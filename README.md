@@ -1,7 +1,7 @@
 # Phase 1: Lexical Analysis
 
 ## To Do
-- For each type of tokens and delimiters (whitespace and comments).
+- For each type of tokens and whitespace and comments.
     - regex pattern 
     - parsing in lexer.c
     - error cases
@@ -15,6 +15,16 @@
         - operators
         - keywords
     - Example Code (correct and incorrect errors)
+- work division
+    - column tracking for tokens (and global error reporting and recovery) - Hendrix
+    - comment handling - Monica
+    - numbers: update to not allow leading zeros, length checking, ... - Ryan
+    - keywords and identifier handling - Simon
+    - string literal handling - Simon
+    - operators - Ryan
+    - punctuators - Monica
+
+
 
 ## Introduction
 Welcome to the first phase of your compiler construction journey! This initial phase focuses on building a lexical analyzer, commonly known as a lexer - the fundamental component that transforms raw source code into meaningful tokens. Your lexer will scan the input character by character, identifying patterns and converting them into tokens representing language constructs like keywords, identifiers, and operators.

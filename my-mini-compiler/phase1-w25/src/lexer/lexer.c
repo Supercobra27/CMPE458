@@ -129,7 +129,7 @@ Token get_next_token(const char *input, int *pos)
         return token;
     }
 
-    // TODO: Add delimiter handling here
+    // TODO: Add punctuation handling here
 
     // Handle invalid characters
     token.error = ERROR_INVALID_CHAR;
