@@ -14,17 +14,23 @@
  * - More operators
  * - Delimiters
  */
-typedef enum {
+typedef enum
+{
     TOKEN_EOF,
-    TOKEN_NUMBER,     // e.g., "123", "456"
-    TOKEN_OPERATOR,   // e.g., "+", "-"
-    TOKEN_ERROR
+    TOKEN_NUMBER,   // e.g., "123", "456" regex "^[1-9][0-9]*"
+    TOKEN_OPERATOR, // e.g., "+", "-"    regex: "^\+|\-|*, /, ==, !=, &&, ||, <=, >=, ="
+    // TOKEN_KEYWORD,        // e.g., "if", "else", "while", "factorial", "repeat_until", "int", "string",
+    // TOKEN_IDENTIFIER,     //
+    // TOKEN_STRING_LITERAL, // basic will not include escape characters "^\"[^\"]*\"". next step will be to include escape characters.
+    // TOKEN_PUNCTUATOR,     // "(", ")", "{", "}", ";"
+    TOKEN_ERROR,
 } TokenType;
 
 /* Error types for lexical analysis
  * TODO: Add more error types as needed for your language - as much as you like !!
  */
-typedef enum {
+typedef enum
+{
     ERROR_NONE,
     ERROR_INVALID_CHAR,
     ERROR_INVALID_NUMBER,
@@ -36,11 +42,12 @@ typedef enum {
  * Hint: You might want to consider adding line and column tracking if you want to debug your lexer properly.
  * Don't forget to update the token fields in lexer.c as well
  */
-typedef struct {
+typedef struct
+{
     TokenType type;
-    char lexeme[100];   // Actual text of the token
-    int line;           // Line number in source file
-    ErrorType error;    // Error type if any
+    char lexeme[100]; // Actual text of the token
+    int line;         // Line number in source file
+    ErrorType error;  // Error type if any
 } Token;
 
 #endif /* TOKENS_H */

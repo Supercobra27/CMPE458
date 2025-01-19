@@ -1,5 +1,21 @@
 # Phase 1: Lexical Analysis
 
+## To Do
+- For each type of tokens and delimiters (whitespace and comments).
+    - regex pattern 
+    - parsing in lexer.c
+    - error cases
+    - test cases
+- Phase 1 Documentation
+    - Changes overview
+    - Change Log
+    - Language Design
+        - data types
+        - control flow patterns (if, else, while, repeat_until) and tentative syntax
+        - operators
+        - keywords
+    - Example Code (correct and incorrect errors)
+
 ## Introduction
 Welcome to the first phase of your compiler construction journey! This initial phase focuses on building a lexical analyzer, commonly known as a lexer - the fundamental component that transforms raw source code into meaningful tokens. Your lexer will scan the input character by character, identifying patterns and converting them into tokens representing language constructs like keywords, identifiers, and operators.
 
@@ -29,6 +45,15 @@ The header file contains basic definitions you'll need to extend:
 - Token structure definition
 
 **Think about what additional token types you'll need for your language features.**
+TODO: put regexes here
+- Keywords (e.g., if, repeat, until)
+- Identifiers (variable names, function name)
+- String literals
+- Operators (+, -, *, /, ==, !=, &&, ||, <=, >=, =)
+- Punctuation and delimiters (;, {, }, (, ))
+- Constants
+- Special characters (underscore, &)
+- Whitespace and comments (remove them)
 
 ### lexer.c
 The source file provides:
