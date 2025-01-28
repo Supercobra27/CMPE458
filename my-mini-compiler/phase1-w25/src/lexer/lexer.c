@@ -4,11 +4,12 @@
 #include <ctype.h>
 #include <string.h>
 #include "../../include/tokens.h"
+#include "../../include/dynamic_array.h"
 
 // Line tracking
 static int current_line = 1;
-// This needs to be a dynamic array to track the start position of each line.
-static int line_start = 0;
+// This is a dynamic array of type int to track the start position of each line.
+static Array *line_start = NULL;
 // TODO: Add column tracking
 
 /* Error messages for lexical errors */
@@ -66,7 +67,7 @@ Token get_next_token(const char *input, int *pos)
         if (c == '\n')
         {
             current_line++;
-            line_start = (*pos) + 1;
+            array_push(line_start, (Element *)pos);
         }
         (*pos)++;
     }
@@ -136,6 +137,8 @@ int main()
     const char *input = "123 + 456 - 789\n1 ++ 2\n$$$$\n45+54"; // Test with multi-line input
     int position = 0;
     Token token;
+    line_start = array_new(1, sizeof(int));
+    array_push(line_start, (Element *)&position);
 
     printf("Analyzing input:\n%s\n\n", input);
 
@@ -144,6 +147,11 @@ int main()
         token = get_next_token(input, &position);
         print_token(token);
     } while (token.type != TOKEN_EOF);
+
+    for (size_t i = 0; i < array_size(line_start); i++)
+    {
+        printf("Line %d starts at position %d\n", i + 1, ((int)array_get(line_start, i)));
+    }
 
     return 0;
 }
