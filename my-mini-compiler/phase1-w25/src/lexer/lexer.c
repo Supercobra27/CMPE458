@@ -7,6 +7,8 @@
 
 // Line tracking
 static int current_line = 1;
+// This needs to be a dynamic array to track the start position of each line.
+static int line_start = 0;
 // TODO: Add column tracking
 
 /* Error messages for lexical errors */
@@ -49,14 +51,13 @@ const char *token_type_to_string(TokenType type)
 
 void print_token(Token token)
 {
-    printf("Token type=%-10s, lexeme='%s', line=%-2d, columns:%d-%d, error_message=\"%s\"\n",
-           token_type_to_string(token.type), token.lexeme, token.line, token.column_start, token.column_end, error_type_to_error_message(token.error));
+    printf("Token type=%-10s, lexeme='%s', line=%-2d, pos:%d-%d, error_message=\"%s\"\n",
+           token_type_to_string(token.type), token.lexeme, token.position.line, token.position.pos_start, token.position.pos_end, error_type_to_error_message(token.error));
 }
 
 /* Get next token from input */
 Token get_next_token(const char *input, int *pos)
 {
-    Token token = {TOKEN_ERROR, "", current_line, ERROR_NONE};
     char c;
 
     // Skip whitespace and track line numbers
@@ -65,9 +66,16 @@ Token get_next_token(const char *input, int *pos)
         if (c == '\n')
         {
             current_line++;
+            line_start = (*pos) + 1;
         }
         (*pos)++;
     }
+
+    Token token = {
+        .type = TOKEN_ERROR,
+        .lexeme = "",
+        .position = {current_line, (*pos), (*pos)},
+        .error = ERROR_NONE};
 
     if (input[*pos] == '\0')
     {
@@ -90,7 +98,7 @@ Token get_next_token(const char *input, int *pos)
             (*pos)++;
             c = input[*pos];
         } while (isdigit(c) && i < sizeof(token.lexeme) - 1);
-
+        token.position.pos_end = (*pos) - 1;
         token.lexeme[i] = '\0';
         token.type = TOKEN_NUMBER;
         return token;

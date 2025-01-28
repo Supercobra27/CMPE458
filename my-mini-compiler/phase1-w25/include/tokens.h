@@ -36,6 +36,14 @@ typedef enum
     ERROR_INVALID_NUMBER,
 } ErrorType;
 
+/* Details for positions of tokens in a file. */
+typedef struct _TokenPosition
+{
+    int line;      // Line number of the token in the file.
+    int pos_start; // Start position of the token in the line.
+    int pos_end;   // End position of the token in the line.
+} TokenPosition;
+
 /* Token structure to store token information
  * TODO: Add more fields if needed for your implementation
  * Hint: You might want to consider adding line and column tracking if you want to debug your lexer properly.
@@ -44,10 +52,9 @@ typedef enum
 typedef struct
 {
     TokenType type;
-    char lexeme[100];             // Actual text of the token
-    int line;                     // Line number in source file
-    int column_start, column_end; // Column number in source file
-    ErrorType error;              // Error type if any
+    char lexeme[100];       // Actual text of the token
+    TokenPosition position; // Position of the token in the input
+    ErrorType error;        // Error type if any
 } Token;
 
 #endif /* TOKENS_H */
