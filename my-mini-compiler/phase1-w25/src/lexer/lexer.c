@@ -7,7 +7,6 @@
 
 // Line tracking
 static int current_line = 1;
-static char last_token_type = 'x'; // For checking consecutive operators
 
 /* Print error messages for lexical errors */
 void print_error(ErrorType error, int line, const char *lexeme)
@@ -20,9 +19,6 @@ void print_error(ErrorType error, int line, const char *lexeme)
         break;
     case ERROR_INVALID_NUMBER:
         printf("Invalid number format\n");
-        break;
-    case ERROR_CONSECUTIVE_OPERATORS:
-        printf("Consecutive operators not allowed\n");
         break;
     default:
         printf("Unknown error\n");
@@ -112,19 +108,9 @@ Token get_next_token(const char *input, int *pos)
     // Handle operators
     if (c == '+' || c == '-')
     {
-        if (last_token_type == 'o')
-        {
-            // Check for consecutive operators
-            token.error = ERROR_CONSECUTIVE_OPERATORS;
-            token.lexeme[0] = c;
-            token.lexeme[1] = '\0';
-            (*pos)++;
-            return token;
-        }
         token.type = TOKEN_OPERATOR;
         token.lexeme[0] = c;
         token.lexeme[1] = '\0';
-        last_token_type = 'o';
         (*pos)++;
         return token;
     }
@@ -143,7 +129,7 @@ Token get_next_token(const char *input, int *pos)
 
 int main()
 {
-    const char *input = "123 + 456 - 789\n1 ++ 2"; // Test with multi-line input
+    const char *input = "123 + 456 - 789\n1 ++ 2\n$$$$\n45+54"; // Test with multi-line input
     int position = 0;
     Token token;
 
