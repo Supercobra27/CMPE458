@@ -34,7 +34,6 @@ typedef enum
     ERROR_NONE,
     ERROR_INVALID_CHAR,
     ERROR_INVALID_NUMBER,
-    ERROR_CONSECUTIVE_OPERATORS
 } ErrorType;
 
 /* Token structure to store token information

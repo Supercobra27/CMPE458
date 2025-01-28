@@ -7,21 +7,38 @@
 
 // Line tracking
 static int current_line = 1;
+// TODO: Add column tracking
 
-/* Print error messages for lexical errors */
-void print_error(ErrorType error, int line, const char *lexeme)
+/* Error messages for lexical errors */
+const char *error_type_to_error_message(ErrorType error)
 {
-    printf("Lexical Error at line %d: ", line);
     switch (error)
     {
+    case ERROR_NONE:
+        return "No error";
     case ERROR_INVALID_CHAR:
-        printf("Invalid character '%s'\n", lexeme);
-        break;
+        return "Invalid character";
     case ERROR_INVALID_NUMBER:
-        printf("Invalid number format\n");
-        break;
+        return "Invalid number format";
     default:
-        printf("Unknown error\n");
+        return "Unknown error";
+    }
+}
+
+const char *token_type_to_string(TokenType type)
+{
+    switch (type)
+    {
+    case TOKEN_EOF:
+        return "EOF";
+    case TOKEN_NUMBER:
+        return "NUMBER";
+    case TOKEN_OPERATOR:
+        return "OPERATOR";
+    case TOKEN_ERROR:
+        return "ERROR";
+    default:
+        return "UNKNOWN";
     }
 }
 
@@ -32,29 +49,8 @@ void print_error(ErrorType error, int line, const char *lexeme)
 
 void print_token(Token token)
 {
-    if (token.error != ERROR_NONE)
-    {
-        print_error(token.error, token.line, token.lexeme);
-        return;
-    }
-
-    printf("Token: ");
-    switch (token.type)
-    {
-    case TOKEN_NUMBER:
-        printf("NUMBER");
-        break;
-    case TOKEN_OPERATOR:
-        printf("OPERATOR");
-        break;
-    case TOKEN_EOF:
-        printf("EOF");
-        break;
-    default:
-        printf("UNKNOWN");
-    }
-    printf(" | Lexeme: '%s' | Line: %d\n",
-           token.lexeme, token.line);
+    printf("Token type=%-10s, lexeme='%s', line=%-2d, columns:%d-%d, error_message=\"%s\"\n",
+           token_type_to_string(token.type), token.lexeme, token.line, token.column_start, token.column_end, error_type_to_error_message(token.error));
 }
 
 /* Get next token from input */
