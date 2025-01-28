@@ -45,9 +45,10 @@ typedef enum
 typedef struct
 {
     TokenType type;
-    char lexeme[100]; // Actual text of the token
-    int line;         // Line number in source file
-    ErrorType error;  // Error type if any
+    char lexeme[100];             // Actual text of the token
+    int line;                     // Line number in source file
+    int column_start, column_end; // Column number in source file
+    ErrorType error;              // Error type if any
 } Token;
 
 #endif /* TOKENS_H */
