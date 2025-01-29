@@ -17,6 +17,7 @@
     - [ ] Example Code (correct and incorrect errors)
 - [ ] work division
     - [x] column tracking for tokens (and global error reporting and recovery) - Hendrix
+    - [ ] ability to pass input code from a file
     - [ ] comment handling - Monica
     - [ ] numbers: update to not allow leading zeros, length checking, ... - Ryan
     - [ ] keywords and identifier handling - Simon
