@@ -6,6 +6,23 @@
 #include "../../include/tokens.h"
 #include "../../include/dynamic_array.h"
 
+// keywords
+static const char *keywords[] = {
+    "if", "else", "while", "factorial",
+    "repeat_until", "int", "string"
+};
+static const int num_keywords = 7;
+
+// to check if a string is a keyword
+static int is_keyword(const char *str) {
+    for (int i = 0; i < num_keywords; i++) {
+        if (strcmp(str, keywords[i]) == 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
 // Line tracking
 static int current_line;
 // This is a dynamic array of type int to track the start position of each line.
@@ -31,6 +48,10 @@ const char *error_type_to_error_message(ErrorType error)
         return "error: invalid character";
     case ERROR_INVALID_NUMBER:
         return "error: invalid number format";
+    case ERROR_UNTERMINATED_STRING:
+        return "error: unterminated string literal";
+    case ERROR_STRING_TOO_LONG:
+        return "error: string literal too long";
     default:
         return "Unknown error";
     }
@@ -46,6 +67,12 @@ const char *token_type_to_string(TokenType type)
         return "NUMBER";
     case TOKEN_OPERATOR:
         return "OPERATOR";
+    case TOKEN_KEYWORD:
+        return "KEYWORD";
+    case TOKEN_IDENTIFIER:
+        return "IDENTIFIER";
+    case TOKEN_STRING_LITERAL:
+        return "STRING_LITERAL";
     case TOKEN_ERROR:
         return "ERROR";
     default:
@@ -132,7 +159,84 @@ Token get_next_token(const char *input, int *pos)
     // TODO: Add keyword and identifier handling here
     // Hint: You'll have to add support for keywords and identifiers, and then string literals
 
+    // handle keywords and identifiers
+    if (isalpha(c) || c == '_')
+    {
+        int i = 0;
+        do
+        {
+            token.lexeme[i++] = c;
+            (*pos)++;
+            c = input[*pos];
+        } while ((isalnum(c) || c == '_') && i < sizeof(token.lexeme) - 1);
+
+        token.lexeme[i] = '\0';
+        token.position.pos_end += i - 1;
+
+        // Check if it's a keyword
+        if (is_keyword(token.lexeme)) {
+            token.type = TOKEN_KEYWORD;
+        } else {
+            token.type = TOKEN_IDENTIFIER;
+        }
+
+        return token;
+    }
+
+
+
     // TODO: Add string literal handling here
+
+    // handling string literals
+    if (c == '"')
+    {
+        int i = 0;
+        token.lexeme[i++] = c;  // store opening quote
+        (*pos)++;
+
+        while ((c = input[*pos]) != '\0' && c != '"' && i < sizeof(token.lexeme) - 2)
+        {
+            // handle newlines in string
+            if (c == '\n')
+            {
+                current_line++;
+                array_push(line_start, (Element *)pos);
+            }
+
+            token.lexeme[i++] = c; // add characters
+            (*pos)++;
+        }
+
+        // check what the exit condition was
+        if (c == '"')
+        {
+            // normal termination
+            token.lexeme[i++] = c;  // store the closing quote
+            token.lexeme[i] = '\0';
+            (*pos)++;
+            token.type = TOKEN_STRING_LITERAL;
+            token.position.pos_end += i - 1;
+            return token;
+        }
+        //buffer filled up, string too long
+        else if (i >= sizeof(token.lexeme) - 2)
+        {
+            token.lexeme[i] = '\0';
+            token.type = TOKEN_ERROR;
+            token.error = ERROR_STRING_TOO_LONG;
+            token.position.pos_end += i - 1;
+            return token;
+        }
+        // if it wasn't the other two then it's unterminated
+        else
+        {
+            token.lexeme[i] = '\0';
+            token.type = TOKEN_ERROR;
+            token.error = ERROR_UNTERMINATED_STRING;
+            token.position.pos_end += i - 1;
+            return token;
+        }
+    }
 
     // Handle operators
     if (c == '+' || c == '-')

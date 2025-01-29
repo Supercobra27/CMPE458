@@ -19,9 +19,9 @@ typedef enum
     TOKEN_EOF,
     TOKEN_NUMBER,   // e.g., "123", "456" regex "^[1-9][0-9]*"
     TOKEN_OPERATOR, // e.g., "+", "-"    regex: "^\+|\-|*, /, ==, !=, &&, ||, <=, >=, ="
-    // TOKEN_KEYWORD,        // e.g., "if", "else", "while", "factorial", "repeat_until", "int", "string",
-    // TOKEN_IDENTIFIER,     //
-    // TOKEN_STRING_LITERAL, // basic will not include escape characters "^\"[^\"]*\"". next step will be to include escape characters.
+    TOKEN_KEYWORD,        // e.g., "if", "else", "while", "factorial", "repeat_until", "int", "string",
+    TOKEN_IDENTIFIER,     //
+    TOKEN_STRING_LITERAL, // basic will not include escape characters "^\"[^\"]*\"". next step will be to include escape characters.
     // TOKEN_PUNCTUATOR,     // "(", ")", "{", "}", ";"
     TOKEN_ERROR,
 } TokenType;
@@ -34,6 +34,8 @@ typedef enum
     ERROR_NONE,
     ERROR_INVALID_CHAR,
     ERROR_INVALID_NUMBER,
+    ERROR_UNTERMINATED_STRING,
+    ERROR_STRING_TOO_LONG,
 } ErrorType;
 
 /* Details for positions of tokens in a file. */
