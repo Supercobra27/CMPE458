@@ -7,10 +7,17 @@
 #include "../../include/dynamic_array.h"
 
 // Line tracking
-static int current_line = 1;
+static int current_line;
 // This is a dynamic array of type int to track the start position of each line.
-static Array *line_start = NULL;
-// TODO: Add column tracking
+static Array *line_start;
+
+void init_lexer(int *position)
+{
+    current_line = 1;
+    *position = 0;
+    line_start = array_new(1, sizeof(int));
+    array_push(line_start, (Element *)position);
+}
 
 /* Error messages for lexical errors */
 const char *error_type_to_error_message(ErrorType error)
@@ -20,9 +27,9 @@ const char *error_type_to_error_message(ErrorType error)
     case ERROR_NONE:
         return "No error";
     case ERROR_INVALID_CHAR:
-        return "Invalid character";
+        return "error: invalid character";
     case ERROR_INVALID_NUMBER:
-        return "Invalid number format";
+        return "error: invalid number format";
     default:
         return "Unknown error";
     }
@@ -52,8 +59,24 @@ const char *token_type_to_string(TokenType type)
 
 void print_token(Token token)
 {
-    printf("Token type=%-10s, lexeme='%s', line=%-2d, pos:%d-%d, error_message=\"%s\"\n",
+    printf("Token type=%-10s, lexeme='%s', line=%-2d, column:%d-%d, error_message=\"%s\"\n",
            token_type_to_string(token.type), token.lexeme, token.position.line, token.position.pos_start, token.position.pos_end, error_type_to_error_message(token.error));
+}
+
+// Do we want to distinguish between errors and warnings?
+void print_token_compiler_message(const char *input, Token token)
+{
+    const int line_start_pos = (int)array_get(line_start, token.position.line - 1);
+    const int line_length = strchr(input + line_start_pos, '\n') - (input + line_start_pos);
+    // tildes is supposed to be as long as the longest token lexeme so that it can always be chopped to the right length.
+    static const char *tildes = "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
+    printf(
+        "%s:%d:%d: %s\n"
+        "%.*s\n"
+        "%*s%.*s\n",
+        "[input file path here]", token.position.line, token.position.pos_start, error_type_to_error_message(token.error),
+        line_length, input + line_start_pos,
+        token.position.pos_start, "^", token.position.pos_end - token.position.pos_start, tildes);
 }
 
 /* Get next token from input */
@@ -64,18 +87,18 @@ Token get_next_token(const char *input, int *pos)
     // Skip whitespace and track line numbers
     while ((c = input[*pos]) != '\0' && isspace(c))
     {
+        (*pos)++;
         if (c == '\n')
         {
             current_line++;
             array_push(line_start, (Element *)pos);
         }
-        (*pos)++;
     }
 
     Token token = {
         .type = TOKEN_ERROR,
         .lexeme = "",
-        .position = {current_line, (*pos), (*pos)},
+        .position = {current_line, (*pos) - (int)array_get(line_start, current_line - 1) + 1, (*pos) - (int)array_get(line_start, current_line - 1) + 1},
         .error = ERROR_NONE};
 
     if (input[*pos] == '\0')
@@ -99,7 +122,7 @@ Token get_next_token(const char *input, int *pos)
             (*pos)++;
             c = input[*pos];
         } while (isdigit(c) && i < sizeof(token.lexeme) - 1);
-        token.position.pos_end = (*pos) - 1;
+        token.position.pos_end += i - 1;
         token.lexeme[i] = '\0';
         token.type = TOKEN_NUMBER;
         return token;
@@ -137,21 +160,31 @@ int main()
     const char *input = "123 + 456 - 789\n1 ++ 2\n$$$$\n45+54"; // Test with multi-line input
     int position = 0;
     Token token;
-    line_start = array_new(1, sizeof(int));
-    array_push(line_start, (Element *)&position);
+    init_lexer(&position);
 
     printf("Analyzing input:\n%s\n\n", input);
 
+    // Get all tokens from input and print them.
     do
     {
         token = get_next_token(input, &position);
         print_token(token);
     } while (token.type != TOKEN_EOF);
 
+    // Print line start positions.
     for (size_t i = 0; i < array_size(line_start); i++)
     {
-        printf("Line %d starts at position %d\n", i + 1, ((int)array_get(line_start, i)));
+        printf("Line %d starts at position %d\n", i + 1, (int)array_get(line_start, i));
     }
+    array_free(line_start);
+
+    // Get all tokens and print all possible compiler messages for tokens.
+    init_lexer(&position);
+    do
+    {
+        token = get_next_token(input, &position);
+        print_token_compiler_message(input, token);
+    } while (token.type != TOKEN_EOF);
 
     return 0;
 }
