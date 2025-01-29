@@ -10,6 +10,7 @@
 static int current_line;
 // This is a dynamic array of type int to track the start position of each line.
 static Array *line_start;
+// Could save all tokens in a dynamic array if needed.
 
 void init_lexer(int *position)
 {

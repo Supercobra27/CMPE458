@@ -1,28 +1,28 @@
 # Phase 1: Lexical Analysis
 
 ## To Do
-- For each type of tokens and whitespace and comments.
-    - regex pattern 
-    - parsing in lexer.c
-    - error cases
-    - test cases
-- Phase 1 Documentation
-    - Changes overview
-    - Change Log
-    - Language Design
-        - data types
-        - control flow patterns (if, else, while, repeat_until) and tentative syntax
-        - operators
-        - keywords
-    - Example Code (correct and incorrect errors)
-- work division
-    - column tracking for tokens (and global error reporting and recovery) - Hendrix
-    - comment handling - Monica
-    - numbers: update to not allow leading zeros, length checking, ... - Ryan
-    - keywords and identifier handling - Simon
-    - string literal handling - Simon
-    - operators - Ryan
-    - punctuators - Monica
+- [ ] For each type of tokens and whitespace and comments.
+    - [ ] regex pattern 
+    - [ ] parsing in lexer.c
+    - [ ] error cases
+    - [ ] test cases
+- [ ] Phase 1 Documentation
+    - [ ] Changes overview
+    - [ ] Change Log
+    - [ ] Language Design
+        - [ ] data types
+        - [ ] control flow patterns (if, else, while, repeat_until) and tentative syntax
+        - [ ] operators
+        - [ ] keywords
+    - [ ] Example Code (correct and incorrect errors)
+- [ ] work division
+    - [x] column tracking for tokens (and global error reporting and recovery) - Hendrix
+    - [ ] comment handling - Monica
+    - [ ] numbers: update to not allow leading zeros, length checking, ... - Ryan
+    - [ ] keywords and identifier handling - Simon
+    - [ ] string literal handling - Simon
+    - [ ] operators - Ryan
+    - [ ] punctuators - Monica
 
 
 
