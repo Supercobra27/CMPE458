@@ -1,9 +1,12 @@
 #include <operators.h>
 #include <tokens.h>
 #include <ctype.h>
+#include <string.h>
+
+const char* operatorList = "+-*/~|&^+!><";
 
 int isOperator(char c){
-    return (c == '+' || c == '-' || c == '*' || c == '/' || c == '~' || c == '|' || c == '&' || c == '^' || c == '=' || c == '!' || c == '>' || c == '<');
+    return strchr(operatorList, c);
 }
 
 int isFloatingPrefix(char c, char cn){
@@ -26,6 +29,7 @@ int isInvalidOperator(char c){
     return isOperator(c) && !(isLogicalOperator(c));
 }
 
+// dont need double pointers
 void encapOperator(Token *token, int **pos, char **input, int len){
             int i = 1;
             while ( i != len  && !isInvalidOperator((*input)[**pos])){
