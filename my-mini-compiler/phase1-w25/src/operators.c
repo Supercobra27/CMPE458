@@ -1,5 +1,6 @@
 #include <operators.h>
 #include <tokens.h>
+#include <ctype.h>
 
 int isOperator(char c){
     return (c == '+' || c == '-' || c == '*' || c == '/' || c == '~' || c == '|' || c == '&' || c == '^');
@@ -15,11 +16,11 @@ int isInvalidOperator(char c){
 
 void encapOperator(Token *token, int **pos, char **input, int len){
             int i = 1;
-            do {
+            while ( i != len  && !isInvalidOperator((*input)[**pos])){
                 (**pos)++;
                 token->lexeme[i] = (*input)[**pos];
                 token->position.pos_end++;
                 i++;
-            } while ( i != len );
-            token->lexeme[2] = '\0';
+            };
+            token->lexeme[i] = '\0';
 }

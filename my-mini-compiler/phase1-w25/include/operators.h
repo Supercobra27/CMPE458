@@ -1,6 +1,8 @@
 #ifndef OP_H
 #define OP_H
 
+#include <tokens.h>
+
 #define LOGICAL_OPERATOR_LENGTH 2
 
 /**
