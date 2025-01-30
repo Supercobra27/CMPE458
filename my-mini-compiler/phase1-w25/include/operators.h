@@ -13,6 +13,13 @@
 int isOperator(char c);
 
 /**
+ * @param c The first character.
+ * @param cn The following character.
+ * @details Useful for checking if a number is a FP.
+*/
+int isFloatingPrefix(char c, char cn);
+
+/**
  * @param c The character to check.
  * @return 1 if it is a valid character as a prefix to an operator.
  * @note Not required yet.

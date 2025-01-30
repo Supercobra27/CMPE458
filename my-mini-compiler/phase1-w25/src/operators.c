@@ -6,6 +6,10 @@ int isOperator(char c){
     return (c == '+' || c == '-' || c == '*' || c == '/' || c == '~' || c == '|' || c == '&' || c == '^' || c == '=' || c == '!' || c == '>' || c == '<');
 }
 
+int isFloatingPrefix(char c, char cn){
+    return (isdigit(c) && cn == '.');
+}
+
 int isValidPrefix(char c){
     return isOperator(c);
 }
