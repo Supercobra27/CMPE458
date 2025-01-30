@@ -3,6 +3,10 @@
 #include <ctype.h>
 #include <string.h>
 
+/**
+ * Have a list with single and double operators
+*/
+
 const char* operatorList = "+-*/~|&^+!><";
 
 int isOperator(char c){
@@ -30,7 +34,7 @@ int isInvalidOperator(char c){
 }
 
 // dont need double pointers
-void encapOperator(Token *token, int **pos, char **input, int len){
+void encapOperator(Token *token, int **pos, const char **input, int len){
             int i = 1;
             while ( i != len  && !isInvalidOperator((*input)[**pos])){
                 (**pos)++;
