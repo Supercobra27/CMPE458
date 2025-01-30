@@ -115,7 +115,7 @@ Token get_next_token(const char *input, int *pos)
     }
 
     c = input[*pos];
-    cn = input[*pos+1];
+    cn = input[*pos + 1];
 
     // TODO: Add comment handling here
 
@@ -129,24 +129,29 @@ Token get_next_token(const char *input, int *pos)
          * Length checking as it is a lexical error
          * Have we defined the max length
          * FP Numbers
-        */
+         */
 
         do
         {
-            if (c == '0' && i == 0 && cn != '.') { // handle initial zeroes
+            if (c == '0' && i == 0 && cn != '.')
+            { // handle initial zeroes
                 token.lexeme[i++] = c;
                 (*pos)++;
                 break; // based on regex for first character
-            } else if (isFloatingPrefix(c, cn)) {
+            }
+            else if (isFloatingPrefix(c, cn))
+            {
                 token.lexeme[i++] = c;
                 token.lexeme[i++] = cn;
                 (*pos) += 2; // skip over the starter and dot so not to return error for unknown character
-            } else {
+            }
+            else
+            {
                 token.lexeme[i++] = c;
                 (*pos)++;
             }
             c = input[*pos];
-            cn = input[*pos+1];
+            cn = input[*pos + 1];
         } while (isdigit(c) && i < sizeof(token.lexeme) - 1);
         token.position.pos_end += i - 1;
         token.lexeme[i] = '\0';
@@ -166,23 +171,24 @@ Token get_next_token(const char *input, int *pos)
         token.lexeme[0] = c;
 
         // If the following character is a valid logical operator (&&, ||)
-        if (isLogicalOperator(input[*pos+1])){
+        if (isLogicalOperator(input[*pos + 1]))
+        {
 
             encapOperator(&token, &pos, &input, LOGICAL_OPERATOR_LENGTH);
 
+            // If it is an invalid consecutive operator
+            /*
+            } else if (isInvalidOperator(input[*pos+1])) {
 
-        // If it is an invalid consecutive operator
-        /*
-        } else if (isInvalidOperator(input[*pos+1])) {
-            
-            // I am pretty sure this logic only has to be done during parsing
+                // I am pretty sure this logic only has to be done during parsing
 
-            encapOperator(&token, &pos, &input, LOGICAL_OPERATOR_LENGTH);
-            token.error = ERROR_CONSECUTIVE_OPERATOR;
+                encapOperator(&token, &pos, &input, LOGICAL_OPERATOR_LENGTH);
+                token.error = ERROR_CONSECUTIVE_OPERATOR;
 
-        */
-       
-       } else {
+            */
+        }
+        else
+        {
             token.lexeme[1] = '\0';
         }
         (*pos)++;
@@ -203,11 +209,12 @@ Token get_next_token(const char *input, int *pos)
 
 int main(int argc, char *argv[])
 {
-    //Potential code for file name/extension checking, although when I run it for some reason although it does not change anything the code does not run properly so Work in Progress
+    // Potential code for file name/extension checking, although when I run it for some reason although it does not change anything the code does not run properly so Work in Progress
 
     // Input file argument check
     argc = 2; // force
-    if (argc != 2) { 
+    if (argc != 2)
+    {
         printf("Usage: .\\my-mini-compiler.exe <Input File Name>.cisc");
         exit(-1);
     }
@@ -215,18 +222,17 @@ int main(int argc, char *argv[])
     argv[1] = "test.cisc"; // force
     // Input file extension check
     int file_len = strlen(argv[1]);
-    char* file_name = argv[1];
-    if(file_len < 5 || strncmp(file_name + file_len - 5, FILE_EXT, 5) != 0){
+    char *file_name = argv[1];
+    if (file_len < 5 || strncmp(file_name + file_len - 5, FILE_EXT, 5) != 0)
+    {
         printf("Incorrect file extension, the correct extension is .cisc");
         exit(-1);
     }
-    
 
-   // "123 + 456 - 789\n1 ++ 2\n$$$$\n45+54" - Original Test Case
+    // "123 + 456 - 789\n1 ++ 2\n$$$$\n45+54" - Original Test Case
 
     const char *input = "1 &&== 01\n2$3 |= 20\n3 == 3.2\n5 =< 5.6543\n6 ** 6"; // Test with multi-line input
 
-    
     /*
         For some reason while testing this, you can only add new test cases at the end?
         Whenever I tried to add at the beginning or the middle it just would not run.
