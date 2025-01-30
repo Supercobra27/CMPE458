@@ -88,7 +88,7 @@ void print_token_compiler_message(const char *input, Token token)
 /* Get next token from input */
 Token get_next_token(const char *input, int *pos)
 {
-    char c;
+    char c, cn; // first char and the following for checking operations
 
     // Skip whitespace and track line numbers
     while ((c = input[*pos]) != '\0' && isspace(c))
@@ -115,6 +115,7 @@ Token get_next_token(const char *input, int *pos)
     }
 
     c = input[*pos];
+    cn = input[*pos+1];
 
     // TODO: Add comment handling here
 
