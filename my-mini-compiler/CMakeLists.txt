@@ -12,4 +12,5 @@ include_directories(${PROJECT_SOURCE_DIR}/phase1-w25/include)
 add_executable(my-mini-compiler
         phase1-w25/include/tokens.h
         phase1-w25/src/lexer/lexer.c
-        phase1-w25/src/dynamic_array.c)
+        phase1-w25/src/dynamic_array.c
+        phase1-w25/src/operators.c)

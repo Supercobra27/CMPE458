@@ -36,6 +36,7 @@ typedef enum
     ERROR_INVALID_NUMBER,
     ERROR_UNTERMINATED_STRING,
     ERROR_STRING_TOO_LONG,
+    ERROR_CONSECUTIVE_OPERATOR
 } ErrorType;
 
 /* Details for positions of tokens in a file. */

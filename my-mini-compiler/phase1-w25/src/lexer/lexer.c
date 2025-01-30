@@ -5,6 +5,9 @@
 #include <string.h>
 #include "../../include/tokens.h"
 #include "../../include/dynamic_array.h"
+#include "../../include/operators.h"
+
+#define FILE_EXT ".cisc"
 
 // keywords
 static const char *keywords[] = {
@@ -48,6 +51,8 @@ const char *error_type_to_error_message(ErrorType error)
         return "error: invalid character";
     case ERROR_INVALID_NUMBER:
         return "error: invalid number format";
+    case ERROR_CONSECUTIVE_OPERATOR:
+        return "error: invalid consecutive operator";
     case ERROR_UNTERMINATED_STRING:
         return "error: unterminated string literal";
     case ERROR_STRING_TOO_LONG:
@@ -110,7 +115,7 @@ void print_token_compiler_message(const char *input, Token token)
 /* Get next token from input */
 Token get_next_token(const char *input, int *pos)
 {
-    char c;
+    char c, cn; // first char and the following for checking operations
 
     // Skip whitespace and track line numbers
     while ((c = input[*pos]) != '\0' && isspace(c))
@@ -137,6 +142,7 @@ Token get_next_token(const char *input, int *pos)
     }
 
     c = input[*pos];
+    cn = input[*pos+1];
 
     // TODO: Add comment handling here
 
@@ -144,11 +150,30 @@ Token get_next_token(const char *input, int *pos)
     if (isdigit(c))
     {
         int i = 0;
+
+        /**
+         * Need to do when keywords are added:
+         * Length checking as it is a lexical error
+         * Have we defined the max length
+         * FP Numbers
+        */
+
         do
         {
-            token.lexeme[i++] = c;
-            (*pos)++;
+            if (c == '0' && i == 0 && cn != '.') { // handle initial zeroes
+                token.lexeme[i++] = c;
+                (*pos)++;
+                break; // based on regex for first character
+            } else if (isFloatingPrefix(c, cn)) {
+                token.lexeme[i++] = c;
+                token.lexeme[i++] = cn;
+                (*pos) += 2; // skip over the starter and dot so not to return error for unknown character
+            } else {
+                token.lexeme[i++] = c;
+                (*pos)++;
+            }
             c = input[*pos];
+            cn = input[*pos+1];
         } while (isdigit(c) && i < sizeof(token.lexeme) - 1);
         token.position.pos_end += i - 1;
         token.lexeme[i] = '\0';
@@ -239,11 +264,31 @@ Token get_next_token(const char *input, int *pos)
     }
 
     // Handle operators
-    if (c == '+' || c == '-')
+    if (isOperator(c))
     {
         token.type = TOKEN_OPERATOR;
         token.lexeme[0] = c;
-        token.lexeme[1] = '\0';
+
+        // If the following character is a valid logical operator (&&, ||)
+        if (isLogicalOperator(input[*pos+1])){
+
+            encapOperator(&token, &pos, &input, LOGICAL_OPERATOR_LENGTH);
+
+
+        // If it is an invalid consecutive operator
+        /*
+        } else if (isInvalidOperator(input[*pos+1])) {
+
+            // I am pretty sure this logic only has to be done during parsing
+
+            encapOperator(&token, &pos, &input, LOGICAL_OPERATOR_LENGTH);
+            token.error = ERROR_CONSECUTIVE_OPERATOR;
+
+        */
+
+       } else {
+            token.lexeme[1] = '\0';
+        }
         (*pos)++;
         return token;
     }
@@ -260,9 +305,37 @@ Token get_next_token(const char *input, int *pos)
 
 // This is a basic lexer that handles numbers (e.g., "123", "456"), basic operators (+ and -), consecutive operator errors, whitespace and newlines, with simple line tracking for error reporting.
 
-int main()
+int main(int argc, char *argv[])
 {
-    const char *input = "123 + 456 - 789\n1 ++ 2\n$$$$\n45+54"; // Test with multi-line input
+    //Potential code for file name/extension checking, although when I run it for some reason although it does not change anything the code does not run properly so Work in Progress
+
+    // Input file argument check
+    argc = 2; // force
+    if (argc != 2) {
+        printf("Usage: .\\my-mini-compiler.exe <Input File Name>.cisc");
+        exit(-1);
+    }
+
+    argv[1] = "test.cisc"; // force
+    // Input file extension check
+    int file_len = strlen(argv[1]);
+    char* file_name = argv[1];
+    if(file_len < 5 || strncmp(file_name + file_len - 5, FILE_EXT, 5) != 0){
+        printf("Incorrect file extension, the correct extension is .cisc");
+        exit(-1);
+    }
+
+
+   // "123 + 456 - 789\n1 ++ 2\n$$$$\n45+54" - Original Test Case
+
+    const char *input = "1 &&== 01\n2$3 |= 20\n3 == 3.2\n5 =< 5.6543\n6 ** 6"; // Test with multi-line input
+
+
+    /*
+        For some reason while testing this, you can only add new test cases at the end?
+        Whenever I tried to add at the beginning or the middle it just would not run.
+    */
+
     int position = 0;
     Token token;
     init_lexer(&position);
