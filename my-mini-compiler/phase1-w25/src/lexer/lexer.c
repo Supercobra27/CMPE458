@@ -123,6 +123,14 @@ Token get_next_token(const char *input, int *pos)
     if (isdigit(c))
     {
         int i = 0;
+
+        /**
+         * Need to do when keywords are added:
+         * Length checking as it is a lexical error
+         * Have we defined the max length
+         * FP Numbers
+        */
+
         do
         {
             if (c == '0' && i == 0 && cn != '.') { // handle initial zeroes
@@ -195,15 +203,16 @@ Token get_next_token(const char *input, int *pos)
 
 int main(int argc, char *argv[])
 {
-    /* Potential code for file name/extension checking, although when I run it for some reason although it does not change anything the code does not run properly
-    so Work in Progress
+    //Potential code for file name/extension checking, although when I run it for some reason although it does not change anything the code does not run properly so Work in Progress
 
     // Input file argument check
+    argc = 2; // force
     if (argc != 2) { 
         printf("Usage: .\\my-mini-compiler.exe <Input File Name>.cisc");
         exit(-1);
     }
 
+    argv[1] = "test.cisc"; // force
     // Input file extension check
     int file_len = strlen(argv[1]);
     char* file_name = argv[1];
@@ -211,7 +220,7 @@ int main(int argc, char *argv[])
         printf("Incorrect file extension, the correct extension is .cisc");
         exit(-1);
     }
-    */
+    
 
    // "123 + 456 - 789\n1 ++ 2\n$$$$\n45+54" - Original Test Case
 
