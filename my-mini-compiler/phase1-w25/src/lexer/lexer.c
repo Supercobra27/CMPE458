@@ -124,6 +124,11 @@ Token get_next_token(const char *input, int *pos)
         int i = 0;
         do
         {
+            if (c == '0' && i == 0) { // handle initial zeroes
+                token.lexeme[i++] = c;
+                (*pos)++;
+                break; // based on regex for first character
+            }
             token.lexeme[i++] = c;
             (*pos)++;
             c = input[*pos];
@@ -203,7 +208,7 @@ int main(int argc, char *argv[])
 
    // "123 + 456 - 789\n1 ++ 2\n$$$$\n45+54" - Original Test Case
 
-    const char *input = "1 &&== 1\n2 |= 2\n3 == 3\n5 =< 5\n6 ** 6"; // Test with multi-line input
+    const char *input = "1 &&== 01\n2 |= 20\n3 == 3\n5 =< 5\n6 ** 6"; // Test with multi-line input
 
     
     /*
