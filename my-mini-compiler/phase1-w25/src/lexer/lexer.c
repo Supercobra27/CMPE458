@@ -5,6 +5,9 @@
 #include <string.h>
 #include "../../include/tokens.h"
 #include "../../include/dynamic_array.h"
+#include "../../include/operators.h"
+
+#define FILE_EXT ".cisc"
 
 // Line tracking
 static int current_line;
@@ -20,6 +23,18 @@ void init_lexer(int *position)
     array_push(line_start, (Element *)position);
 }
 
+void encapOperator(Token *token, int **pos, char **input, int len){
+            int i = 1;
+            do {
+            (**pos)++;
+            token->lexeme[i] = (*input)[**pos];
+            token->position.pos_end++;
+            i++;
+            } while ( i != len );
+            token->lexeme[2] = '\0';
+            token->position.pos_end++;
+}
+
 /* Error messages for lexical errors */
 const char *error_type_to_error_message(ErrorType error)
 {
@@ -31,6 +46,8 @@ const char *error_type_to_error_message(ErrorType error)
         return "error: invalid character";
     case ERROR_INVALID_NUMBER:
         return "error: invalid number format";
+    case ERROR_CONSECUTIVE_OPERATOR:
+        return "error: invalid consecutive operator";
     default:
         return "Unknown error";
     }
@@ -135,11 +152,27 @@ Token get_next_token(const char *input, int *pos)
     // TODO: Add string literal handling here
 
     // Handle operators
-    if (c == '+' || c == '-')
+    if (isOperator(c))
     {
         token.type = TOKEN_OPERATOR;
         token.lexeme[0] = c;
-        token.lexeme[1] = '\0';
+
+        // If the following character is a valid logical operator (&&, ||)
+        if (isLogicalOperator(input[*pos+1])){
+
+            encapOperator(&token, &pos, &input, LOGICAL_OPERATOR_LENGTH);
+
+        // If it is an invalid consecutive operator
+        } else if (isInvalidOperator(input[*pos+1])) {
+            
+            // I am pretty sure this logic only has to be done during parsing
+
+            encapOperator(&token, &pos, &input, LOGICAL_OPERATOR_LENGTH);
+            token.error = ERROR_CONSECUTIVE_OPERATOR;
+
+        } else {
+            token.lexeme[1] = '\0';
+        }
         (*pos)++;
         return token;
     }
@@ -156,9 +189,36 @@ Token get_next_token(const char *input, int *pos)
 
 // This is a basic lexer that handles numbers (e.g., "123", "456"), basic operators (+ and -), consecutive operator errors, whitespace and newlines, with simple line tracking for error reporting.
 
-int main()
+int main(int argc, char *argv[])
 {
-    const char *input = "123 + 456 - 789\n1 ++ 2\n$$$$\n45+54"; // Test with multi-line input
+    /* Potential code for file name/extension checking, although when I run it for some reason although it does not change anything the code does not run properly
+    so Work in Progress
+
+    // Input file argument check
+    if (argc != 2) { 
+        printf("Usage: .\\my-mini-compiler.exe <Input File Name>.cisc");
+        exit(-1);
+    }
+
+    // Input file extension check
+    int file_len = strlen(argv[1]);
+    char* file_name = argv[1];
+    if(file_len < 5 || strncmp(file_name + file_len - 5, FILE_EXT, 5) != 0){
+        printf("Incorrect file extension, the correct extension is .cisc");
+        exit(-1);
+    }
+    */
+
+   // "123 + 456 - 789\n1 ++ 2\n$$$$\n45+54" - Original Test Case
+
+    const char *input = "1 && 1\n 2 || 2\n 3 ^^ 3"; // Test with multi-line input
+
+    
+    /*
+        For some reason while testing this, you can only add new test cases at the end?
+        Whenever I tried to add at the beginning or the middle it just would not run.
+    */
+
     int position = 0;
     Token token;
     init_lexer(&position);
