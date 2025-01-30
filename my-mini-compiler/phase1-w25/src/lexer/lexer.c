@@ -32,7 +32,6 @@ void encapOperator(Token *token, int **pos, char **input, int len){
             i++;
             } while ( i != len );
             token->lexeme[2] = '\0';
-            token->position.pos_end++;
 }
 
 /* Error messages for lexical errors */
@@ -211,7 +210,7 @@ int main(int argc, char *argv[])
 
    // "123 + 456 - 789\n1 ++ 2\n$$$$\n45+54" - Original Test Case
 
-    const char *input = "1 && 1\n 2 || 2\n 3 ^^ 3"; // Test with multi-line input
+    const char *input = "1 &&&& 1\n 2 ||| 2\n 3 ^^ 3"; // Test with multi-line input
 
     
     /*
