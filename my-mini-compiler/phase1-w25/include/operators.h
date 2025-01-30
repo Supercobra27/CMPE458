@@ -7,21 +7,37 @@
 
 /**
  * @param c The character to check.
- * @return 1 if true.
+ * @return 1 the character exists in the set of operators.
  * @details Returns if the character is a valid operator, like addition, logical, or bitwise.
 */
 int isOperator(char c);
 
 /**
  * @param c The character to check.
- * @return 1 if true.
+ * @return 1 if it is a valid character as a prefix to an operator.
+ * @note Not required yet.
+ * @deprecated
+*/
+int isValidPrefix(char c);
+
+/**
+ * @param c The character to check.
+ * @return 1 if it is a valid character as a postfix to an operator.
+ * @note Not required yet.
+ * @deprecated
+*/
+int isValidPostfix(char cp, char c);
+
+/**
+ * @param c The character to check.
+ * @return 1 if the operator is part of the logical set.
  * @details Returns based on if the character is a valid logical like & or |.
 */
 int isLogicalOperator(char c);
 
 /**
  * @param c The character to check.
- * @return 1.
+ * @return 1 if the character is not part of the logical/double operator set.
  * @details Returns based on if the character is a valid operator to follow another.
 */
 int isInvalidOperator(char c);
