@@ -203,7 +203,7 @@ int main(int argc, char *argv[])
 
    // "123 + 456 - 789\n1 ++ 2\n$$$$\n45+54" - Original Test Case
 
-    const char *input = "1 &&&& 1\n 2 ||| 2\n 3 ^^ 3"; // Test with multi-line input
+    const char *input = "1 &&== 1\n2 |= 2\n3 == 3\n5 =< 5\n6 ** 6"; // Test with multi-line input
 
     
     /*
