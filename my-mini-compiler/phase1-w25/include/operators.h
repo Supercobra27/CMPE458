@@ -24,4 +24,13 @@ int isLogicalOperator(char c);
 */
 int isInvalidOperator(char c);
 
+
+/**
+ * @param token The token to encapsulate.
+ * @param pos The current position of the lexer.
+ * @param input The input string of the lexer.
+ * @param len The desired length to encapsulate.
+*/
+void encapOperator(Token *token, int **pos, char **input, int len);
+
 #endif

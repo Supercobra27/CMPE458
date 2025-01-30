@@ -23,17 +23,6 @@ void init_lexer(int *position)
     array_push(line_start, (Element *)position);
 }
 
-void encapOperator(Token *token, int **pos, char **input, int len){
-            int i = 1;
-            do {
-            (**pos)++;
-            token->lexeme[i] = (*input)[**pos];
-            token->position.pos_end++;
-            i++;
-            } while ( i != len );
-            token->lexeme[2] = '\0';
-}
-
 /* Error messages for lexical errors */
 const char *error_type_to_error_message(ErrorType error)
 {
