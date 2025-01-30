@@ -125,14 +125,20 @@ Token get_next_token(const char *input, int *pos)
         int i = 0;
         do
         {
-            if (c == '0' && i == 0) { // handle initial zeroes
+            if (c == '0' && i == 0 && cn != '.') { // handle initial zeroes
                 token.lexeme[i++] = c;
                 (*pos)++;
                 break; // based on regex for first character
+            } else if (isFloatingPrefix(c, cn)) {
+                token.lexeme[i++] = c;
+                token.lexeme[i++] = cn;
+                (*pos) += 2; // skip over the starter and dot so not to return error for unknown character
+            } else {
+                token.lexeme[i++] = c;
+                (*pos)++;
             }
-            token.lexeme[i++] = c;
-            (*pos)++;
             c = input[*pos];
+            cn = input[*pos+1];
         } while (isdigit(c) && i < sizeof(token.lexeme) - 1);
         token.position.pos_end += i - 1;
         token.lexeme[i] = '\0';
@@ -209,7 +215,7 @@ int main(int argc, char *argv[])
 
    // "123 + 456 - 789\n1 ++ 2\n$$$$\n45+54" - Original Test Case
 
-    const char *input = "1 &&== 01\n2 |= 20\n3 == 3\n5 =< 5\n6 ** 6"; // Test with multi-line input
+    const char *input = "1 &&== 01\n2$3 |= 20\n3 == 3.2\n5 =< 5.6543\n6 ** 6"; // Test with multi-line input
 
     
     /*
