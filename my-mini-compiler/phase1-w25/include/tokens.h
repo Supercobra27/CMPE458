@@ -34,6 +34,7 @@ typedef enum
     ERROR_NONE,
     ERROR_INVALID_CHAR,
     ERROR_INVALID_NUMBER,
+    ERROR_CONSECUTIVE_OPERATOR
 } ErrorType;
 
 /* Details for positions of tokens in a file. */
