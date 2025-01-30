@@ -150,7 +150,9 @@ Token get_next_token(const char *input, int *pos)
 
             encapOperator(&token, &pos, &input, LOGICAL_OPERATOR_LENGTH);
 
+
         // If it is an invalid consecutive operator
+        /*
         } else if (isInvalidOperator(input[*pos+1])) {
             
             // I am pretty sure this logic only has to be done during parsing
@@ -158,7 +160,9 @@ Token get_next_token(const char *input, int *pos)
             encapOperator(&token, &pos, &input, LOGICAL_OPERATOR_LENGTH);
             token.error = ERROR_CONSECUTIVE_OPERATOR;
 
-        } else {
+        */
+       
+       } else {
             token.lexeme[1] = '\0';
         }
         (*pos)++;
