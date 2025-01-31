@@ -8,6 +8,44 @@
 */
 
 const char* operatorList = "+-*/~|&^+!><";
+static const int num_operators = 26;
+const char* operators[] = {
+    "+",
+    "-",
+    "*",
+    "/",
+    "~",
+    "|",
+    "&",
+    "^",
+    "!",
+    "<",
+    ">",
+    "==",
+    "!=",
+    ">=",
+    "<=",
+    "+=",
+    "-=",
+    "*=",
+    "/=",
+    "|=",
+    "&=",
+    "~=",
+    "^=",
+    "<<",
+    ">>",
+    ">>>"
+};
+
+int isOperator1(const char* _Str){
+    for (int i = 0; i < num_operators; i++) {
+        if (strcmp(_Str, operators[i]) == 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
 
 int isOperator(char c){
     return strchr(operatorList, c);
