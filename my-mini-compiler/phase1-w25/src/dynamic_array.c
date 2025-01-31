@@ -10,7 +10,7 @@ typedef struct Array_t
     size_t size;
     // void (*free_element)(Element *);
     // void (*copy_element)(Element *, Element *);
-    void *elements;
+    Element *elements;
 } Array;
 
 Array *array_new(const size_t capacity, const size_t element_size)
