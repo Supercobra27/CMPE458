@@ -11,7 +11,7 @@ const char *operatorList = "+-*/~|&^+!><";
 
 int isOperator(char c)
 {
-    return strchr(operatorList, c);
+    return strchr(operatorList, c) != NULL;
 }
 
 int isFloatingPrefix(char c, char cn)

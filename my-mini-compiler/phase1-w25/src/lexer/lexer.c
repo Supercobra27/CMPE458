@@ -101,7 +101,7 @@ void print_token(Token token)
 // Do we want to distinguish between errors and warnings?
 void print_token_compiler_message(const char *input, Token token)
 {
-    const int line_start_pos = (int)array_get(line_start, token.position.line - 1);
+    const int line_start_pos = *(int *)array_get(line_start, token.position.line - 1);
     const int line_length = strchr(input + line_start_pos, '\n') - (input + line_start_pos);
     // tildes is supposed to be as long as the longest token lexeme so that it can always be chopped to the right length.
     static const char *tildes = "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
@@ -133,7 +133,7 @@ Token get_next_token(const char *input, int *pos)
     Token token = {
         .type = TOKEN_ERROR,
         .lexeme = "",
-        .position = {current_line, (*pos) - (int)array_get(line_start, current_line - 1) + 1, (*pos) - (int)array_get(line_start, current_line - 1) + 1},
+        .position = {current_line, (*pos) - *(int *)array_get(line_start, current_line - 1) + 1, (*pos) - *(int *)array_get(line_start, current_line - 1) + 1},
         .error = ERROR_NONE};
 
     if (input[*pos] == '\0')
@@ -323,14 +323,14 @@ int main(int argc, char *argv[])
     // Potential code for file name/extension checking, although when I run it for some reason although it does not change anything the code does not run properly so Work in Progress
 
     // Input file argument check
-    // argc = 2; // force
+    argc = 2;              // force
+    argv[1] = "test.cisc"; // force
     if (argc != 2)
     {
         printf("Usage: .\\my-mini-compiler.exe <Input File Name>.cisc");
         exit(-1);
     }
 
-    argv[1] = "test.cisc"; // force
     // Input file extension check
     int file_len = strlen(argv[1]);
     char *file_name = argv[1];
@@ -339,7 +339,7 @@ int main(int argc, char *argv[])
         printf("Incorrect file extension, the correct extension is .cisc");
         exit(-1);
     }
-    // "123 + 456 - 789\n1 ++ 2\n$$$$\n45+54" - Original Test Case
+    // const char *input = "123 + 456 - 789\n1 ++ 2\n$$$$\n45+54"; // Original Test Case
 
     const char *input = "1 &&== 01\n2$3 |= 20\n3 == 3.2\n5 =< 5.6543\n6 ** 6"; // Test with multi-line input
     /*
@@ -363,7 +363,7 @@ int main(int argc, char *argv[])
     // Print line start positions.
     for (size_t i = 0; i < array_size(line_start); i++)
     {
-        printf("Line %d starts at position %d\n", i + 1, (int)array_get(line_start, i));
+        printf("Line %d starts at position %d\n", i + 1, *(int *)array_get(line_start, i));
     }
     array_free(line_start);
 

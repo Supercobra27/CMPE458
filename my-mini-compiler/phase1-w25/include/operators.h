@@ -55,6 +55,6 @@ int isInvalidOperator(char c);
  * @param input The input string of the lexer.
  * @param len The desired length to encapsulate.
  */
-void encapOperator(Token *token, int **pos, char **input, int len);
+void encapOperator(Token *token, int **pos, const char **input, int len);
 
 #endif

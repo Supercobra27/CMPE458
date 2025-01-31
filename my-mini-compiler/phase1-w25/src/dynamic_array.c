@@ -1,9 +1,7 @@
-#include <dynamic_array.h>
+#include "../include/dynamic_array.h"
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
-
-typedef void *Element;
 
 typedef struct Array_t
 {
@@ -12,12 +10,12 @@ typedef struct Array_t
     size_t size;
     // void (*free_element)(Element *);
     // void (*copy_element)(Element *, Element *);
-    Element *elements;
+    void *elements;
 } Array;
 
 Array *array_new(const size_t capacity, const size_t element_size)
 {
-    Array *a = (Array *)malloc(sizeof(Array));
+    Array *a = (Array *)malloc(offsetof(Array, elements));
     a->element_size = element_size;
     a->capacity = 0;
     a->elements = NULL;
@@ -86,13 +84,12 @@ void array_set_capacity(Array *const a, const size_t new_capacity)
         free(a->elements);
         a->elements = NULL;
         a->size = 0;
-        return;
     }
-    if (a->size > new_capacity)
+    else if (a->size > new_capacity)
     {
         array_decrease_capacity(a, a->size - new_capacity);
     }
-    else
+    else if (a->size < new_capacity)
     {
         array_increase_capacity(a, new_capacity - a->size);
     }
@@ -105,22 +102,22 @@ void array_push(Array *const a, const Element *const e)
     {
         array_increase_capacity(a, a->capacity);
     }
-    memcpy(a->elements + a->size, e, a->element_size);
+    memcpy((char *)a->elements + a->size * a->element_size, e, a->element_size);
     a->size++;
 }
 
-Element array_get(Array *const a, const size_t index)
+Element *array_get(Array *const a, const size_t index)
 {
     assert(a != NULL);
     assert(index < a->size);
-    return a->elements[index];
+    return (Element *)((char *)a->elements + index * a->element_size);
 }
 
 void array_set(Array *const a, const size_t index, const Element *const e)
 {
     assert(a != NULL);
     assert(index < a->size);
-    memcpy(a->elements + index, e, a->element_size);
+    memcpy((char *)a->elements + index * a->element_size, e, a->element_size);
 }
 
 Element *array_begin(Array *const a)
@@ -132,5 +129,5 @@ Element *array_begin(Array *const a)
 Element *array_end(Array *const a)
 {
     assert(a != NULL);
-    return a->elements + a->size;
+    return (Element *)((char *)a->elements + a->size * a->element_size);
 }
