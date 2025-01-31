@@ -222,54 +222,74 @@ Token get_next_token(const char *input, int *pos)
 
     // handling string literals
     if (c == '"')
-    {
-        int i = 0;
-        token.lexeme[i++] = c; // store opening quote
-        (*pos)++;
+{
+    int i = 0;
+    token.lexeme[i++] = c; // store opening quote
+    (*pos)++;
 
-        while ((c = input[*pos]) != '\0' && c != '"' && i < sizeof(token.lexeme) - 2)
+    // Keep reading until we find a closing quote, EOF, or exceed max length
+    while ((c = input[*pos]) != '\0' && c != '"')
+    {
+        // Check if adding this character would exceed our limit
+        // We need room for: current chars + this char + closing quote + null terminator
+        if (i >= sizeof(token.lexeme) - 2)
         {
-            // handle newlines in string
-            if (c == '\n')
+            // We've hit the maximum length, need to report error
+            // Keep reading until we find the closing quote or EOF, but don't store
+            while ((c = input[*pos]) != '\0' && c != '"')
             {
-                current_line++;
-                array_push(line_start, (Element *)pos);
+                if (c == '\n')
+                {
+                    current_line++;
+                    array_push(line_start, (Element *)pos);
+                }
+                (*pos)++;
             }
 
-            token.lexeme[i++] = c; // add characters
-            (*pos)++;
-        }
+            // If we found a closing quote, consume it
+            if (c == '"')
+            {
+                (*pos)++;
+            }
 
-        // check what the exit condition was
-        if (c == '"')
-        {
-            // normal termination
-            token.lexeme[i++] = c; // store the closing quote
-            token.lexeme[i] = '\0';
-            (*pos)++;
-            token.type = TOKEN_STRING_LITERAL;
-            token.position.pos_end += i - 1;
-            return token;
-        }
-        // buffer filled up, string too long
-        else if (i >= sizeof(token.lexeme) - 2)
-        {
             token.lexeme[i] = '\0';
             token.type = TOKEN_ERROR;
             token.error = ERROR_STRING_TOO_LONG;
             token.position.pos_end += i - 1;
             return token;
         }
-        // if it wasn't the other two then it's unterminated
-        else
+
+        // handle newlines in string
+        if (c == '\n')
         {
-            token.lexeme[i] = '\0';
-            token.type = TOKEN_ERROR;
-            token.error = ERROR_UNTERMINATED_STRING;
-            token.position.pos_end += i - 1;
-            return token;
+            current_line++;
+            array_push(line_start, (Element *)pos);
         }
+
+        token.lexeme[i++] = c; // add characters
+        (*pos)++;
     }
+
+    // check if we terminated normally
+    if (c == '"')
+    {
+        // normal termination
+        token.lexeme[i++] = c; // store the closing quote
+        token.lexeme[i] = '\0';
+        (*pos)++;
+        token.type = TOKEN_STRING_LITERAL;
+        token.position.pos_end += i - 1;
+        return token;
+    }
+
+    // if we got here without returning, it must be unterminated
+    token.lexeme[i] = '\0';
+    token.type = TOKEN_ERROR;
+    token.error = ERROR_UNTERMINATED_STRING;
+    token.position.pos_end += i - 1;
+    return token;
+}
+
 
     // Handle operators
     if (isOperator(c))
@@ -339,9 +359,10 @@ int main(int argc, char *argv[])
         printf("Incorrect file extension, the correct extension is .cisc");
         exit(-1);
     }
-    // const char *input = "123 + 456 - 789\n1 ++ 2\n$$$$\n45+54"; // Original Test Case
+    const char *input = "123 + 456 - 789\n1 ++ 2\n$$$$\n45+54\nif else while\nvariablename ifelse whilesomething\n"
+                        "\"this string literal is toooooooooo loooooooooooong some more chracters to fill up what needs"
+                        " to be filled to make a really long string\n\"normal string literal\""; // Original Test Case
 
-    const char *input = "1 &&== 01\n2$3 |= 20\n3 == 3.2\n5 =< 5.6543\n6 ** 6"; // Test with multi-line input
     /*
     For some reason while testing this, you can only add new test cases at the end?
     Whenever I tried to add at the beginning or the middle it just would not run.
