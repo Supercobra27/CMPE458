@@ -271,14 +271,21 @@ Token get_next_token(const char *input, int *pos)
         }
     }
 
+    char op_str[3];
+    sprintf(op_str, "%c%c", c, cn);
+
     // Handle operators
-    if (isOperator(c))
+    if (isOperatorStr(op_str))
     {
         token.type = TOKEN_OPERATOR;
-        token.lexeme[0] = c;
+        //token.lexeme[0] = c;
+
+        //char op_str[3];
+        //sprintf(op_str, "%c%c", c, cn);
 
         // If the following character is a valid logical operator (&&, ||)
-        if (isLogicalOperator(input[*pos + 1]))
+        //char* token_str = strcat(input[*pos], input[*pos+1]);
+        if (isOperatorStr(op_str)) //isLogicalOperator(input[*pos + 1])
         {
 
             encapOperator(&token, &pos, &input, LOGICAL_OPERATOR_LENGTH);
@@ -323,7 +330,7 @@ int main(int argc, char *argv[])
     // Potential code for file name/extension checking, although when I run it for some reason although it does not change anything the code does not run properly so Work in Progress
 
     // Input file argument check
-    // argc = 2; // force
+    argc = 2; // force
     if (argc != 2)
     {
         printf("Usage: .\\my-mini-compiler.exe <Input File Name>.cisc");
