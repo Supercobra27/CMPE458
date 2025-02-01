@@ -19,6 +19,10 @@ typedef enum
     TOKEN_EOF,
     TOKEN_NUMBER,         // e.g., "123", "456" regex "[0-9]*"
     TOKEN_OPERATOR,       // e.g., "+", "-"    regex: "^\+|\-|*, /, ==, !=, &&, ||, <=, >=, ="
+    TOKEN_ASSIGNMENT_OPERATOR,
+    TOKEN_ARITHMETIC_OPERATOR,
+    TOKEN_LOGICAL_OPERATOR,
+    TOKEN_BITWISE_OPERATOR,
     TOKEN_KEYWORD,        // e.g., "if", "else", "while", "factorial", "repeat_until", "int", "string",
     TOKEN_IDENTIFIER,     //
     TOKEN_STRING_LITERAL, // basic will not include escape characters "^\"[^\"]*\"". next step will be to include escape characters.
