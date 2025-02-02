@@ -70,8 +70,10 @@ const char *token_type_to_string(TokenType type)
     {
     case TOKEN_EOF:
         return "EOF";
-    case TOKEN_NUMBER:
-        return "NUMBER";
+    case TOKEN_INTEGER:
+        return "INTEGER";
+    case TOKEN_FLOAT:
+        return "FLOAT";
     case TOKEN_OPERATOR:
         return "OPERATOR";
     case TOKEN_KEYWORD:
@@ -152,6 +154,7 @@ Token get_next_token(const char *input, int *pos)
     if (isdigit(c) || c == '-')
     {
         int i = 0;
+        int fp_flag = 0;
 
         /**
          * Need to do when keywords are added:
@@ -181,12 +184,13 @@ Token get_next_token(const char *input, int *pos)
                 token.lexeme[i++] = cn;
                 (*pos) += 2; // skip over the starter and dot so not to return error for unknown character
                 token.type = TOKEN_FLOAT;
+                fp_flag = 1;
             }
             else
             {
                 token.lexeme[i++] = c;
                 (*pos)++;
-                token.type = TOKEN_INTEGER;
+                if(!(fp_flag)) token.type = TOKEN_INTEGER;
             }
             c = input[*pos];
             cn = input[*pos + 1];
@@ -287,7 +291,7 @@ Token get_next_token(const char *input, int *pos)
     if (isOperatorStr(op_str))
     {
         token.type = TOKEN_OPERATOR;
-        //token.lexeme[0] = c;
+        token.lexeme[0] = c;
 
         encapOperator(&token, &pos, &input, LOGICAL_OPERATOR_LENGTH);
         (*pos)++;
