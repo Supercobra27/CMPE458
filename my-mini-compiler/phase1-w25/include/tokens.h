@@ -22,7 +22,7 @@ typedef enum
     TOKEN_KEYWORD,        // e.g., "if", "else", "while", "factorial", "repeat_until", "int", "string",
     TOKEN_IDENTIFIER,     //
     TOKEN_STRING_LITERAL, // basic will not include escape characters "^\"[^\"]*\"". next step will be to include escape characters.
-    // TOKEN_PUNCTUATOR,     // "(", ")", "{", "}", ";"
+    TOKEN_PUNCTUATOR,     // "(", ")", "{", "}", ";"
     TOKEN_ERROR,
 } TokenType;
 
@@ -36,7 +36,7 @@ typedef enum
     ERROR_INVALID_NUMBER,
     ERROR_UNTERMINATED_STRING,
     ERROR_STRING_TOO_LONG,
-    ERROR_CONSECUTIVE_OPERATOR
+    ERROR_CONSECUTIVE_OPERATOR,
 } ErrorType;
 
 /* Details for positions of tokens in a file. */

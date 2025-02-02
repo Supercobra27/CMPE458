@@ -82,6 +82,8 @@ const char *token_type_to_string(TokenType type)
         return "STRING_LITERAL";
     case TOKEN_ERROR:
         return "ERROR";
+    case TOKEN_PUNCTUATOR:
+        return "PUNCTUATOR";
     default:
         return "UNKNOWN";
     }
@@ -147,6 +149,31 @@ Token get_next_token(const char *input, int *pos)
     cn = input[*pos + 1];
 
     // TODO: Add comment handling here
+    // Handle comments
+    if (c == '?' && cn == '?') {
+        // Single-line comment
+        while (input[*pos] != '\n' && input[*pos] != '\0') {
+            (*pos)++;
+        }
+        return get_next_token(input, pos); // Skip and get next token
+    }
+
+    if (c == '?' && cn == '!') {
+        // Multi-line comment
+        (*pos) += 2; // Skip `?!`
+        while (!(input[*pos] == '!' && input[*pos + 1] == '?') && input[*pos] != '\0') {
+            if (input[*pos] == '\n') {
+                current_line++;
+                array_push(line_start, (Element *)pos);
+            }
+            (*pos)++;
+        }
+        if (input[*pos] == '!' && input[*pos + 1] == '?') {
+            (*pos) += 2; // Skip `!?`
+        }
+        return get_next_token(input, pos); // Skip and get next token
+    }
+
 
     // Handle numbers
     if (isdigit(c))
@@ -327,6 +354,15 @@ Token get_next_token(const char *input, int *pos)
     }
 
     // TODO: Add punctuation handling here
+// Handle punctuation & delimiters
+    const char *punctuation = ";{}(),";
+    if (strchr(punctuation, c)) {
+        token.type = TOKEN_PUNCTUATOR;
+        token.lexeme[0] = c;
+        token.lexeme[1] = '\0';
+        (*pos)++;
+        return token;
+    }
 
     // Handle invalid characters
     token.error = ERROR_INVALID_CHAR;
@@ -360,6 +396,7 @@ int main(int argc, char *argv[])
         exit(-1);
     }
     const char *input = "123 + 456 - 789\n1 ++ 2\n$$$$\n45+54\nif else while\nvariablename ifelse whilesomething\n"
+                        "?? this is a comment\n(123+456);\n?! this is a multline comment\nstill comment\nendingcomment!?\n"
                         "\"this string literal is toooooooooo loooooooooooong some more chracters to fill up what needs"
                         " to be filled to make a really long string\n\"normal string literal\""; // Original Test Case
 
