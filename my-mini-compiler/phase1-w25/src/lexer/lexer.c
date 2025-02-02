@@ -53,8 +53,6 @@ const char *error_type_to_error_message(ErrorType error)
         return "error: invalid character";
     case ERROR_INVALID_NUMBER:
         return "error: invalid number format";
-    case ERROR_CONSECUTIVE_OPERATOR:
-        return "error: invalid consecutive operator";
     case ERROR_UNTERMINATED_STRING:
         return "error: unterminated string literal";
     case ERROR_STRING_TOO_LONG:

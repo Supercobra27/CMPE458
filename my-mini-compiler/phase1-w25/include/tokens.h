@@ -17,12 +17,12 @@
 typedef enum
 {
     TOKEN_EOF,
-    TOKEN_NUMBER,         // e.g., "123", "456" regex "[0-9]*"
-    TOKEN_OPERATOR,       // e.g., "+", "-"    regex: "^\+|\-|*, /, ==, !=, &&, ||, <=, >=, ="
-    TOKEN_KEYWORD,        // e.g., "if", "else", "while", "factorial", "repeat_until", "int", "string",
-    TOKEN_IDENTIFIER,     //
-    TOKEN_STRING_LITERAL, // basic will not include escape characters "^\"[^\"]*\"". next step will be to include escape characters.
-    // TOKEN_PUNCTUATOR,     // "(", ")", "{", "}", ";"
+    TOKEN_NUMBER,     // e.g., "123", "456"
+    TOKEN_OPERATOR,   // e.g., "+", "-"
+    TOKEN_KEYWORD,    // e.g., "if", "else", "while", "factorial", "repeat", "until", "int", "string",
+    TOKEN_IDENTIFIER, //
+    TOKEN_STRING_LITERAL,
+    // TOKEN_PUNCTUATOR, // ispunct()
     TOKEN_ERROR,
 } TokenType;
 
@@ -36,7 +36,6 @@ typedef enum
     ERROR_INVALID_NUMBER,
     ERROR_UNTERMINATED_STRING,
     ERROR_STRING_TOO_LONG,
-    ERROR_CONSECUTIVE_OPERATOR
 } ErrorType;
 
 /* Details for positions of tokens in a file. */
@@ -57,7 +56,15 @@ typedef struct
     TokenType type;
     char lexeme[100];       // Actual text of the token
     TokenPosition position; // Position of the token in the input
-    ErrorType error;        // Error type if any
+    ErrorType error;        // Error type if the token is an TOKEN_ERROR.
+    // union
+    // {
+    //     ErrorType error;       // Error type if the token is an TOKEN_ERROR.
+    //     OperatorType operator; // Operator type if the token is an TOKEN_OPERATOR.
+    //     KeywordType keyword;   // Keyword type if the token is an TOKEN_KEYWORD.
+    //     NumberType number;     // Number type if the token is an TOKEN_NUMBER.
+
+    // } type2; // Secondary type information.
 } Token;
 
 #endif /* TOKENS_H */
