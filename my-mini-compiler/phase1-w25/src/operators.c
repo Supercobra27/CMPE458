@@ -44,6 +44,7 @@ const char* multi_operators[] = {
 int isOperatorStr(const char* _Str){
     for (int i = 0; i < num_multi_operators; i++) {
         if (strncmp(_Str, multi_operators[i], 2) == 0) {
+            printf("%s", _Str);
             return 1;
         } 
     }
@@ -52,6 +53,18 @@ int isOperatorStr(const char* _Str){
 
     return 0;
 }
+
+int strictOperatorStr(const char* _Str){
+    for (int i = 0; i < num_multi_operators; i++) {
+        if (strncmp(_Str, multi_operators[i], 2) == 0) {
+            printf("%s", _Str);
+            return 1;
+        } 
+    }
+
+    return 0;
+}
+
 
 int isOperator(char c)
 {
@@ -97,4 +110,5 @@ void encapOperator(Token *token, int **pos, char **input, int len)
         i++;
     };
     token->lexeme[i] = '\0';
+    if(strlen(token->lexeme) == 3 && !(strictOperatorStr(token->lexeme))) token->type = TOKEN_ERROR;
 }
