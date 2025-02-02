@@ -6,10 +6,9 @@
 /**
  * Have a list with single and double operators
  */
-static const int num_multi_operators = 19;
-const char* single_operators = "=+-*/~|&^+!><";
+static const int num_multi_operators = 18;
+const char* single_operators = "=+-*/~|&^!><";
 const char* multi_operators[] = {
-    ">>>",
     "==",
     "!=",
     ">=",
@@ -27,7 +26,19 @@ const char* multi_operators[] = {
     "&&",
     "||",
     "++",
-    "--"
+    "--",
+    "=",
+    "+",
+    "-",
+    "/",
+    "*",
+    "~",
+    "&",
+    "|",
+    "^",
+    "!",
+    "<",
+    ">"
 };
 
 int isOperatorStr(const char* _Str){
