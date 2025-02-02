@@ -20,8 +20,8 @@
     - [ ] ability to pass input code from a file
     - [ ] comment handling - Monica
     - [x] numbers: update to not allow leading zeros, length checking, ... - Ryan
-    - [ ] keywords and identifier handling - Simon
-    - [ ] string literal handling - Simon
+    - [x] keywords and identifier handling - Simon
+    - [x] string literal handling - Simon
     - [x] operators - Ryan
     - [ ] punctuators - Monica
 
