@@ -149,7 +149,7 @@ Token get_next_token(const char *input, int *pos)
     // TODO: Add comment handling here
 
     // Handle numbers
-    if (isdigit(c))
+    if (isdigit(c) || c == '-')
     {
         int i = 0;
 
@@ -159,6 +159,13 @@ Token get_next_token(const char *input, int *pos)
          * Have we defined the max length
          * FP Numbers
          */
+
+        // Handle initial negative sign
+        if(c == '-'){
+            i++;
+            token.lexeme[0] = c;
+            (*pos)++;
+        }
 
         do
         {
@@ -173,18 +180,20 @@ Token get_next_token(const char *input, int *pos)
                 token.lexeme[i++] = c;
                 token.lexeme[i++] = cn;
                 (*pos) += 2; // skip over the starter and dot so not to return error for unknown character
+                token.type = TOKEN_FLOAT;
             }
             else
             {
                 token.lexeme[i++] = c;
                 (*pos)++;
+                token.type = TOKEN_INTEGER;
             }
             c = input[*pos];
             cn = input[*pos + 1];
         } while (isdigit(c) && i < sizeof(token.lexeme) - 1);
         token.position.pos_end += i - 1;
         token.lexeme[i] = '\0';
-        token.type = TOKEN_NUMBER;
+        //token.type = TOKEN_NUMBER;
         return token;
     }
 
