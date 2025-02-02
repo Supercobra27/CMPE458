@@ -6,10 +6,9 @@
 /**
  * Have a list with single and double operators
  */
-
-const char* operatorList = "+-*/~|&^+!><";
-static const int num_operators = 26;
-const char* operators[] = {
+static const int num_multi_operators = 19;
+const char* single_operators = "=+-*/~|&^+!><";
+const char* multi_operators[] = {
     ">>>",
     "==",
     "!=",
@@ -21,37 +20,31 @@ const char* operators[] = {
     "/=",
     "|=",
     "&=",
-    "&&",
     "~=",
     "^=",
     "<<",
     ">>",
-    "+",
-    "-",
-    "*",
-    "/",
-    "~",
-    "|",
-    "&",
-    "^",
-    "!",
-    "<",
-    ">",
-    "="
+    "&&",
+    "||",
+    "++",
+    "--"
 };
 
 int isOperatorStr(const char* _Str){
-    for (int i = 0; i < num_operators; i++) {
-        if (strncmp(_Str, operators[i], 2) == 0) {
+    for (int i = 0; i < num_multi_operators; i++) {
+        if (strncmp(_Str, multi_operators[i], 2) == 0) {
             return 1;
-        }
+        } 
     }
+
+    if (isOperator(_Str[0])) return 1; // for single operators
+
     return 0;
 }
 
 int isOperator(char c)
 {
-    return strchr(operatorList, c);
+    return strchr(single_operators, c);
 }
 
 int isFloatingPrefix(char c, char cn)

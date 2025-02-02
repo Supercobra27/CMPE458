@@ -280,35 +280,7 @@ Token get_next_token(const char *input, int *pos)
         token.type = TOKEN_OPERATOR;
         //token.lexeme[0] = c;
 
-        //char op_str[3];
-        //sprintf(op_str, "%c%c", c, cn);
-
-        // If the following character is a valid logical operator (&&, ||)
-        //char* token_str = strcat(input[*pos], input[*pos+1]);
-        if (isOperatorStr(op_str)) //isLogicalOperator(input[*pos + 1])
-        {
-
-            encapOperator(&token, &pos, &input, LOGICAL_OPERATOR_LENGTH);
-
-            // If it is an invalid consecutive operator
-            /*
-            } else if (isInvalidOperator(input[*pos+1])) {
-
-        // If it is an invalid consecutive operator
-        /*
-        } else if (isInvalidOperator(input[*pos+1])) {
-
-            // I am pretty sure this logic only has to be done during parsing
-
-                encapOperator(&token, &pos, &input, LOGICAL_OPERATOR_LENGTH);
-                token.error = ERROR_CONSECUTIVE_OPERATOR;
-
-        */
-        }
-        else
-        {
-            token.lexeme[1] = '\0';
-        }
+        encapOperator(&token, &pos, &input, LOGICAL_OPERATOR_LENGTH);
         (*pos)++;
         return token;
     }
