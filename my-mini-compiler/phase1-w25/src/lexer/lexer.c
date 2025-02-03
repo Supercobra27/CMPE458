@@ -12,7 +12,7 @@
 // keywords
 static const char *keywords[] = {
     "if", "else", "while", "factorial",
-    "repeat_until", "int", "string"};
+    "repeat", "until", "int", "string"};
 static const int num_keywords = 7;
 
 // to check if a string is a keyword
@@ -268,55 +268,49 @@ Token get_next_token(const char *input, int *pos)
         token.lexeme[i++] = c; // store opening quote
         (*pos)++;
 
-        // Keep reading until we find a closing quote, EOF, or exceed max length
-        while ((c = input[*pos]) != '\0' && c != '"')
+        // keep reading until we find the closing quote, a non-printable character, or EOF
+        while (isprint(c = input[*pos]) && c != '"' && c != '\0')
         {
-            // Check if adding this character would exceed our limit
-            // We need room for: current chars + this char + closing quote + null terminator
-            if (i >= sizeof(token.lexeme) - 2)
+            // if adding this character would make the string too long, report error
+            // need room for: current chars + this char + closing quote. - 1 for zero index
+            if (i >= sizeof(token.lexeme) - 1)
             {
+                // hit max length, report error
+                // keep reading until closing quote, non-printable character, or EOF, but don't store
+                while (isprint(c = input[*pos]) && c != '"' && c != '\0')
+                {
+                    (*pos)++;
+                }
 
-                // If we found a closing quote, consume it
+                // If we found a closing quote, consume it and terminate with too long string error
                 if (c == '"')
                 {
                     (*pos)++;
+                    // terminate with string too long error
+                    token.lexeme[i] = '\0';
+                    token.type = TOKEN_ERROR;
+                    token.error = ERROR_STRING_TOO_LONG;
+                    token.position.col_end += i - 1;
+                    return token;
                 }
 
-                // We've hit the maximum length, need to report error
-                // Keep reading until we find the closing quote or EOF, but don't store
-                while ((c = input[*pos]) != '\0' && c != '"')
-                {
-                    if (c == '\n')
-                    {
-                        current_line++;
-                        record_newline(input, *pos);
-                    }
-                    (*pos)++;
-                }
-
+                // here the string is both too long and there is a non-printable character/EOF before the closing quote
+                // terminate with unterminated string error
                 token.lexeme[i] = '\0';
                 token.type = TOKEN_ERROR;
-                token.error = ERROR_STRING_TOO_LONG;
+                token.error = ERROR_UNTERMINATED_STRING;
                 token.position.col_end += i - 1;
                 return token;
             }
-
-            // handle newlines in string
-            // if (c == '\n')
-            // {
-            //     current_line++;
-            //     array_push(line_start, (Element *)pos);
-            // }
 
             token.lexeme[i++] = c; // add characters
             (*pos)++;
         }
 
-        // check if we terminated normally
+        // if we found the closing quote and the string wasn't too long, terminate normally
         if (c == '"')
         {
-            // normal termination
-            token.lexeme[i++] = c; // store the closing quote
+            token.lexeme[i++] = c; // store closing quote
             token.lexeme[i] = '\0';
             (*pos)++;
             token.type = TOKEN_STRING_LITERAL;
@@ -324,7 +318,8 @@ Token get_next_token(const char *input, int *pos)
             return token;
         }
 
-        // if we got here without returning, it must be unterminated
+        // if we got here without returning, loop was exited without finding closing quote
+        // terminate with unterminated string error
         token.lexeme[i] = '\0';
         token.type = TOKEN_ERROR;
         token.error = ERROR_UNTERMINATED_STRING;

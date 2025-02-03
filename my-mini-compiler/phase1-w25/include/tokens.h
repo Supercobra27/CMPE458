@@ -17,12 +17,12 @@
 typedef enum
 {
     TOKEN_EOF,
-    TOKEN_NUMBER,     // e.g., "123", "456"
-    TOKEN_OPERATOR,   // e.g., "+", "-"
-    TOKEN_KEYWORD,    // e.g., "if", "else", "while", "factorial", "repeat", "until", "int", "string",
-    TOKEN_IDENTIFIER, //
-    TOKEN_STRING_LITERAL,
-    TOKEN_PUNCTUATOR, // ispunct()
+    TOKEN_NUMBER,         // e.g., "123", "456"
+    TOKEN_OPERATOR,       // e.g., "+", "-"
+    TOKEN_KEYWORD,        // regex: ^(if|else|while|factorial|repeat|until|int|string)$
+    TOKEN_IDENTIFIER,     // regex: ^[a-zA-Z_][a-zA-Z0-9_]*$
+    TOKEN_STRING_LITERAL, // regex: ^"[ -~]*"$
+    TOKEN_PUNCTUATOR,     // ispunct()
     TOKEN_ERROR,
 } TokenType;
 
