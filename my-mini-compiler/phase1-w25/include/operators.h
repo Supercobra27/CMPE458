@@ -16,11 +16,4 @@ int isOperatorStr(const char *_Str);
  */
 int isOperator(char c);
 
-/**
- * @param c The first character.
- * @param cn The following character.
- * @details Useful for checking if a number is a FP.
- */
-int isFloatingPrefix(char c, char cn);
-
 #endif

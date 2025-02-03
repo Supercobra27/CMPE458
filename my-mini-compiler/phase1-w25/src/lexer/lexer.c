@@ -102,11 +102,7 @@ const char *token_type_to_string(TokenType type)
     }
 }
 
-/* Print token information
- *
- *  TODO Update your printing function accordingly
- */
-
+/* Print token information */
 void print_token(Token token)
 {
     printf("Token type=%-10s, lexeme='%s', line=%-2d, column:%d-%d, error_message=\"%s\"\n",
@@ -212,7 +208,7 @@ Token get_next_token(const char *input, int *pos)
 
         do
         {
-            if (isFloatingPrefix(c, cn))
+            if (cn == '.')
             {
                 token.lexeme[i++] = c;
                 token.lexeme[i++] = cn;
@@ -273,8 +269,8 @@ Token get_next_token(const char *input, int *pos)
         while (isprint(c = input[*pos]) && c != '"' && c != '\0')
         {
             // if adding this character would make the string too long, report error
-            // need room for: current chars + this char + closing quote. - 1 for zero index
-            if (i >= sizeof(token.lexeme) - 1)
+            // need room for: current chars + this char + closing quote + '\0'. - 1 for zero index
+            if (i >= sizeof(token.lexeme) - 2)
             {
                 // hit max length, report error
                 // keep reading until closing quote, non-printable character, or EOF, but don't store
@@ -359,7 +355,6 @@ Token get_next_token(const char *input, int *pos)
 
 int main(int argc, char *argv[])
 {
-    // Potential code for file name/extension checking, although when I run it for some reason although it does not change anything the code does not run properly so Work in Progress
 
     // Input file argument check
     if (argc != 2)
@@ -367,7 +362,6 @@ int main(int argc, char *argv[])
         printf("Usage: .\\my-mini-compiler.exe <Input File Name>.cisc");
         exit(-1);
     }
-
     // Input file extension check
     int file_len = strlen(argv[1]);
     char *file_name = argv[1];
@@ -401,11 +395,6 @@ int main(int argc, char *argv[])
     //         "\"this string literal is toooooooooo loooooooooooong some more chracters to fill up what needs"
     //         " to be filled to make a really long string\n\"normal string literal\"";
     // const char *input = "000123 + 456";
-
-    /*
-    For some reason while testing this, you can only add new test cases at the end?
-    Whenever I tried to add at the beginning or the middle it just would not run.
-    */
 
     int position = 0;
     Token token;
