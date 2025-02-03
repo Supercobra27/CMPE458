@@ -26,7 +26,6 @@ typedef enum
 } TokenType;
 
 /* Error types for lexical analysis
- * TODO: Add more error types as needed for your language - as much as you like !!
  */
 typedef enum
 {
@@ -46,9 +45,6 @@ typedef struct _LexemePosition
 } LexemePosition;
 
 /* Token structure to store token information
- * TODO: Add more fields if needed for your implementation
- * Hint: You might want to consider adding line and column tracking if you want to debug your lexer properly.
- * Don't forget to update the token fields in lexer.c as well
  */
 typedef struct
 {
