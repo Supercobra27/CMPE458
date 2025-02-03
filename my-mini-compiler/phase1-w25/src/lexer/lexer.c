@@ -54,7 +54,7 @@ void record_newline(const char *input, int position)
 }
 
 /* Error messages for lexical errors */
-const char *error_type_to_error_message(ErrorType error)
+const char *const error_type_to_error_message(ErrorType error)
 {
     switch (error)
     {
@@ -396,10 +396,10 @@ int main(int argc, char *argv[])
     input[file_size] = '\0';
     fclose(file);
 
-    input = "123 + 456 - 789\n1 ++ 2\n$$$$\n45+54\nif else while\nvariablename ifelse whilesomething\n"
-            "?? this is a comment\n(123+456);\n?! this is a multline comment\nstill comment\nendingcomment\n"
-            "\"this string literal is toooooooooo loooooooooooong some more chracters to fill up what needs"
-            " to be filled to make a really long string\n\"normal string literal\"";
+    // input = "123 + 456 - 789\n1 ++ 2\n$$$$\n45+54\nif else while\nvariablename ifelse whilesomething\n"
+    //         "?? this is a comment\n(123+456);\n?! this is a multline comment\nstill comment\nendingcomment!?\n"
+    //         "\"this string literal is toooooooooo loooooooooooong some more chracters to fill up what needs"
+    //         " to be filled to make a really long string\n\"normal string literal\"";
     // const char *input = "000123 + 456";
 
     /*
@@ -439,5 +439,3 @@ int main(int argc, char *argv[])
     free(input);
     return 0;
 }
-
-/*            ddddddddddddddddddddd
