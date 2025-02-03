@@ -270,6 +270,7 @@ Token get_next_token(const char *input, int *pos)
         return token;
     }
 
+    // TODO: Handle escape sequences in string literals.
     // handling string literals
     if (c == '"')
     {
