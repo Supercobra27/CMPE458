@@ -7,9 +7,9 @@
  * Have a list with single and double operators
  */
 
-const char* operatorList = "+-*/~|&^+!><";
+const char *operatorList = "+-*/~|&^+!><";
 static const int num_operators = 26;
-const char* operators[] = {
+const char *operators[] = {
     "+",
     "-",
     "*",
@@ -35,12 +35,14 @@ const char* operators[] = {
     "^=",
     "<<",
     ">>",
-    ">>>"
-};
+    ">>>"};
 
-int isOperator1(const char* _Str){
-    for (int i = 0; i < num_operators; i++) {
-        if (strcmp(_Str, operators[i]) == 0) {
+int isOperator1(const char *_Str)
+{
+    for (int i = 0; i < num_operators; i++)
+    {
+        if (strcmp(_Str, operators[i]) == 0)
+        {
             return 1;
         }
     }
@@ -87,7 +89,7 @@ void encapOperator(Token *token, int **pos, const char **input, int len)
         if ((*input)[**pos] == ' ')
             break; // prevent spaces from being added to the lexeme
         token->lexeme[i] = (*input)[**pos];
-        token->position.pos_end++;
+        token->position.col_end++;
         i++;
     };
     token->lexeme[i] = '\0';
@@ -104,7 +106,7 @@ void encapKeyword(Token *token, int **pos, char **input, int len)
         if ((*input)[**pos] == ' ')
             break;
         token->lexeme[i] = (*input)[**pos];
-        token->position.pos_end++;
+        token->position.col_end++;
         i++;
     };
     token->lexeme[i] = '\0';

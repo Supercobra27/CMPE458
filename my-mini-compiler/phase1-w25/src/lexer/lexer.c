@@ -34,12 +34,23 @@ static int current_line;
 static Array *line_start;
 // Could save all tokens in a dynamic array if needed.
 
-void init_lexer(int *position)
+void init_lexer(int *position, int *line, Array **line_start_positions)
 {
-    current_line = 1;
+    *line = 1;
     *position = 0;
-    line_start = array_new(1, sizeof(int));
-    array_push(line_start, (Element *)position);
+    *line_start_positions = array_new(1, sizeof(int));
+    array_push(*line_start_positions, (Element *)position);
+}
+
+// Call this function to record a newline character.
+// If the input[position] is a newline character, it will record the position of the next character.
+// if the input[position] is not a newline character, nothing will happen.
+void record_newline(const char *input, int position)
+{
+    if (input[position] != '\n')
+        return;
+    position++;
+    array_push(line_start, (Element *)&position);
 }
 
 /* Error messages for lexical errors */
@@ -95,7 +106,7 @@ const char *token_type_to_string(TokenType type)
 void print_token(Token token)
 {
     printf("Token type=%-10s, lexeme='%s', line=%-2d, column:%d-%d, error_message=\"%s\"\n",
-           token_type_to_string(token.type), token.lexeme, token.position.line, token.position.pos_start, token.position.pos_end, error_type_to_error_message(token.error));
+           token_type_to_string(token.type), token.lexeme, token.position.line, token.position.col_start, token.position.col_end, error_type_to_error_message(token.error));
 }
 
 // Do we want to distinguish between errors and warnings?
@@ -109,9 +120,9 @@ void print_token_compiler_message(const char *input, Token token)
         "%s:%d:%d: %s\n"
         "%.*s\n"
         "%*s%.*s\n",
-        "[input file path here]", token.position.line, token.position.pos_start, error_type_to_error_message(token.error),
+        "[input file path here]", token.position.line, token.position.col_start, error_type_to_error_message(token.error),
         line_length, input + line_start_pos,
-        token.position.pos_start, "^", token.position.pos_end - token.position.pos_start, tildes);
+        token.position.col_start, "^", token.position.col_end - token.position.col_start, tildes);
 }
 
 /* Get next token from input */
@@ -122,12 +133,12 @@ Token get_next_token(const char *input, int *pos)
     // Skip whitespace and track line numbers
     while ((c = input[*pos]) != '\0' && isspace(c))
     {
-        (*pos)++;
         if (c == '\n')
         {
             current_line++;
-            array_push(line_start, (Element *)pos);
+            record_newline(input, *pos);
         }
+        (*pos)++;
     }
 
     Token token = {
@@ -148,30 +159,35 @@ Token get_next_token(const char *input, int *pos)
 
     // TODO: Add comment handling here
     // Handle comments
-    if (c == '?' && cn == '?') {
+    if (c == '?' && cn == '?')
+    {
         // Single-line comment
-        while (input[*pos] != '\n' && input[*pos] != '\0') {
+        while (input[*pos] != '\n' && input[*pos] != '\0')
+        {
             (*pos)++;
         }
         return get_next_token(input, pos); // Skip and get next token
     }
 
-    if (c == '?' && cn == '!') {
+    if (c == '?' && cn == '!')
+    {
         // Multi-line comment
         (*pos) += 2; // Skip `?!`
-        while (!(input[*pos] == '!' && input[*pos + 1] == '?') && input[*pos] != '\0') {
-            if (input[*pos] == '\n') {
+        while (!(input[*pos] == '!' && input[*pos + 1] == '?') && input[*pos] != '\0')
+        {
+            if (input[*pos] == '\n')
+            {
                 current_line++;
-                array_push(line_start, (Element *)pos);
+                record_newline(input, *pos);
             }
             (*pos)++;
         }
-        if (input[*pos] == '!' && input[*pos + 1] == '?') {
+        if (input[*pos] == '!' && input[*pos + 1] == '?')
+        {
             (*pos) += 2; // Skip `!?`
         }
         return get_next_token(input, pos); // Skip and get next token
     }
-
 
     // Handle numbers
     if (isdigit(c))
@@ -207,7 +223,7 @@ Token get_next_token(const char *input, int *pos)
             c = input[*pos];
             cn = input[*pos + 1];
         } while (isdigit(c) && i < sizeof(token.lexeme) - 1);
-        token.position.pos_end += i - 1;
+        token.position.col_end += i - 1;
         token.lexeme[i] = '\0';
         token.type = TOKEN_NUMBER;
         return token;
@@ -228,7 +244,7 @@ Token get_next_token(const char *input, int *pos)
         } while ((isalnum(c) || c == '_') && i < sizeof(token.lexeme) - 1);
 
         token.lexeme[i] = '\0';
-        token.position.pos_end += i - 1;
+        token.position.col_end += i - 1;
 
         // Check if it's a keyword
         if (is_keyword(token.lexeme))
@@ -247,74 +263,74 @@ Token get_next_token(const char *input, int *pos)
 
     // handling string literals
     if (c == '"')
-{
-    int i = 0;
-    token.lexeme[i++] = c; // store opening quote
-    (*pos)++;
-
-    // Keep reading until we find a closing quote, EOF, or exceed max length
-    while ((c = input[*pos]) != '\0' && c != '"')
     {
-        // Check if adding this character would exceed our limit
-        // We need room for: current chars + this char + closing quote + null terminator
-        if (i >= sizeof(token.lexeme) - 2)
+        int i = 0;
+        token.lexeme[i++] = c; // store opening quote
+        (*pos)++;
+
+        // Keep reading until we find a closing quote, EOF, or exceed max length
+        while ((c = input[*pos]) != '\0' && c != '"')
         {
-            // We've hit the maximum length, need to report error
-            // Keep reading until we find the closing quote or EOF, but don't store
-            while ((c = input[*pos]) != '\0' && c != '"')
+            // Check if adding this character would exceed our limit
+            // We need room for: current chars + this char + closing quote + null terminator
+            if (i >= sizeof(token.lexeme) - 2)
             {
-                if (c == '\n')
+
+                // If we found a closing quote, consume it
+                if (c == '"')
                 {
-                    current_line++;
-                    array_push(line_start, (Element *)pos);
+                    (*pos)++;
                 }
-                (*pos)++;
+
+                // We've hit the maximum length, need to report error
+                // Keep reading until we find the closing quote or EOF, but don't store
+                while ((c = input[*pos]) != '\0' && c != '"')
+                {
+                    if (c == '\n')
+                    {
+                        current_line++;
+                        record_newline(input, *pos);
+                    }
+                    (*pos)++;
+                }
+
+                token.lexeme[i] = '\0';
+                token.type = TOKEN_ERROR;
+                token.error = ERROR_STRING_TOO_LONG;
+                token.position.col_end += i - 1;
+                return token;
             }
 
-            // If we found a closing quote, consume it
-            if (c == '"')
-            {
-                (*pos)++;
-            }
+            // handle newlines in string
+            // if (c == '\n')
+            // {
+            //     current_line++;
+            //     array_push(line_start, (Element *)pos);
+            // }
 
+            token.lexeme[i++] = c; // add characters
+            (*pos)++;
+        }
+
+        // check if we terminated normally
+        if (c == '"')
+        {
+            // normal termination
+            token.lexeme[i++] = c; // store the closing quote
             token.lexeme[i] = '\0';
-            token.type = TOKEN_ERROR;
-            token.error = ERROR_STRING_TOO_LONG;
-            token.position.pos_end += i - 1;
+            (*pos)++;
+            token.type = TOKEN_STRING_LITERAL;
+            token.position.col_end += i - 1;
             return token;
         }
 
-        // handle newlines in string
-        if (c == '\n')
-        {
-            current_line++;
-            array_push(line_start, (Element *)pos);
-        }
-
-        token.lexeme[i++] = c; // add characters
-        (*pos)++;
-    }
-
-    // check if we terminated normally
-    if (c == '"')
-    {
-        // normal termination
-        token.lexeme[i++] = c; // store the closing quote
+        // if we got here without returning, it must be unterminated
         token.lexeme[i] = '\0';
-        (*pos)++;
-        token.type = TOKEN_STRING_LITERAL;
-        token.position.pos_end += i - 1;
+        token.type = TOKEN_ERROR;
+        token.error = ERROR_UNTERMINATED_STRING;
+        token.position.col_end += i - 1;
         return token;
     }
-
-    // if we got here without returning, it must be unterminated
-    token.lexeme[i] = '\0';
-    token.type = TOKEN_ERROR;
-    token.error = ERROR_UNTERMINATED_STRING;
-    token.position.pos_end += i - 1;
-    return token;
-}
-
 
     // Handle operators
     if (isOperator(c))
@@ -352,9 +368,10 @@ Token get_next_token(const char *input, int *pos)
     }
 
     // TODO: Add punctuation handling here
-// Handle punctuation & delimiters
+    // Handle punctuation & delimiters
     const char *punctuation = ";{}(),";
-    if (strchr(punctuation, c)) {
+    if (strchr(punctuation, c))
+    {
         token.type = TOKEN_PUNCTUATOR;
         token.lexeme[0] = c;
         token.lexeme[1] = '\0';
@@ -405,7 +422,7 @@ int main(int argc, char *argv[])
 
     int position = 0;
     Token token;
-    init_lexer(&position);
+    init_lexer(&position, &current_line, &line_start);
 
     printf("Analyzing input:\n%s\n\n", input);
 
@@ -415,21 +432,24 @@ int main(int argc, char *argv[])
         token = get_next_token(input, &position);
         print_token(token);
     } while (token.type != TOKEN_EOF);
-
+    // printf("array_size: %u\n", array_size(line_start));
     // Print line start positions.
     for (size_t i = 0; i < array_size(line_start); i++)
     {
         printf("Line %d starts at position %d\n", i + 1, *(int *)array_get(line_start, i));
     }
+    printf("%s\n", input + *(int *)array_get(line_start, 13 - 1));
     array_free(line_start);
 
     // Get all tokens and print all possible compiler messages for tokens.
-    init_lexer(&position);
+    init_lexer(&position, &current_line, &line_start);
     do
     {
         token = get_next_token(input, &position);
+        printf("array_size: %u\n", array_size(line_start));
         print_token_compiler_message(input, token);
     } while (token.type != TOKEN_EOF);
 
+    array_free(line_start);
     return 0;
 }
