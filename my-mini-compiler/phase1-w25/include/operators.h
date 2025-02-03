@@ -8,8 +8,8 @@
 /**
  * @param _Str Input string to check for operator.
  * @return 1 if the string exists in the set of operators.
-*/
-int isOperatorStr(const char* _Str);
+ */
+int isOperatorStr(const char *_Str);
 
 /**
  * @param c The character to check.
@@ -61,6 +61,6 @@ int isInvalidOperator(char c);
  * @param input The input string of the lexer.
  * @param len The desired length to encapsulate.
  */
-void encapOperator(Token *token, int **pos, const char **input, int len);
+void encapOperator(Token *token, int *pos, const char *input, int len);
 
 #endif

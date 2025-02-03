@@ -159,7 +159,6 @@ Token get_next_token(const char *input, int *pos)
     c = input[*pos];
     cn = input[*pos + 1];
 
-    // TODO: Add comment handling here
     // Handle comments
     if (c == '?' && cn == '?')
     {
@@ -205,7 +204,8 @@ Token get_next_token(const char *input, int *pos)
          */
 
         // Handle initial negative sign
-        if(c == '-'){
+        if (c == '-')
+        {
             i++;
             token.lexeme[0] = c;
             (*pos)++;
@@ -231,19 +231,17 @@ Token get_next_token(const char *input, int *pos)
             {
                 token.lexeme[i++] = c;
                 (*pos)++;
-                if(!(fp_flag)) token.type = TOKEN_INTEGER;
+                if (!(fp_flag))
+                    token.type = TOKEN_INTEGER;
             }
             c = input[*pos];
             cn = input[*pos + 1];
         } while (isdigit(c) && i < sizeof(token.lexeme) - 1);
         token.position.col_end += i - 1;
         token.lexeme[i] = '\0';
-        //token.type = TOKEN_NUMBER;
+        // token.type = TOKEN_NUMBER;
         return token;
     }
-
-    // TODO: Add keyword and identifier handling here
-    // Hint: You'll have to add support for keywords and identifiers, and then string literals
 
     // handle keywords and identifiers
     if (isalpha(c) || c == '_')
@@ -271,8 +269,6 @@ Token get_next_token(const char *input, int *pos)
 
         return token;
     }
-
-    // TODO: Add string literal handling here
 
     // handling string literals
     if (c == '"')
@@ -349,12 +345,11 @@ Token get_next_token(const char *input, int *pos)
         token.type = TOKEN_OPERATOR;
         token.lexeme[0] = c;
 
-        encapOperator(&token, &pos, &input, LOGICAL_OPERATOR_LENGTH);
+        encapOperator(&token, pos, input, LOGICAL_OPERATOR_LENGTH);
         (*pos)++;
         return token;
     }
 
-    // TODO: Add punctuation handling here
     // Handle punctuation & delimiters
     const char *punctuation = ";{}(),";
     if (strchr(punctuation, c))
@@ -401,6 +396,7 @@ int main(int argc, char *argv[])
                         "?? this is a comment\n(123+456);\n?! this is a multline comment\nstill comment\nendingcomment!?\n"
                         "\"this string literal is toooooooooo loooooooooooong some more chracters to fill up what needs"
                         " to be filled to make a really long string\n\"normal string literal\""; // Original Test Case
+    // const char *input = "123 + 456";
 
     /*
     For some reason while testing this, you can only add new test cases at the end?
@@ -425,7 +421,6 @@ int main(int argc, char *argv[])
     {
         printf("Line %d starts at position %d\n", i + 1, *(int *)array_get(line_start, i));
     }
-    printf("%s\n", input + *(int *)array_get(line_start, 13 - 1));
     array_free(line_start);
 
     // Get all tokens and print all possible compiler messages for tokens.
