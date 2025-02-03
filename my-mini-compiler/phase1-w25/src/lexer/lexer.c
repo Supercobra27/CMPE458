@@ -194,17 +194,13 @@ Token get_next_token(const char *input, int *pos)
     }
 
     // Handle numbers
+    /**
+     * TODO: Length checking as it is a lexical error. (current max length is set by the size of token.lexeme)
+     */
     if (isdigit(c))
     {
         int i = 0;
         token.type = TOKEN_INTEGER;
-
-        /**
-         * Need to do when keywords are added:
-         * Length checking as it is a lexical error
-         * Have we defined the max length
-         * FP Numbers
-         */
 
         do
         {
