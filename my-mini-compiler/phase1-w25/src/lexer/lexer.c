@@ -185,14 +185,14 @@ Token get_next_token(const char *input, int *pos)
             }
             (*pos)++;
         }
-        if (input[*pos] == '!' && input[*pos + 1] == '?')
-        {
-            (*pos) += 2; // Skip `!?`
-        }
         if (input[*pos] == '\0')
         {
             token.error = ERROR_UNTERMINATED_COMMENT;
             return token;
+        }
+        if (input[*pos] == '!' && input[*pos + 1] == '?')
+        {
+            (*pos) += 2; // Skip `!?`
         }
         return get_next_token(input, pos); // Skip and get next token
     }
