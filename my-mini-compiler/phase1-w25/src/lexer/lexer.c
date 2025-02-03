@@ -203,14 +203,6 @@ Token get_next_token(const char *input, int *pos)
          * FP Numbers
          */
 
-        // Handle initial negative sign
-        if (c == '-')
-        {
-            i++;
-            token.lexeme[0] = c;
-            (*pos)++;
-        }
-
         do
         {
             if (c == '0' && i == 0 && cn != '.')
@@ -239,7 +231,6 @@ Token get_next_token(const char *input, int *pos)
         } while (isdigit(c) && i < sizeof(token.lexeme) - 1);
         token.position.col_end += i - 1;
         token.lexeme[i] = '\0';
-        // token.type = TOKEN_NUMBER;
         return token;
     }
 
@@ -270,8 +261,7 @@ Token get_next_token(const char *input, int *pos)
         return token;
     }
 
-    // TODO: Handle escape sequences in string literals.
-    // handling string literals
+    // handling string literals (these string literals do not support escape characters)
     if (c == '"')
     {
         int i = 0;
@@ -337,22 +327,18 @@ Token get_next_token(const char *input, int *pos)
         return token;
     }
 
-    char op_str[3];
-    sprintf(op_str, "%c%c", c, cn);
-
     // Handle operators
-    if (isOperatorStr(op_str))
+    int operator_len = isOperatorStr(input + *pos);
+    if (operator_len)
     {
         token.type = TOKEN_OPERATOR;
-        token.lexeme[0] = c;
-
-        encapOperator(&token, pos, input, LOGICAL_OPERATOR_LENGTH);
-        (*pos)++;
+        strncpy(token.lexeme, input + *pos, operator_len);
+        (*pos) += operator_len;
         return token;
     }
 
     // Handle punctuation & delimiters
-    const char *punctuation = ";{}(),";
+    const char *const punctuation = ";{}(),";
     if (strchr(punctuation, c))
     {
         token.type = TOKEN_PUNCTUATOR;
