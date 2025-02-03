@@ -197,7 +197,7 @@ Token get_next_token(const char *input, int *pos)
     if (isdigit(c))
     {
         int i = 0;
-        int fp_flag = 0;
+        token.type = TOKEN_INTEGER;
 
         /**
          * Need to do when keywords are added:
@@ -214,14 +214,11 @@ Token get_next_token(const char *input, int *pos)
                 token.lexeme[i++] = cn;
                 (*pos) += 2; // skip over the starter and dot so not to return error for unknown character
                 token.type = TOKEN_FLOAT;
-                fp_flag = 1;
             }
             else
             {
                 token.lexeme[i++] = c;
                 (*pos)++;
-                if (!(fp_flag))
-                    token.type = TOKEN_INTEGER;
             }
             c = input[*pos];
             cn = input[*pos + 1];
