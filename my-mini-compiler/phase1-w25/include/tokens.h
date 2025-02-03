@@ -7,17 +7,7 @@
 #define TOKENS_H
 
 /* Token types that need to be recognized by the lexer
- * TODO: Add more token types as per requirements:
- * - Keywords or reserved words (if, repeat, until)
- * - Identifiers
- * - String literals
- * - More operators
- * - Delimiters
  */
-
-/*
- - Change to have integer and FP number token seperation
-*/
 typedef enum
 {
     TOKEN_EOF,
