@@ -28,10 +28,10 @@ typedef enum
     TOKEN_ARITHMETIC_OPERATOR,
     TOKEN_LOGICAL_OPERATOR,
     TOKEN_BITWISE_OPERATOR,
-    TOKEN_KEYWORD,        // e.g., "if", "else", "while", "factorial", "repeat_until", "int", "string",
-    TOKEN_IDENTIFIER,     //
-    TOKEN_STRING_LITERAL, // basic will not include escape characters "^\"[^\"]*\"". next step will be to include escape characters.
-    // TOKEN_PUNCTUATOR,     // "(", ")", "{", "}", ";"
+    TOKEN_KEYWORD,        // regex: ^(if|else|while|factorial|repeat|until|int|string)$
+    TOKEN_IDENTIFIER,     // regex: ^[a-zA-Z_][a-zA-Z0-9_]*$
+    TOKEN_STRING_LITERAL, // regex: ^"[ -~]*"$
+    TOKEN_PUNCTUATOR,     // ispunct()
     TOKEN_ERROR,
 } TokenType;
 
@@ -45,16 +45,15 @@ typedef enum
     ERROR_INVALID_NUMBER,
     ERROR_UNTERMINATED_STRING,
     ERROR_STRING_TOO_LONG,
-    ERROR_CONSECUTIVE_OPERATOR
 } ErrorType;
 
 /* Details for positions of tokens in a file. */
-typedef struct _TokenPosition
+typedef struct _LexemePosition
 {
     int line;      // Line number of the token in the file.
-    int pos_start; // Start position of the token in the line.
-    int pos_end;   // End position of the token in the line.
-} TokenPosition;
+    int col_start; // Column number of the first character of the token in the line.
+    int col_end;   // Column number of the last character of the token in the line.
+} LexemePosition;
 
 /* Token structure to store token information
  * TODO: Add more fields if needed for your implementation
@@ -64,9 +63,17 @@ typedef struct _TokenPosition
 typedef struct
 {
     TokenType type;
-    char lexeme[100];       // Actual text of the token
-    TokenPosition position; // Position of the token in the input
-    ErrorType error;        // Error type if any
+    char lexeme[100];        // Actual text of the token
+    LexemePosition position; // Position of this token's lexeme in the input
+    ErrorType error;         // Error type if the token is an TOKEN_ERROR.
+    // union
+    // {
+    //     ErrorType error;       // Error type if the token is an TOKEN_ERROR.
+    //     OperatorType operator; // Operator type if the token is an TOKEN_OPERATOR.
+    //     KeywordType keyword;   // Keyword type if the token is an TOKEN_KEYWORD.
+    //     NumberType number;     // Number type if the token is an TOKEN_NUMBER.
+
+    // } type2; // Secondary type information.
 } Token;
 
 #endif /* TOKENS_H */

@@ -50,6 +50,7 @@ void array_increase_capacity(Array *const a, const size_t increase);
 /**
  * Decreases the capacity of the array by the given amount.
  * @param a The array to decrease the capacity of. If `a` is NULL or invalid, Undefined behavior.
+ * @param decrease The amount to decrease the capacity by. If `decrease` is greater than or equal to the current capacity, then the decrease is equivalent to `array_set_capacity(a, 0)`.
  */
 void array_decrease_capacity(Array *const a, const size_t decrease);
 
@@ -64,7 +65,7 @@ void array_set_capacity(Array *const a, const size_t new_capacity);
 /**
  * Inserts an element at the end of the array by memcpy, resizing if necessary.
  * @param a The array. If `a` is NULL or invalid, Undefined behavior.
- * @param e The element to push. If `e` is NULL or invalid, Undefined behavior.
+ * @param e A pointer to the element to push. If `e` is NULL or invalid, Undefined behavior.
  */
 void array_push(Array *const a, const Element *const e);
 
@@ -72,9 +73,9 @@ void array_push(Array *const a, const Element *const e);
  * Accesses the element at the given index.
  * @param a The array to access.
  * @param index The index of the element to access. (0 <= index < array_size(a))
- * @return The element at the given index. Undefined behavior if the index is out of bounds.
+ * @return A pointer to the element at the given index. Undefined behavior if the index is out of bounds.
  */
-Element array_get(Array *const a, const size_t index);
+Element *array_get(Array *const a, const size_t index);
 
 /**
  * Sets the element at the given index by using memcpy.

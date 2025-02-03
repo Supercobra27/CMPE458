@@ -44,7 +44,7 @@ const char* multi_operators[] = {
 int isOperatorStr(const char* _Str){
     for (int i = 0; i < num_multi_operators; i++) {
         if (strncmp(_Str, multi_operators[i], 2) == 0) {
-            printf("%s", _Str);
+//             printf("%s", _Str);
             return 1;
         } 
     }
@@ -68,7 +68,7 @@ int strictOperatorStr(const char* _Str){
 
 int isOperator(char c)
 {
-    return strchr(single_operators, c);
+    return strchr(single_operators, c) != NULL;
 }
 
 int isFloatingPrefix(char c, char cn)
@@ -106,7 +106,7 @@ void encapOperator(Token *token, int **pos, char **input, int len)
         if ((*input)[**pos] == ' ')
             break; // prevent spaces from being added to the lexeme
         token->lexeme[i] = (*input)[**pos];
-        token->position.pos_end++;
+        token->position.col_end++;
         i++;
     };
     token->lexeme[i] = '\0';
