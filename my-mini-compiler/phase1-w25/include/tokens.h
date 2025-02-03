@@ -21,7 +21,7 @@
 typedef enum
 {
     TOKEN_EOF,
-    TOKEN_INTEGER,
+    TOKEN_INTEGER, // regex: ^[0-9]+$
     TOKEN_FLOAT,
     TOKEN_OPERATOR,
     TOKEN_ASSIGNMENT_OPERATOR,

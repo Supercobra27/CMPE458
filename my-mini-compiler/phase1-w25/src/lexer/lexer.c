@@ -191,7 +191,7 @@ Token get_next_token(const char *input, int *pos)
     }
 
     // Handle numbers
-    if (isdigit(c) || c == '-')
+    if (isdigit(c))
     {
         int i = 0;
         int fp_flag = 0;
@@ -428,7 +428,6 @@ int main(int argc, char *argv[])
     do
     {
         token = get_next_token(input, &position);
-        printf("array_size: %u\n", array_size(line_start));
         print_token_compiler_message(input, token);
     } while (token.type != TOKEN_EOF);
 
