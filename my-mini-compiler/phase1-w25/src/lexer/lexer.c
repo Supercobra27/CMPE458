@@ -68,6 +68,8 @@ const char *error_type_to_error_message(ErrorType error)
         return "error: unterminated string literal";
     case ERROR_STRING_TOO_LONG:
         return "error: string literal too long";
+    case ERROR_UNTERMINATED_BLOCK_COMMENT:
+        return "error: unterminated block comment, missing matching '!?'";
     default:
         return "Unknown error";
     }
@@ -186,6 +188,11 @@ Token get_next_token(const char *input, int *pos)
         if (input[*pos] == '!' && input[*pos + 1] == '?')
         {
             (*pos) += 2; // Skip `!?`
+        }
+        if (input[*pos] == '\0')
+        {
+            token.error = ERROR_UNTERMINATED_BLOCK_COMMENT;
+            return token;
         }
         return get_next_token(input, pos); // Skip and get next token
     }
@@ -389,10 +396,10 @@ int main(int argc, char *argv[])
     input[file_size] = '\0';
     fclose(file);
 
-    // const char *input = "123 + 456 - 789\n1 ++ 2\n$$$$\n45+54\nif else while\nvariablename ifelse whilesomething\n"
-    //                     "?? this is a comment\n(123+456);\n?! this is a multline comment\nstill comment\nendingcomment!?\n"
-    //                     "\"this string literal is toooooooooo loooooooooooong some more chracters to fill up what needs"
-    //                     " to be filled to make a really long string\n\"normal string literal\"";
+    input = "123 + 456 - 789\n1 ++ 2\n$$$$\n45+54\nif else while\nvariablename ifelse whilesomething\n"
+            "?? this is a comment\n(123+456);\n?! this is a multline comment\nstill comment\nendingcomment\n"
+            "\"this string literal is toooooooooo loooooooooooong some more chracters to fill up what needs"
+            " to be filled to make a really long string\n\"normal string literal\"";
     // const char *input = "000123 + 456";
 
     /*
