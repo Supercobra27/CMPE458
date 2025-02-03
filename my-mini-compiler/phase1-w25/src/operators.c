@@ -16,7 +16,6 @@ static const char *const multi_operators[] = {
     "/=",
     "|=",
     "&=",
-    "~=",
     "^=",
     "<<",
     ">>",
