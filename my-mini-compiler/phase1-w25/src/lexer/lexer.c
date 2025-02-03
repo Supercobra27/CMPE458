@@ -12,7 +12,7 @@
 // keywords
 static const char *keywords[] = {
     "if", "else", "while", "factorial",
-    "repeat_until", "int", "string"};
+    "repeat", "until", "int", "string"};
 static const int num_keywords = 7;
 
 // to check if a string is a keyword
@@ -247,73 +247,69 @@ Token get_next_token(const char *input, int *pos)
 
     // handling string literals
     if (c == '"')
-{
-    int i = 0;
-    token.lexeme[i++] = c; // store opening quote
-    (*pos)++;
-
-    // Keep reading until we find a closing quote, EOF, or exceed max length
-    while ((c = input[*pos]) != '\0' && c != '"')
     {
-        // Check if adding this character would exceed our limit
-        // We need room for: current chars + this char + closing quote + null terminator
-        if (i >= sizeof(token.lexeme) - 2)
+        int i = 0;
+        token.lexeme[i++] = c; // store opening quote
+        (*pos)++;
+
+        // keep reading until we find the closing quote, a non-printable character, or EOF
+        while (isprint(c = input[*pos]) && c != '"' && c != '\0')
         {
-            // We've hit the maximum length, need to report error
-            // Keep reading until we find the closing quote or EOF, but don't store
-            while ((c = input[*pos]) != '\0' && c != '"')
+            // if adding this character would make the string too long, report error
+            // need room for: current chars + this char + closing quote. - 1 for zero index
+            if (i >= sizeof(token.lexeme) - 1)
             {
-                if (c == '\n')
+                // hit max length, report error
+                // keep reading until closing quote, non-printable character, or EOF, but don't store
+                while (isprint(c = input[*pos]) && c != '"' && c != '\0')
                 {
-                    current_line++;
-                    array_push(line_start, (Element *)pos);
+                    (*pos)++;
                 }
-                (*pos)++;
+
+                // If we found a closing quote, consume it and terminate with too long string error
+                if (c == '"')
+                {
+                    (*pos)++;
+                    // terminate with string too long error
+                    token.lexeme[i] = '\0';
+                    token.type = TOKEN_ERROR;
+                    token.error = ERROR_STRING_TOO_LONG;
+                    token.position.pos_end += i - 1;
+                    return token;
+                }
+
+                // here the string is both too long and there is a non-printable character/EOF before the closing quote
+                // terminate with unterminated string error
+                token.lexeme[i] = '\0';
+                token.type = TOKEN_ERROR;
+                token.error = ERROR_UNTERMINATED_STRING;
+                token.position.pos_end += i - 1;
+                return token;
             }
 
-            // If we found a closing quote, consume it
-            if (c == '"')
-            {
-                (*pos)++;
-            }
+            token.lexeme[i++] = c; // add characters
+            (*pos)++;
+        }
 
+        // if we found the closing quote and the string wasn't too long, terminate normally
+        if (c == '"')
+        {
+            token.lexeme[i++] = c; // store closing quote
             token.lexeme[i] = '\0';
-            token.type = TOKEN_ERROR;
-            token.error = ERROR_STRING_TOO_LONG;
+            (*pos)++;
+            token.type = TOKEN_STRING_LITERAL;
             token.position.pos_end += i - 1;
             return token;
         }
 
-        // handle newlines in string
-        if (c == '\n')
-        {
-            current_line++;
-            array_push(line_start, (Element *)pos);
-        }
-
-        token.lexeme[i++] = c; // add characters
-        (*pos)++;
-    }
-
-    // check if we terminated normally
-    if (c == '"')
-    {
-        // normal termination
-        token.lexeme[i++] = c; // store the closing quote
+        // if we got here without returning, loop was exited without finding closing quote
+        // terminate with unterminated string error
         token.lexeme[i] = '\0';
-        (*pos)++;
-        token.type = TOKEN_STRING_LITERAL;
+        token.type = TOKEN_ERROR;
+        token.error = ERROR_UNTERMINATED_STRING;
         token.position.pos_end += i - 1;
         return token;
     }
-
-    // if we got here without returning, it must be unterminated
-    token.lexeme[i] = '\0';
-    token.type = TOKEN_ERROR;
-    token.error = ERROR_UNTERMINATED_STRING;
-    token.position.pos_end += i - 1;
-    return token;
-}
 
 
     // Handle operators
