@@ -17,13 +17,13 @@
     - [ ] Example Code (correct and incorrect errors)
 - [ ] work division
     - [x] column tracking for tokens (and global error reporting and recovery) - Hendrix
-    - [ ] ability to pass input code from a file
-    - [ ] comment handling - Monica
+    - [x] ability to pass input code from a file
+    - [x] comment handling - Monica
     - [x] numbers: update to not allow leading zeros, length checking, ... - Ryan
     - [x] keywords and identifier handling - Simon
     - [x] string literal handling - Simon
     - [x] operators - Ryan
-    - [ ] punctuators - Monica
+    - [x] punctuators - Monica
 
 
 
