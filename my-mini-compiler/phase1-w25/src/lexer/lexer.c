@@ -68,8 +68,8 @@ const char *error_type_to_error_message(ErrorType error)
         return "error: unterminated string literal";
     case ERROR_STRING_TOO_LONG:
         return "error: string literal too long";
-    case ERROR_UNTERMINATED_BLOCK_COMMENT:
-        return "error: unterminated block comment, missing matching '!?'";
+    case ERROR_UNTERMINATED_COMMENT:
+        return "error: unterminated comment, missing matching '!?'";
     default:
         return "Unknown error";
     }
@@ -191,7 +191,7 @@ Token get_next_token(const char *input, int *pos)
         }
         if (input[*pos] == '\0')
         {
-            token.error = ERROR_UNTERMINATED_BLOCK_COMMENT;
+            token.error = ERROR_UNTERMINATED_COMMENT;
             return token;
         }
         return get_next_token(input, pos); // Skip and get next token
@@ -439,3 +439,5 @@ int main(int argc, char *argv[])
     free(input);
     return 0;
 }
+
+/*            ddddddddddddddddddddd
