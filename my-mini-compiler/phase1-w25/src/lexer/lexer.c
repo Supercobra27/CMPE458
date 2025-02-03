@@ -172,7 +172,7 @@ Token get_next_token(const char *input, int *pos)
 
     if (c == '?' && cn == '!')
     {
-        // Multi-line comment
+        // Block/Multi-line comment
         (*pos) += 2; // Skip `?!`
         while (!(input[*pos] == '!' && input[*pos + 1] == '?') && input[*pos] != '\0')
         {
@@ -205,13 +205,7 @@ Token get_next_token(const char *input, int *pos)
 
         do
         {
-            if (c == '0' && i == 0 && cn != '.')
-            { // handle initial zeroes
-                token.lexeme[i++] = c;
-                (*pos)++;
-                break; // based on regex for first character
-            }
-            else if (isFloatingPrefix(c, cn))
+            if (isFloatingPrefix(c, cn))
             {
                 token.lexeme[i++] = c;
                 token.lexeme[i++] = cn;
@@ -356,15 +350,11 @@ Token get_next_token(const char *input, int *pos)
     return token;
 }
 
-// This is a basic lexer that handles numbers (e.g., "123", "456"), basic operators (+ and -), consecutive operator errors, whitespace and newlines, with simple line tracking for error reporting.
-
 int main(int argc, char *argv[])
 {
     // Potential code for file name/extension checking, although when I run it for some reason although it does not change anything the code does not run properly so Work in Progress
 
     // Input file argument check
-    argc = 2;              // force
-    argv[1] = "test.cisc"; // force
     if (argc != 2)
     {
         printf("Usage: .\\my-mini-compiler.exe <Input File Name>.cisc");
@@ -379,11 +369,31 @@ int main(int argc, char *argv[])
         printf("Incorrect file extension, the correct extension is .cisc");
         exit(-1);
     }
-    const char *input = "123 + 456 - 789\n1 ++ 2\n$$$$\n45+54\nif else while\nvariablename ifelse whilesomething\n"
-                        "?? this is a comment\n(123+456);\n?! this is a multline comment\nstill comment\nendingcomment!?\n"
-                        "\"this string literal is toooooooooo loooooooooooong some more chracters to fill up what needs"
-                        " to be filled to make a really long string\n\"normal string literal\""; // Original Test Case
-    // const char *input = "123 + 456";
+    // Load file into input.
+    FILE *file = fopen(file_name, "r");
+    if (file == NULL)
+    {
+        printf("Error: Unable to open file %s\n", file_name);
+        exit(-1);
+    }
+    fseek(file, 0, SEEK_END);
+    long file_size = ftell(file);
+    fseek(file, 0, SEEK_SET);
+    char *input = malloc(file_size + 1);
+    if (input == NULL)
+    {
+        printf("Error: Unable to allocate memory for file %s\n", file_name);
+        exit(-1);
+    }
+    fread(input, 1, file_size, file);
+    input[file_size] = '\0';
+    fclose(file);
+
+    // const char *input = "123 + 456 - 789\n1 ++ 2\n$$$$\n45+54\nif else while\nvariablename ifelse whilesomething\n"
+    //                     "?? this is a comment\n(123+456);\n?! this is a multline comment\nstill comment\nendingcomment!?\n"
+    //                     "\"this string literal is toooooooooo loooooooooooong some more chracters to fill up what needs"
+    //                     " to be filled to make a really long string\n\"normal string literal\"";
+    // const char *input = "000123 + 456";
 
     /*
     For some reason while testing this, you can only add new test cases at the end?
@@ -402,7 +412,7 @@ int main(int argc, char *argv[])
         token = get_next_token(input, &position);
         print_token(token);
     } while (token.type != TOKEN_EOF);
-    // printf("array_size: %u\n", array_size(line_start));
+
     // Print line start positions.
     for (size_t i = 0; i < array_size(line_start); i++)
     {
@@ -419,5 +429,6 @@ int main(int argc, char *argv[])
     } while (token.type != TOKEN_EOF);
 
     array_free(line_start);
+    free(input);
     return 0;
 }
