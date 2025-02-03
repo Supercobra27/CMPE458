@@ -79,8 +79,10 @@ const char *token_type_to_string(TokenType type)
     {
     case TOKEN_EOF:
         return "EOF";
-    case TOKEN_NUMBER:
-        return "NUMBER";
+    case TOKEN_INTEGER:
+        return "INTEGER";
+    case TOKEN_FLOAT:
+        return "FLOAT";
     case TOKEN_OPERATOR:
         return "OPERATOR";
     case TOKEN_KEYWORD:
@@ -190,9 +192,10 @@ Token get_next_token(const char *input, int *pos)
     }
 
     // Handle numbers
-    if (isdigit(c))
+    if (isdigit(c) || c == '-')
     {
         int i = 0;
+        int fp_flag = 0;
 
         /**
          * Need to do when keywords are added:
@@ -200,6 +203,13 @@ Token get_next_token(const char *input, int *pos)
          * Have we defined the max length
          * FP Numbers
          */
+
+        // Handle initial negative sign
+        if(c == '-'){
+            i++;
+            token.lexeme[0] = c;
+            (*pos)++;
+        }
 
         do
         {
@@ -214,18 +224,21 @@ Token get_next_token(const char *input, int *pos)
                 token.lexeme[i++] = c;
                 token.lexeme[i++] = cn;
                 (*pos) += 2; // skip over the starter and dot so not to return error for unknown character
+                token.type = TOKEN_FLOAT;
+                fp_flag = 1;
             }
             else
             {
                 token.lexeme[i++] = c;
                 (*pos)++;
+                if(!(fp_flag)) token.type = TOKEN_INTEGER;
             }
             c = input[*pos];
             cn = input[*pos + 1];
         } while (isdigit(c) && i < sizeof(token.lexeme) - 1);
         token.position.col_end += i - 1;
         token.lexeme[i] = '\0';
-        token.type = TOKEN_NUMBER;
+        //token.type = TOKEN_NUMBER;
         return token;
     }
 
@@ -327,37 +340,16 @@ Token get_next_token(const char *input, int *pos)
         return token;
     }
 
+    char op_str[3];
+    sprintf(op_str, "%c%c", c, cn);
+
     // Handle operators
-    if (isOperator(c))
+    if (isOperatorStr(op_str))
     {
         token.type = TOKEN_OPERATOR;
         token.lexeme[0] = c;
 
-        // If the following character is a valid logical operator (&&, ||)
-        if (isLogicalOperator(input[*pos + 1]))
-        {
-
-            encapOperator(&token, &pos, &input, LOGICAL_OPERATOR_LENGTH);
-
-            // If it is an invalid consecutive operator
-            /*
-            } else if (isInvalidOperator(input[*pos+1])) {
-
-        // If it is an invalid consecutive operator
-        /*
-        } else if (isInvalidOperator(input[*pos+1])) {
-
-            // I am pretty sure this logic only has to be done during parsing
-
-                encapOperator(&token, &pos, &input, LOGICAL_OPERATOR_LENGTH);
-                token.error = ERROR_CONSECUTIVE_OPERATOR;
-
-        */
-        }
-        else
-        {
-            token.lexeme[1] = '\0';
-        }
+        encapOperator(&token, &pos, &input, LOGICAL_OPERATOR_LENGTH);
         (*pos)++;
         return token;
     }

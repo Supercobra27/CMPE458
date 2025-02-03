@@ -14,11 +14,20 @@
  * - More operators
  * - Delimiters
  */
+
+/*
+ - Change to have integer and FP number token seperation
+*/
 typedef enum
 {
     TOKEN_EOF,
-    TOKEN_NUMBER,         // e.g., "123", "456"
-    TOKEN_OPERATOR,       // e.g., "+", "-"
+    TOKEN_INTEGER,
+    TOKEN_FLOAT,
+    TOKEN_OPERATOR,
+    TOKEN_ASSIGNMENT_OPERATOR,
+    TOKEN_ARITHMETIC_OPERATOR,
+    TOKEN_LOGICAL_OPERATOR,
+    TOKEN_BITWISE_OPERATOR,
     TOKEN_KEYWORD,        // regex: ^(if|else|while|factorial|repeat|until|int|string)$
     TOKEN_IDENTIFIER,     // regex: ^[a-zA-Z_][a-zA-Z0-9_]*$
     TOKEN_STRING_LITERAL, // regex: ^"[ -~]*"$

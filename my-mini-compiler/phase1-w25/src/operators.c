@@ -6,21 +6,9 @@
 /**
  * Have a list with single and double operators
  */
-
-const char *operatorList = "+-*/~|&^+!><";
-static const int num_operators = 26;
-const char *operators[] = {
-    "+",
-    "-",
-    "*",
-    "/",
-    "~",
-    "|",
-    "&",
-    "^",
-    "!",
-    "<",
-    ">",
+static const int num_multi_operators = 18;
+const char* single_operators = "=+-*/~|&^!><";
+const char* multi_operators[] = {
     "==",
     "!=",
     ">=",
@@ -35,23 +23,52 @@ const char *operators[] = {
     "^=",
     "<<",
     ">>",
-    ">>>"};
+    "&&",
+    "||",
+    "++",
+    "--",
+    "=",
+    "+",
+    "-",
+    "/",
+    "*",
+    "~",
+    "&",
+    "|",
+    "^",
+    "!",
+    "<",
+    ">"
+};
 
-int isOperator1(const char *_Str)
-{
-    for (int i = 0; i < num_operators; i++)
-    {
-        if (strcmp(_Str, operators[i]) == 0)
-        {
+int isOperatorStr(const char* _Str){
+    for (int i = 0; i < num_multi_operators; i++) {
+        if (strncmp(_Str, multi_operators[i], 2) == 0) {
+//             printf("%s", _Str);
             return 1;
-        }
+        } 
     }
+
+    if (isOperator(_Str[0])) return 1; // for single operators
+
     return 0;
 }
 
+int strictOperatorStr(const char* _Str){
+    for (int i = 0; i < num_multi_operators; i++) {
+        if (strncmp(_Str, multi_operators[i], 2) == 0) {
+            printf("%s", _Str);
+            return 1;
+        } 
+    }
+
+    return 0;
+}
+
+
 int isOperator(char c)
 {
-    return strchr(operatorList, c) != NULL;
+    return strchr(single_operators, c) != NULL;
 }
 
 int isFloatingPrefix(char c, char cn)
@@ -80,7 +97,7 @@ int isInvalidOperator(char c)
 }
 
 // dont need double pointers
-void encapOperator(Token *token, int **pos, const char **input, int len)
+void encapOperator(Token *token, int **pos, char **input, int len)
 {
     int i = 1;
     while (i != len && !isInvalidOperator((*input)[**pos]))
@@ -93,21 +110,5 @@ void encapOperator(Token *token, int **pos, const char **input, int len)
         i++;
     };
     token->lexeme[i] = '\0';
-}
-
-// For Simon, you can change this around for variable keyword lengths, it worked for me for operators
-void encapKeyword(Token *token, int **pos, char **input, int len)
-{
-    int i = 1;
-    while (i < len && !isInvalidOperator((*input)[**pos]))
-    { // change to isInvalidKeyword?
-
-        (**pos)++;
-        if ((*input)[**pos] == ' ')
-            break;
-        token->lexeme[i] = (*input)[**pos];
-        token->position.col_end++;
-        i++;
-    };
-    token->lexeme[i] = '\0';
+    if(strlen(token->lexeme) == 3 && !(strictOperatorStr(token->lexeme))) token->type = TOKEN_ERROR;
 }
