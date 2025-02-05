@@ -50,7 +50,7 @@ int isOperatorStr(const char *_Str)
 
 int isOperator(char c)
 {
-    return strchr(single_operators, c) != NULL;
+    return c != '\0' && strchr(single_operators, c) != NULL;
 }
 
 int isFloatingPrefix(char c, char cn)
