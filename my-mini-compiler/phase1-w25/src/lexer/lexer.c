@@ -13,7 +13,7 @@
 static const char *keywords[] = {
     "if", "else", "while", "factorial",
     "repeat", "until", "int", "string"};
-static const int num_keywords = 7;
+static const int num_keywords = sizeof(keywords) / sizeof(keywords[0]);
 
 // to check if a string is a keyword
 static int is_keyword(const char *str)
