@@ -115,7 +115,6 @@ void print_token_compiler_message(const char *input_file_path, const char *input
     const int line_start_pos = *(int *)array_get(line_start, token.position.line - 1);
     const char *const line_end = strchr(input + line_start_pos, '\n');
     const int line_length = line_end == NULL ? strlen(input + line_start_pos) : line_end - (input + line_start_pos);
-    printf("line_start_pos=%d, line_length=%d\n", line_start_pos, line_length);
     // tildes is supposed to be as long as the longest token lexeme so that it can always be chopped to the right length.
     static const char *tildes = "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
     printf(
