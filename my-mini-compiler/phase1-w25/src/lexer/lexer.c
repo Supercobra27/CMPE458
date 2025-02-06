@@ -409,7 +409,7 @@ int main(int argc, char *argv[])
     // Print line start positions.
     for (size_t i = 0; i < array_size(line_start); i++)
     {
-        printf("Line %d starts at position %d\n", i + 1, *(int *)array_get(line_start, i));
+        printf("Line %zu starts at position %d\n", i + 1U, *(int *)array_get(line_start, i));
     }
     array_free(line_start);
 

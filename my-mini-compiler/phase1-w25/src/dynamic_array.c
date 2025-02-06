@@ -15,7 +15,7 @@ typedef struct Array_t
 
 Array *array_new(const size_t capacity, const size_t element_size)
 {
-    Array *a = (Array *)malloc(offsetof(Array, elements));
+    Array *a = (Array *)malloc(sizeof(Array));
     a->element_size = element_size;
     a->capacity = 0;
     a->elements = NULL;
