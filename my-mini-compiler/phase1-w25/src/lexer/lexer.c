@@ -110,17 +110,19 @@ void print_token(Token token)
 }
 
 // Do we want to distinguish between errors and warnings?
-void print_token_compiler_message(const char *input, Token token)
+void print_token_compiler_message(const char *input_file_path, const char *input, Token token)
 {
     const int line_start_pos = *(int *)array_get(line_start, token.position.line - 1);
-    const int line_length = strchr(input + line_start_pos, '\n') - (input + line_start_pos);
+    const char *const line_end = strchr(input + line_start_pos, '\n');
+    const int line_length = line_end == NULL ? strlen(input + line_start_pos) : line_end - (input + line_start_pos);
+    printf("line_start_pos=%d, line_length=%d\n", line_start_pos, line_length);
     // tildes is supposed to be as long as the longest token lexeme so that it can always be chopped to the right length.
     static const char *tildes = "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
     printf(
         "%s:%d:%d: %s\n"
         "%.*s\n"
         "%*s%.*s\n",
-        "[input file path here]", token.position.line, token.position.col_start, error_type_to_error_message(token.error),
+        input_file_path, token.position.line, token.position.col_start, error_type_to_error_message(token.error),
         line_length, input + line_start_pos,
         token.position.col_start, "^", token.position.col_end - token.position.col_start, tildes);
 }
@@ -371,7 +373,7 @@ int main(int argc, char *argv[])
         exit(-1);
     }
     fseek(file, 0, SEEK_END);
-    long file_size = ftell(file);
+    size_t file_size = ftell(file);
     fseek(file, 0, SEEK_SET);
     char *input = malloc(file_size + 1);
     if (input == NULL)
@@ -379,8 +381,11 @@ int main(int argc, char *argv[])
         printf("Error: Unable to allocate memory for file %s\n", file_name);
         exit(-1);
     }
-    fread(input, 1, file_size, file);
-    input[file_size] = '\0';
+    size_t bytes_read = 0;
+    char ch;
+    while (bytes_read < file_size && (ch = fgetc(file)) != EOF && ch != '\0')
+        input[bytes_read++] = ch;
+    input[bytes_read] = '\0';
     fclose(file);
 
     // input = "123 + 456 - 789\n1 ++ 2\n$$$$\n45+54\nif else while\nvariablename ifelse whilesomething\n"
@@ -414,7 +419,7 @@ int main(int argc, char *argv[])
     do
     {
         token = get_next_token(input, &position);
-        print_token_compiler_message(input, token);
+        print_token_compiler_message(file_name, input, token);
     } while (token.type != TOKEN_EOF);
 
     array_free(line_start);
