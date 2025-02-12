@@ -1,0 +1,4 @@
+"this is a valid string literal"
+"this string literal is unterminated because it ends in a new line
+"this string literal is unterminated as well, but also exceeds the maximum size for a string literal. extra characters
+"this string literal is too long, not unterminated, because the program can find the closing quote now"
