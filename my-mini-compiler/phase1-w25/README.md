@@ -1,21 +1,21 @@
 # Phase 1: Lexical Analysis
 
 ## To Do
-- [ ] For each type of tokens and whitespace and comments.
-    - [ ] regex pattern 
-    - [ ] parsing in lexer.c
-    - [ ] error cases
-    - [ ] test cases
-- [ ] Phase 1 Documentation
-    - [ ] Changes overview
-    - [ ] Change Log
-    - [ ] Language Design
-        - [ ] data types
-        - [ ] control flow patterns (if, else, while, repeat_until) and tentative syntax
-        - [ ] operators
-        - [ ] keywords
-    - [ ] Example Code (correct and incorrect errors)
-- [ ] work division
+- [x] For each type of tokens and whitespace and comments.
+    - [x] regex pattern 
+    - [x] parsing in lexer.c
+    - [x] error cases
+    - [x] test cases
+- [x] Phase 1 Documentation
+    - [x] Changes overview
+    - [x] Change Log
+    - [x] Language Design
+        - [x] data types
+        - [x] control flow patterns (if, else, while, repeat_until) and tentative syntax
+        - [x] operators
+        - [x] keywords
+    - [x] Example Code (correct and incorrect errors)
+- [x] work division
     - [x] column tracking for tokens (and global error reporting and recovery) - Hendrix
     - [x] ability to pass input code from a file
     - [x] comment handling - Monica
@@ -34,14 +34,12 @@ Welcome to the first phase of your compiler construction journey! This initial p
 While we provide a suggested project structure below, you can organize your code as you see fit. The key components remain the same:
 
 ```plaintext
-my-mini-compiler/
-├── CMakeLists.txt              # Build configuration
-└── phase1-w25/                 # Phase 1 implementation
-    ├── include/
-    │   └── tokens.h           # Token definitions and types
-    └── src/
-        └── lexer/
-            └── lexer.c        # Core lexer implementation
+phase1-w25/                 # Phase 1 implementation
+├── include/
+│   └── tokens.h           # Token definitions and types
+└── src/
+    └── lexer/
+        └── lexer.c        # Core lexer implementation
 ```
 
 The `tokens.h` header file contains the definitions for different token types your lexer will recognize, while `lexer.c` houses the main implementation of your lexical analyzer. As you progress, you can extend this foundation to support all the features your target programming language requires.
@@ -56,7 +54,6 @@ The header file contains basic definitions you'll need to extend:
 - Token structure definition
 
 **Think about what additional token types you'll need for your language features.**
-TODO: put regexes here
 - Keywords (e.g., if, repeat, until)
 - Identifiers (variable names, function name)
 - String literals

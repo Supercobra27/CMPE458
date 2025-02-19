@@ -6,6 +6,8 @@
 static const int num_multi_operators = 18;
 static const char *const single_operators = "=+-*/~|&^!><";
 static const char *const multi_operators[] = {
+    "<<=",
+    ">>=",
     "==",
     "!=",
     ">=",
@@ -51,9 +53,4 @@ int isOperatorStr(const char *_Str)
 int isOperator(char c)
 {
     return c != '\0' && strchr(single_operators, c) != NULL;
-}
-
-int isFloatingPrefix(char c, char cn)
-{
-    return (isdigit(c) && cn == '.');
 }
