@@ -1,7 +1,7 @@
 # Lexer
 ## How to Compile and run
 
-To build using CMAKE: build the project using the `CMakeLists.txt` file. Run the following commands in the terminal.
+To build using CMAKE: build the project using the `CMakeLists.txt` file. From the `my-mini-compiler` directory, run the following commands in the terminal.
 ```
 mkdir build
 cd build
