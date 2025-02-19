@@ -11,8 +11,8 @@
 ## Grammar
 - UpperCase = non-terminals
 - lower_case = terminals/tokens/token-classes
-- there is some regex stuff mixed in here (* for zero or more of the previous symbol, + for one or more of the previous symbol, [] for character set, . for any character)
-- single characters are separated by single quotes (')
+- there is some regex stuff mixed in here, regular expressions are written within double quotes (") (* for zero or more of the previous symbol, + for one or more of the previous symbol, [] for character set, . for any character)
+- create a right-recursive only version of this grammar so that we can do recursive descent parsing.
 - to add `break` and `continue` keywords for loops
 ```
 Program -> Statement*
@@ -26,11 +26,11 @@ Statement -> statement_end
         | WhileLoop
         | RepeatUntilLoop
 
-statement_end -> ';'
+statement_end -> ";"
 VariableDeclaration -> type_keyword identifier statement_end
 ExpressionStatement -> Expression statement_end
 PrintStatement -> print_keyword Expression statement_end
-Block -> '{' Statement* '}'
+Block -> "{" Statement* "}"
 ConditionalStatement -> if_keyword Expression then_keyword Block else_keyword Block
                     | if_keyword Expression then_keyword Block
 WhileLoop -> while_keyword Expression Block
@@ -61,13 +61,13 @@ Expression -> AssignmentExpression_r12
 |  5         | bit shift                                    | left          |
 |  4         | add/sub (SumExpression)                      | left          |
 |  3         | mul/div/mod (ProductExpression)              | left          |
-|  2         | unary prefix (unary negate '-', logical not '!', increment/decrement, ...) | right   |
+|  2         | unary prefix (unary negate -, logical/bitwise not !/~, increment/decrement ++/--, ...) | right   |
 |  1         | unary suffix (increment/decrement)           | left   |
 | high       | factor (mutable or immutable)                | N/A           |
 
 
 ```
-AssignmentExpression_r12 -> identifier assignment_operator OrExpression_l11 | OrExpression_l11
+AssignmentExpression_r12 -> identifier assignment_operator AssignmentExpression_r12 | OrExpression_l11
 OrExpression_l11 -> OrExpression_l11 or_operator AndExpression_l10 | AndExpression_l10
 AndExpression_l10 -> AndExpression_l10 and_operator BitOrExpression_l9 | BitOrExpression_l9
 BitOrExpression_l9 -> BitOrExpression_l9 bit_or_operator BitAndExpression_l8 | BitAndExpression_l8
@@ -80,12 +80,24 @@ ProductExpression_l3 -> ProductExpression_l3 product_operator UnaryPrefixExpress
 UnaryPrefixExpression_r2 -> increment_decrement_operator identifier | unary_prefix_operator UnarySuffixExpression_l1
 UnarySuffix_l1 -> identifier increment_decrement_operator
 Factor -> Immutable | identifier
-Immutable -> '(' Expression ')' | constant | factorial_keyword '(' Expression ')'
+Immutable -> "(" Expression ")" | constant | factorial_keyword "(" Expression ")"
 constant -> int_literal | float_literal | string_literal
 
 factorial_keyword -> "factorial"
 int_literal -> "[0-9]+"
 float_literal -> "[0-9]+\.[0-9]+"
 string_literal -> "\"[ -~]\""
+
+assignment_operator -> "=" | "+=" | "-=" | "*=" | "/=" | "%=" | "<<=" | ">>=" | "&=" | "^=" | "|="
+or_operator -> "||"
+and_operator -> "&&"
+bit_or_operator -> "|"
+bit_and_operator -> "&"
+relation_operator -> "<" | "<=" | ">" | ">=" | "++" | "!="
+shift_operator -> "<<" | ">>"
+sum_operator -> "+" | "-"
+product_operator -> "*" | "/" | "%"
+increment_decrement_operator -> "++" | "--"
+unary_prefix_operator -> "!" | "~" | "-"
 ```
 
