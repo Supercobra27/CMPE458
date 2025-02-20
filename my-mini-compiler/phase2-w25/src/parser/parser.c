@@ -5,7 +5,6 @@
 #include "../../include/lexer.h"
 #include "../../include/tokens.h"
 
-
 // TODO 1: Add more parsing function declarations for:
 // - if statements: if (condition) { ... }
 // - while loops: while (condition) { ... }
@@ -14,14 +13,13 @@
 // - blocks: { statement1; statement2; }
 // - factorial function: factorial(x)
 
-
 // Current token being processed
 static Token current_token;
 static int position = 0;
 static const char *source;
 
-
-static void parse_error(ParseError error, Token token) {
+static void parse_error(ParseError error, Token token)
+{
     // TODO 2: Add more error types for:
     // - Missing parentheses
     // - Missing condition
@@ -30,36 +28,40 @@ static void parse_error(ParseError error, Token token) {
     // - Function call errors
 
     printf("Parse Error at line %d: ", token.line);
-    switch (error) {
-        case PARSE_ERROR_UNEXPECTED_TOKEN:
-            printf("Unexpected token '%s'\n", token.lexeme);
-            break;
-        case PARSE_ERROR_MISSING_SEMICOLON:
-            printf("Missing semicolon after '%s'\n", token.lexeme);
-            break;
-        case PARSE_ERROR_MISSING_IDENTIFIER:
-            printf("Expected identifier after '%s'\n", token.lexeme);
-            break;
-        case PARSE_ERROR_MISSING_EQUALS:
-            printf("Expected '=' after '%s'\n", token.lexeme);
-            break;
-        case PARSE_ERROR_INVALID_EXPRESSION:
-            printf("Invalid expression after '%s'\n", token.lexeme);
-            break;
-        default:
-            printf("Unknown error\n");
+    switch (error)
+    {
+    case PARSE_ERROR_UNEXPECTED_TOKEN:
+        printf("Unexpected token '%s'\n", token.lexeme);
+        break;
+    case PARSE_ERROR_MISSING_SEMICOLON:
+        printf("Missing semicolon after '%s'\n", token.lexeme);
+        break;
+    case PARSE_ERROR_MISSING_IDENTIFIER:
+        printf("Expected identifier after '%s'\n", token.lexeme);
+        break;
+    case PARSE_ERROR_MISSING_EQUALS:
+        printf("Expected '=' after '%s'\n", token.lexeme);
+        break;
+    case PARSE_ERROR_INVALID_EXPRESSION:
+        printf("Invalid expression after '%s'\n", token.lexeme);
+        break;
+    default:
+        printf("Unknown error\n");
     }
 }
 
 // Get next token
-static void advance(void) {
+static void advance(void)
+{
     current_token = get_next_token(source, &position);
 }
 
 // Create a new AST node
-static ASTNode *create_node(ASTNodeType type) {
+static ASTNode *create_node(ASTNodeType type)
+{
     ASTNode *node = malloc(sizeof(ASTNode));
-    if (node) {
+    if (node)
+    {
         node->type = type;
         node->token = current_token;
         node->left = NULL;
@@ -69,15 +71,20 @@ static ASTNode *create_node(ASTNodeType type) {
 }
 
 // Match current token with expected type
-static int match(TokenType type) {
+static int match(TokenType type)
+{
     return current_token.type == type;
 }
 
 // Expect a token type or error
-static void expect(TokenType type) {
-    if (match(type)) {
+static void expect(TokenType type)
+{
+    if (match(type))
+    {
         advance();
-    } else {
+    }
+    else
+    {
         parse_error(PARSE_ERROR_UNEXPECTED_TOKEN, current_token);
         exit(1); // Or implement error recovery
     }
@@ -97,11 +104,14 @@ static ASTNode *parse_statement(void);
 static ASTNode *parse_expression(void);
 
 // Parse variable declaration: int x;
-static ASTNode *parse_declaration(void) {
+// The token stored in this ASTNode is the identifier.
+static ASTNode *parse_declaration(void)
+{
     ASTNode *node = create_node(AST_VARDECL);
     advance(); // consume 'int'
 
-    if (!match(TOKEN_IDENTIFIER)) {
+    if (!match(TOKEN_IDENTIFIER))
+    {
         parse_error(PARSE_ERROR_MISSING_IDENTIFIER, current_token);
         exit(1);
     }
@@ -109,7 +119,8 @@ static ASTNode *parse_declaration(void) {
     node->token = current_token;
     advance();
 
-    if (!match(TOKEN_SEMICOLON)) {
+    if (!match(TOKEN_SEMICOLON))
+    {
         parse_error(PARSE_ERROR_MISSING_SEMICOLON, current_token);
         exit(1);
     }
@@ -118,13 +129,17 @@ static ASTNode *parse_declaration(void) {
 }
 
 // Parse assignment: x = 5;
-static ASTNode *parse_assignment(void) {
+// The left child is the identifier, the right child is the expression.
+// Nothing is stored for the token of this ASTNode (should be the equals operator).
+static ASTNode *parse_assignment(void)
+{
     ASTNode *node = create_node(AST_ASSIGN);
     node->left = create_node(AST_IDENTIFIER);
     node->left->token = current_token;
     advance();
 
-    if (!match(TOKEN_EQUALS)) {
+    if (!match(TOKEN_EQUALS))
+    {
         parse_error(PARSE_ERROR_MISSING_EQUALS, current_token);
         exit(1);
     }
@@ -132,7 +147,8 @@ static ASTNode *parse_assignment(void) {
 
     node->right = parse_expression();
 
-    if (!match(TOKEN_SEMICOLON)) {
+    if (!match(TOKEN_SEMICOLON))
+    {
         parse_error(PARSE_ERROR_MISSING_SEMICOLON, current_token);
         exit(1);
     }
@@ -141,10 +157,15 @@ static ASTNode *parse_assignment(void) {
 }
 
 // Parse statement
-static ASTNode *parse_statement(void) {
-    if (match(TOKEN_INT)) {
+// Currently only handles declarations and assignments
+static ASTNode *parse_statement(void)
+{
+    if (match(TOKEN_INT))
+    {
         return parse_declaration();
-    } else if (match(TOKEN_IDENTIFIER)) {
+    }
+    else if (match(TOKEN_IDENTIFIER))
+    {
         return parse_assignment();
     }
 
@@ -160,6 +181,7 @@ static ASTNode *parse_statement(void) {
 }
 
 // Parse expression (currently only handles numbers and identifiers)
+// No token is stored in the ASTNode. The token should be stored somehow in the ASTNode.
 
 // TODO 5: Implement expression parsing
 // Current expression parsing is basic. Need to implement:
@@ -169,16 +191,22 @@ static ASTNode *parse_statement(void) {
 // - Parentheses grouping
 // - Function calls
 
-static ASTNode *parse_expression(void) {
+static ASTNode *parse_expression(void)
+{
     ASTNode *node;
 
-    if (match(TOKEN_NUMBER)) {
+    if (match(TOKEN_NUMBER))
+    {
         node = create_node(AST_NUMBER);
         advance();
-    } else if (match(TOKEN_IDENTIFIER)) {
+    }
+    else if (match(TOKEN_IDENTIFIER))
+    {
         node = create_node(AST_IDENTIFIER);
         advance();
-    } else {
+    }
+    else
+    {
         printf("Syntax Error: Expected expression\n");
         exit(1);
     }
@@ -187,13 +215,19 @@ static ASTNode *parse_expression(void) {
 }
 
 // Parse program (multiple statements)
-static ASTNode *parse_program(void) {
+// This parses the statements as a linked list, the left child is the current statement, the right chid points to the next statement.
+// There is no parent node for the program, the root node is the first statement.
+// Statement Nodes don't have a token associated with them.
+static ASTNode *parse_program(void)
+{
     ASTNode *program = create_node(AST_PROGRAM);
     ASTNode *current = program;
 
-    while (!match(TOKEN_EOF)) {
+    while (!match(TOKEN_EOF))
+    {
         current->left = parse_statement();
-        if (!match(TOKEN_EOF)) {
+        if (!match(TOKEN_EOF))
+        {
             current->right = create_node(AST_PROGRAM);
             current = current->right;
         }
@@ -203,50 +237,56 @@ static ASTNode *parse_program(void) {
 }
 
 // Initialize parser
-void parser_init(const char *input) {
+void parser_init(const char *input)
+{
     source = input;
     position = 0;
     advance(); // Get first token
 }
 
 // Main parse function
-ASTNode *parse(void) {
+ASTNode *parse(void)
+{
     return parse_program();
 }
 
 // Print AST (for debugging)
-void print_ast(ASTNode *node, int level) {
-    if (!node) return;
+void print_ast(ASTNode *node, int level)
+{
+    if (!node)
+        return;
 
     // Indent based on level
-    for (int i = 0; i < level; i++) printf("  ");
+    for (int i = 0; i < level; i++)
+        printf("  ");
 
     // Print node info
-    switch (node->type) {
-        case AST_PROGRAM:
-            printf("Program\n");
-            break;
-        case AST_VARDECL:
-            printf("VarDecl: %s\n", node->token.lexeme);
-            break;
-        case AST_ASSIGN:
-            printf("Assign\n");
-            break;
-        case AST_NUMBER:
-            printf("Number: %s\n", node->token.lexeme);
-            break;
-        case AST_IDENTIFIER:
-            printf("Identifier: %s\n", node->token.lexeme);
-            break;
+    switch (node->type)
+    {
+    case AST_PROGRAM:
+        printf("Program\n");
+        break;
+    case AST_VARDECL:
+        printf("VarDecl: %s\n", node->token.lexeme);
+        break;
+    case AST_ASSIGN:
+        printf("Assign\n");
+        break;
+    case AST_NUMBER:
+        printf("Number: %s\n", node->token.lexeme);
+        break;
+    case AST_IDENTIFIER:
+        printf("Identifier: %s\n", node->token.lexeme);
+        break;
 
-        // TODO 6: Add cases for new node types
-        // case AST_IF: printf("If\n"); break;
-        // case AST_WHILE: printf("While\n"); break;
-        // case AST_REPEAT: printf("Repeat-Until\n"); break;
-        // case AST_BLOCK: printf("Block\n"); break;
-        // case AST_BINOP: printf("BinaryOp: %s\n", node->token.lexeme); break;
-        default:
-            printf("Unknown node type\n");
+    // TODO 6: Add cases for new node types
+    // case AST_IF: printf("If\n"); break;
+    // case AST_WHILE: printf("While\n"); break;
+    // case AST_REPEAT: printf("Repeat-Until\n"); break;
+    // case AST_BLOCK: printf("Block\n"); break;
+    // case AST_BINOP: printf("BinaryOp: %s\n", node->token.lexeme); break;
+    default:
+        printf("Unknown node type\n");
     }
 
     // Print children
@@ -255,18 +295,21 @@ void print_ast(ASTNode *node, int level) {
 }
 
 // Free AST memory
-void free_ast(ASTNode *node) {
-    if (!node) return;
+void free_ast(ASTNode *node)
+{
+    if (!node)
+        return;
     free_ast(node->left);
     free_ast(node->right);
     free(node);
 }
 
 // Main function for testing
-int main() {
+int main()
+{
     // Test with both valid and invalid inputs
-    const char *input = "int x;\n" // Valid declaration
-            "x = 42;\n"; // Valid assignment;
+    const char *input = "int x;\n"   // Valid declaration
+                        "x = 42;\n"; // Valid assignment;
     // TODO 8: Add more test cases and read from a file:
     const char *invalid_input = "int x;\n"
                                 "x = 42;\n"
