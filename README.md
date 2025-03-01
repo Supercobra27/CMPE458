@@ -42,6 +42,27 @@ parse_cfg(production_rule="E->EEEa|b", input_string="") -> ASTNode:
 - create a right-recursive only version of this grammar so that we can do recursive descent parsing.
 - to add `break` and `continue` keywords for loops
 
+### Abstract Syntax Tree Grammar
+```
+Program -> StatementList
+StatementList -> Statement StatementList | epsilon
+Statement -> Declaration
+            | Expression
+            | Print
+            | Conditional
+            | WhileLoop
+            | RepeatUntilLoop
+
+Declaration -> Declaration_Type Identifier
+Print -> Expression
+Conditional -> Expression StatementList StatementList
+WhileLoop -> Expression StatementList
+RepeatUntilLoop -> StatementList Expression
+
+Expression -> Expression operator Expression | int_const | float_const | string_const | identifier | FactorialExpr
+FactorialExpr -> Expression
+```
+
 ### Statement-Level Grammar
 ```
 Program -> StatementList TOKEN_EOF
