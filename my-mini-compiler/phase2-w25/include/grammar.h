@@ -13,6 +13,7 @@ typedef struct _Symbol {
 } Symbol;
 
 typedef struct _ProductionRule {
+    Symbol non_terminal; // Terminal that derives the production rule
     Symbol* symbols;
     size_t num_symbols;
 } ProductionRule;
@@ -27,6 +28,10 @@ typedef struct _GrammarRule {
 // Array of Null-terminated arrays of Symbols
 // Each array of Symbols represents a rule in the grammar
 // static const * grammar[] = {};
+
+/**
+ * 
+*/
 
 
 #endif /* GRAMMAR_H */
