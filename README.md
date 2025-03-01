@@ -4,6 +4,33 @@
 
 ## Phase 2: Parser
 
+### How to parse left-recursive production rule
+example conversion (using ? as the empty string) 
+E -> EEEa | EEa | Ea | b | c
+
+E -> bE' | cE'
+E'-> EEaE' | EaE' | aE' | ?
+
+```python
+# lowercase letters are terminals, uppercase letters are non-terminals
+parse_cfg(production_rule="E->EEEa|b", input_string="") -> ASTNode:
+    node = ASTNode()
+    node.symbol = production_rule.left
+    if production_rule.left = production_rule.right[0]:
+        # now we have to deal with left-recursive rule
+        # parse as right-recursive, but build nodes as if it were left-recursive
+        lower_node = ASTNode()
+        for i in range(len(input_string)):
+    else:
+        node.children = []
+
+    return null
+
+
+
+
+```
+
 ## Phase 3: Semantic Analyzer
 
 ## Phase 4: Code Generation
@@ -17,24 +44,28 @@
 
 ### Statement-Level Grammar
 ```
-Program -> Statement*
+Program -> StatementList TOKEN_EOF
 
-Statement -> statement_end
-        | VariableDeclaration
+StatementList -> Statement StatementList | epsilon
+
+Statement -> EmptyStatement
+        | Declaration
         | ExpressionStatement
         | PrintStatement
         | Block
-        | ConditionalStatement
+        | Conditional
         | WhileLoop
         | RepeatUntilLoop
 
+EmptyStatement -> statement_end
 statement_end -> ";"
-VariableDeclaration -> type_keyword identifier statement_end
+Declaration -> type_keyword identifier statement_end
 ExpressionStatement -> Expression statement_end
 PrintStatement -> print_keyword Expression statement_end
-Block -> "{" Statement* "}"
-ConditionalStatement -> if_keyword Expression then_keyword Block else_keyword Block
-                    | if_keyword Expression then_keyword Block
+Block -> "{" StatementList "}"
+Conditional -> IfThenElse | IfThen
+IfThenElse -> if_keyword Expression then_keyword Block else_keyword Block
+IfThen -> if_keyword Expression then_keyword Block
 WhileLoop -> while_keyword Expression Block
 RepeatUntilLoop -> repeat_keyword Block until_keyword Expression statement_end
 
@@ -72,7 +103,7 @@ Expression -> AssignmentExpression_r12
 Full Abstract Expression Grammar (ignoring precedence).
 ```
 Expression -> AssignmentExpression_r12 
-            | OrExpression_r11 
+            | OrExpression_l11 
             | AndExpression_l10 
             | BitOrExpression_l9 
             | BitXorExpression_l8 
@@ -99,8 +130,7 @@ UnaryPrefixExpression_r2    -> unary_prefix_operator Expression | increment_decr
 UnarySuffixExpression_l1    -> identifier increment_decrement_operator
 
 Factor -> Immutable | identifier
-Immutable -> ImmutableExpression | constant | FactorialCall
-ImmutableExpression -> "(" Expression ")"
+Immutable -> "(" Expression ")" | constant | FactorialCall
 FactorialCall ->  factorial_keyword "(" Expression ")"
 constant -> int_literal | float_literal | string_literal
 ```
