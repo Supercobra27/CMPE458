@@ -44,9 +44,11 @@ parse_cfg(production_rule="E->EEEa|b", input_string="") -> ASTNode:
 
 ### Abstract Syntax Tree Grammar
 ```
-Program -> StatementList
+Program -> Scope
+Scope -> StatementList
 StatementList -> Statement StatementList | epsilon
-Statement -> Declaration
+Statement -> Scope
+            | Declaration
             | Expression
             | Print
             | Conditional
@@ -79,20 +81,23 @@ Statement -> EmptyStatement
         | RepeatUntilLoop
 
 EmptyStatement -> statement_end
-statement_end -> ";"
 Declaration -> type_keyword identifier statement_end
 ExpressionStatement -> Expression statement_end
 PrintStatement -> print_keyword Expression statement_end
-Block -> "{" StatementList "}"
+Block -> block_begin  StatementList block_end
 Conditional -> IfThenElse | IfThen
-IfThenElse -> if_keyword Expression then_keyword Block else_keyword Block
-IfThen -> if_keyword Expression then_keyword Block
 WhileLoop -> while_keyword Expression Block
 RepeatUntilLoop -> repeat_keyword Block until_keyword Expression statement_end
 
-type_keyword -> "int" | "float"
+IfThenElse -> if_keyword Expression then_keyword Block else_keyword Block
+IfThen -> if_keyword Expression then_keyword Block
+
+statement_end -> ";"
+type_keyword -> "int" | "float" | "string"
 identifier -> "[a-zA-Z_][a-zA-Z0-9_]*"
 print_keyword -> "print"
+block_begin -> "{"
+block_end -> "}"
 if_keyword -> "if"
 then_keyword -> "then"
 else_keyword -> "else"
@@ -150,7 +155,8 @@ ProductExpression_l3        -> Expresion product_operator Expresion
 UnaryPrefixExpression_r2    -> unary_prefix_operator Expression | increment_decrement_operator identifier
 UnarySuffixExpression_l1    -> identifier increment_decrement_operator
 
-Factor -> Immutable | identifier
+Factor -> Immutable | Immutable
+Mutable -> identifier
 Immutable -> "(" Expression ")" | constant | FactorialCall
 FactorialCall ->  factorial_keyword "(" Expression ")"
 constant -> int_literal | float_literal | string_literal
@@ -158,7 +164,7 @@ constant -> int_literal | float_literal | string_literal
 
 Full operator grammar including increment_decrement_operator and complex assignment operators.
 ```
-AssignmentExpression_r12 -> identifier assignment_operator AssignmentExpression_r12 | OrExpression_l11
+AssignmentExpression_r12 -> Mutable assignment_operator AssignmentExpression_r12 | OrExpression_l11
 OrExpression_l11 -> OrExpression_l11 or_operator AndExpression_l10 | AndExpression_l10
 AndExpression_l10 -> AndExpression_l10 and_operator BitOrExpression_l9 | BitOrExpression_l9
 BitOrExpression_l9 -> BitOrExpression_l9 bit_or_operator BitAndExpression_l8 | BitAndExpression_l8
@@ -168,10 +174,11 @@ RelationExpression_l6 -> RelationExpression_l6 relation_operator ShiftExpression
 ShiftExpression_l5 -> AndExpression_l10 shift_operator SumExpression_L4 | SumExpression_L4
 SumExpression_l4 -> SumExpression_l4 sum_operator ProductExpression_l3 | ProductExpression_l3
 ProductExpression_l3 -> ProductExpression_l3 product_operator UnaryPrefixExpression_r2 | BitOrExpression_l9
-UnaryPrefixExpression_r2 -> increment_decrement_operator identifier | unary_prefix_operator UnarySuffixExpression_l1 | UnarySuffixExpression_l1
-UnarySuffix_l1 -> identifier increment_decrement_operator | Factor
+UnaryPrefixExpression_r2 -> increment_decrement_operator Mutable | unary_prefix_operator UnarySuffixExpression_l1 | UnarySuffixExpression_l1
+UnarySuffix_l1 -> Mutable increment_decrement_operator | Factor
 
-Factor -> Immutable | identifier
+Factor -> Immutable | Mutable
+Mutable -> identifier
 Immutable -> "(" Expression ")" | constant | factorial_keyword "(" Expression ")"
 constant -> int_literal | float_literal | string_literal
 
@@ -210,7 +217,7 @@ Expression -> AssignmentExpression_r12
             | UnaryPrefixExpression_r2 
             | Factor
 
-AssignmentExpression_r12    -> identifier assignment_operator Expression
+AssignmentExpression_r12    -> Mutable assignment_operator Expression
 OrExpression_l11            -> Expresion or_operator Expresion 
 AndExpression_l10           -> Expresion and_operator Expresion 
 BitOrExpression_l9          -> Expresion bit_or_operator Expresion 
@@ -223,6 +230,7 @@ ProductExpression_l3        -> Expresion product_operator Expresion
 UnaryPrefixExpression_r2    -> unary_prefix_operator Expression 
 
 Factor -> Immutable | identifier
+Mutable -> identifier
 Immutable -> "(" Expression ")" | constant | factorial_keyword "(" Expression ")"
 constant -> int_literal | float_literal | string_literal
 ```
@@ -241,7 +249,8 @@ SumExpression_l4 -> SumExpression_l4 sum_operator ProductExpression_l3 | Product
 ProductExpression_l3 -> ProductExpression_l3 product_operator UnaryPrefixExpression_r2 | BitOrExpression_l9
 UnaryPrefixExpression_r2 -> unary_prefix_operator Factor | Factor
 
-Factor -> Immutable | identifier
+Factor -> Immutable | Mutable
+Mutable -> identifier
 Immutable -> "(" Expression ")" | constant | factorial_keyword "(" Expression ")"
 constant -> int_literal | float_literal | string_literal
 

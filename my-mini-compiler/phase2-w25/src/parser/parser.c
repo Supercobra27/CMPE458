@@ -5,6 +5,22 @@
 #include "../../include/lexer.h"
 #include "../../include/tokens.h"
 
+
+/*
+TODO: Delete everything below, and implement just one function to parse according to a grammar rule.abort
+
+We have to define the grammar rules for parsing in a data structure. Grammar is an array(indexed by ParseToken enum) of GrammarRule, GrammarRule is an array of ProductionRule. ProductionRule is an array of ParseToken. 
+
+parsing will be recursive descent parsing. we need two functions to accomplish this:
+- right-recursive parsing function
+- left-recursive parsing function (only for operator grammar that does not have indirect left recursion https://www.geeksforgeeks.org/removing-direct-and-indirect-left-recursion-in-a-grammar/)
+
+Errors will all be of the form:
+- at the token level: just say missing/wrong token (e.g. trying to parse a PT_THEN_KEYWORD and the token is TOKEN_ELSE, then say "expected THEN, got ELSE") Also, do we consume this token, or leave it for the rest of the parser?
+- at the grammar level: say what is missing/unable to parse (e.g. trying to parse a PT_IF_THEN_ELSE and the first token is PT_IF_KEYWORD, but the next token is not a PT_EXPRESSION, then say "expected expression after IF, got something else").
+
+*/
+
 // TODO 1: Add more parsing function declarations for:
 // - if statements: if (condition) { ... }
 // - while loops: while (condition) { ... }

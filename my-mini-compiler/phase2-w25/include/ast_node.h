@@ -8,6 +8,7 @@
 // Basic node types for AST (Abstract Syntax Tree)
 typedef enum _ASTNodeType {
     AST_PROGRAM, 
+    AST_SCOPE,
     AST_STATEMENTLIST,
     AST_STATEMENT,
     AST_DECLARATION,
