@@ -3,8 +3,8 @@
 #include "tokens.h"
 
 typedef enum _ParseToken {
+    // Terminal tokens (these enum values must directly correspond to the token values in tokens.h)
     PT_EOF,
-    PT_EPSILON,
     PT_IDENTIFIER,
     PT_INTEGER_CONST,
     PT_FLOAT_CONST,
@@ -26,6 +26,31 @@ typedef enum _ParseToken {
     PT_LEFT_PAREN,
     PT_RIGHT_PAREN,
 
+    // Operator tokens (still terminals)
+    PT_SINGLE_EQUALS,
+    PT_DOUBLE_PIPE,
+    PT_DOUBLE_AMPERSAND,
+    PT_SINGLE_PIPE,
+    PT_CARET,
+    PT_SINGLE_AMPERSAND,
+    PT_LESS_THAN_EQUALS,
+    PT_LESS_THAN,
+    PT_GREATER_THAN_EQUALS,
+    PT_GREATER_THAN,
+    PT_DOUBLE_EQUALS,
+    PT_BANG_EQUALS,
+    PT_DOUBLE_LESS_THAN,
+    PT_DOUBLE_GREATER_THAN,
+    PT_PLUS,
+    PT_MINUS,
+    PT_STAR,
+    PT_FORWARD_SLASH,
+    PT_PERCENT,
+    PT_TILDE,
+    PT_BANG,
+
+    
+    // Non-terminal tokens
     PT_PROGRAM,
     PT_STATEMENT_LIST,
     PT_STATEMENT,
@@ -38,16 +63,12 @@ typedef enum _ParseToken {
     PT_WHILE_LOOP,
     PT_REPEAT_UNTIL_LOOP,
 
-    PT_IF_THEN_ELSE,
-    PT_IF_THEN,
-
+    PT_OPTIONAL_ELSE_BLOCK,
     PT_STATEMENT_END,
     PT_TYPE_KEYWORD,
     PT_EXPRESSION,
     PT_BLOCK_BEGIN,
     PT_BLOCK_END,
-    PT_WHILE,
-    PT_REPEATUNTIL,
 
     /* Expressions */
     PT_ASSIGNMENTEX_R12,
@@ -76,12 +97,43 @@ typedef enum _ParseToken {
     PT_PRODUCT_OPERATOR,
     PT_UNARY_PREFIX_OPERATOR,
 
+    PT_ASSIGN_EQUAL,
+    PT_LOGICAL_OR,
+    PT_LOGICAL_AND,
+    PT_BITWISE_OR,
+    PT_BITWISE_XOR,
+    PT_BITWISE_AND,
+    PT_COMPARE_EQUAL,
+    PT_COMPARE_NOT_EQUAL,
+    PT_COMPARE_LESS,
+    PT_COMPARE_LESS_EQUAL,
+    PT_COMPARE_GREATER,
+    PT_COMPARE_GREATER_EQUAL,
+    PT_SHIFT_LEFT,
+    PT_SHIFT_RIGHT,
+    PT_ADD,
+    PT_SUBTRACT,
+    PT_MULTIPLY,
+    PT_DIVIDE,
+    PT_MODULO,
+    PT_BITWISE_NOT,
+    PT_LOGICAL_NOT,
+    PT_NEGATE,
+
     PT_IMMUTABLE,
     PT_MUTABLE,
 
     PT_FACTORIAL_CALL,
     PT_CONSTANT,
+    // Used by to indicate the end of a Null-terminated array of ParseToken.
+    PT_NULL,
 } ParseToken;
+
+#define FIRST_TERMINAL_ParseToken PT_EOF
+#define FIRST_NONTERMINAL_ParseToken PT_PROGRAM
+#define COUNT_TERMINAL_ParseToken FIRST_NONTERMINAL_ParseToken
+#define COUNT_NONTERMINAL_ParseToken (PT_NULL - FIRST_NONTERMINAL_ParseToken)
+
 
 typedef enum _ParseErrorType {
     PARSE_ERROR_WRONG_TOKEN,
