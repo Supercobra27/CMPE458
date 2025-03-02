@@ -17,7 +17,7 @@ typedef enum _ParseToken {
     PT_RIGHT_BRACE,
     PT_PRINT_KEYWORD,
     PT_IF_KEYWORD,
-    PT_THEN,
+    PT_THEN_KEYWORD,
     PT_ELSE_KEYWORD,
     PT_WHILE_KEYWORD,
     PT_REPEAT_KEYWORD,
