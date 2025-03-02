@@ -44,25 +44,27 @@ parse_cfg(production_rule="E->EEEa|b", input_string="") -> ASTNode:
 
 ### Abstract Syntax Tree Grammar
 ```
-Program -> Scope
+Program -> StatementList
 Scope -> StatementList
 StatementList -> Statement StatementList | epsilon
 Statement -> Scope
             | Declaration
-            | Expression
+            | EvaluateExpression
             | Print
             | Conditional
             | WhileLoop
             | RepeatUntilLoop
 
 Declaration -> Declaration_Type Identifier
+EvaluateExpression -> Expression
 Print -> Expression
-Conditional -> Expression StatementList StatementList
-WhileLoop -> Expression StatementList
-RepeatUntilLoop -> StatementList Expression
+Conditional -> Expression Scope Scope | Expression Scope
+WhileLoop -> Expression Scope
+RepeatUntilLoop -> Scope Expression
 
-Expression -> Expression operator Expression | int_const | float_const | string_const | identifier | FactorialExpr
+Expression -> Expression operator Expression | int_const | float_const | string_const | Mutable | FactorialExpr
 FactorialExpr -> Expression
+Mutable -> identifier
 ```
 
 ### Statement-Level Grammar
@@ -76,7 +78,8 @@ Statement -> EmptyStatement
         | ExpressionStatement
         | PrintStatement
         | Block
-        | Conditional
+        | IfThenElse
+        | IfThen
         | WhileLoop
         | RepeatUntilLoop
 
@@ -84,14 +87,12 @@ EmptyStatement -> statement_end
 Declaration -> type_keyword identifier statement_end
 ExpressionStatement -> Expression statement_end
 PrintStatement -> print_keyword Expression statement_end
-Block -> block_begin  StatementList block_end
-Conditional -> IfThenElse | IfThen
+Block -> block_begin StatementList block_end
+Conditional -> if_keyword Expression then_keyword Block OptionalElseBlock 
 WhileLoop -> while_keyword Expression Block
 RepeatUntilLoop -> repeat_keyword Block until_keyword Expression statement_end
 
-IfThenElse -> if_keyword Expression then_keyword Block else_keyword Block
-IfThen -> if_keyword Expression then_keyword Block
-
+OptionalElseBlock -> else_keyword Block | epsilon
 statement_end -> ";"
 type_keyword -> "int" | "float" | "string"
 identifier -> "[a-zA-Z_][a-zA-Z0-9_]*"
@@ -192,7 +193,7 @@ or_operator -> "||"
 and_operator -> "&&"
 bit_or_operator -> "|"
 bit_and_operator -> "&"
-relation_operator -> "<" | "<=" | ">" | ">=" | "==" | "!="
+relation_operator -> "<=" | "<" | ">=" | ">" | "==" | "!="
 shift_operator -> "<<" | ">>"
 sum_operator -> "+" | "-"
 product_operator -> "*" | "/" | "%"

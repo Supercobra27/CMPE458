@@ -7,24 +7,37 @@
 
 // Basic node types for AST (Abstract Syntax Tree)
 typedef enum _ASTNodeType {
+    // Terminal nodes that have tokens associated with them
+    AST_IDENTIFIER,
+    AST_TYPE,
+    AST_INTEGER,
+    AST_FLOAT,
+    AST_STRING,
+    // Terminal Nodes that are do not have tokens associated with them
+    AST_OPERATOR,
+
+    // used by grammar rules to indicate that the ParseToken should be ignored in the AST.
+    AST_IGNORE, 
+    // used by grammar rules to indicate that the ParseToken children should be passed directly to the parent node.
+    AST_FROM_CHILDREN,
+    
+    // Non-terminal nodes
     AST_PROGRAM, 
     AST_SCOPE,
-    AST_STATEMENTLIST,
+    AST_STATEMENT_LIST,
     AST_STATEMENT,
     AST_DECLARATION,
     AST_PRINT,
     AST_CODITIONAL,
     AST_WHILE_LOOP,
-    AST_REPEATUNTIL_LOOP,
+    AST_REPEAT_UNTIL_LOOP,
+    AST_EVALUATE_EXPRESSION,
     AST_EXPRESSION,
     AST_FACTORIAL,
-    // the nodes below have tokens associated with them.
-    AST_OPERATOR, 
-    AST_IDENTIFIER,
-    AST_INTEGER,
-    AST_FLOAT,
-    AST_STRING,
-    AST_ERROR
+    AST_MUTABLE, // Mutable is needed to indicate that we have to calculate a memory address and store a value there.
+    AST_ERROR,
+    // used for null-terminated arrays of ASTNodeType
+    AST_NULL,
 } ASTNodeType;
 
 typedef enum {
