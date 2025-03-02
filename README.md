@@ -62,7 +62,7 @@ Conditional -> Expression Scope Scope | Expression Scope
 WhileLoop -> Expression Scope
 RepeatUntilLoop -> Scope Expression
 
-Expression -> Expression operator Expression | int_const | float_const | string_const | Mutable | FactorialExpr
+Expression -> Expression operator Expression | operator Expression | int_const | float_const | string_const | Mutable | FactorialExpr
 FactorialExpr -> Expression
 Mutable -> identifier
 ```
