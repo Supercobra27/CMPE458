@@ -1,37 +1,23 @@
 #ifndef GRAMMAR_H
 #define GRAMMAR_H
-#include "tokens.h"
-#include "parser.h"
-#include <stddef.h>
+#include "parse_tokens.h"
+#include "ast_node.h"
 
-typedef struct _Symbol {
-    union {
-        ASTNodeType non_terminal;
-        TokenType terminal;
-    } symbol;
-    int is_terminal;
-} Symbol;
-
-typedef struct _ProductionRule {
-    Symbol non_terminal; // Terminal that derives the production rule
-    Symbol* symbols;
-    size_t num_symbols;
+typedef struct _ProductionRule
+{
+    // Null-terminated array of tokens
+    ParseToken *tokens;
+    // Null-terminated array of ASTNodeType indicating how to convert each ParseToken into an AST node.
+    ASTNodeType *ast_types;
 } ProductionRule;
 
-
-typedef struct _GrammarRule {
-    ProductionRule* rhs;
-    size_t num_productions;
+typedef struct _GrammarRule
+{
+    // left-hand-side non-terminal for this grammar rule (e.g. PT_STATEMENT_LIST -> PT_STATEMENT PT_STATEMENT_LIST | PT_EPSILON, where PT_STATEMENT_LIST is the left-hand-side)
+    ParseToken lhs;
+    // Null-terminated Array of production rules
+    ProductionRule *rules;
 } GrammarRule;
-
-// Grammar rules
-// Array of Null-terminated arrays of Symbols
-// Each array of Symbols represents a rule in the grammar
-// static const * grammar[] = {};
-
-/**
- * 
-*/
 
 
 #endif /* GRAMMAR_H */

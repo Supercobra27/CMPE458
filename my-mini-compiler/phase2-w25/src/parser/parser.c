@@ -1,10 +1,11 @@
 /* parser.c */
 #include <stdio.h>
 #include <stdlib.h>
-#include "../../include/parser.h"
 #include "../../include/lexer.h"
 #include "../../include/tokens.h"
-
+#include "../../include/parse_tokens.h"
+#include "../../include/grammar.h"
+#include "../../include/parser.h"
 
 /*
 TODO: Delete everything below, and implement just one function to parse according to a grammar rule.abort
@@ -319,30 +320,6 @@ void free_ast(ASTNode *node)
     free_ast(node->right);
     free(node);
 }
-
-
-// We have to define the grammar rules for parsing in a data structure. Grammar is an array(indexed by ParseToken enum) of GrammarRule, GrammarRule is an array of ProductionRule. ProductionRule is an array of ParseToken followed by boolean array of whether the token is included in the AST.
-
-#include <stdbool.h>
-#include "parse_tokens.h"
-
-typedef struct _ProductionRule
-{
-    // Null-terminated array of tokens
-    ParseToken *tokens;
-    // Null-terminated array of ASTNodeType indicating how to convert each ParseToken into an AST node.
-    ASTNodeType *ast_types;
-} ProductionRule;
-
-typedef struct _GrammarRule
-{
-    // left-hand-side non-terminal for this grammar rule (e.g. PT_STATEMENT_LIST -> PT_STATEMENT PT_STATEMENT_LIST | PT_EPSILON, where PT_STATEMENT_LIST is the left-hand-side)
-    ParseToken lhs;
-    // Null-terminated Array of production rules
-    ProductionRule *rules;
-} GrammarRule;
-
-
 
 
 // Main function for testing
@@ -995,6 +972,17 @@ int main()
                 NULL},
         },
     };
+
+    // Validate Grammar
+    for (ParseToken i = FIRST_NONTERMINAL_ParseToken; i < FIRST_NONTERMINAL_ParseToken + COUNT_NONTERMINAL_ParseToken; ++i)
+    {
+        // ensure the grammar has a rule for each non-terminal in the correct index
+        if (grammar[i-FIRST_NONTERMINAL_ParseToken].lhs != i)
+        {
+            printf("Grammar rule for %d is missing\n", i);
+            exit(1);
+        }
+    }
 
 
 
