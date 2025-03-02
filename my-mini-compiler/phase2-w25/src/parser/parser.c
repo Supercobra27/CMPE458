@@ -17,7 +17,7 @@ parsing will be recursive descent parsing. we need two functions to accomplish t
 - left-recursive parsing function (only for operator grammar that does not have indirect left recursion https://www.geeksforgeeks.org/removing-direct-and-indirect-left-recursion-in-a-grammar/)
 
 Errors will all be of the form:
-- at the token level: just say missing/wrong token (e.g. trying to parse a PT_THEN_KEYWORD and the token is TOKEN_ELSE, then say "expected THEN, got ELSE") Also, do we consume this token, or leave it for the rest of the parser?
+- at the token level: just say missing/wrong token (e.g. trying to parse a PT_THEN_KEYWORD_KEYWORD and the token is TOKEN_ELSE, then say "expected THEN, got ELSE") Also, do we consume this token, or leave it for the rest of the parser?
 - at the grammar level: say what is missing/unable to parse (e.g. trying to parse a PT_IF_THEN_ELSE and the first token is PT_IF_KEYWORD, but the next token is not a PT_EXPRESSION, then say "expected expression after IF, got something else").
 
 */
@@ -418,7 +418,7 @@ int main()
             .lhs = PT_CONDITIONAL,
             .rules = (ProductionRule[]){
                 (ProductionRule){
-                    .tokens = (ParseToken[]){PT_IF_KEYWORD, PT_EXPRESSION, PT_THEN, PT_BLOCK, PT_OPTIONAL_ELSE_BLOCK, PT_NULL},
+                    .tokens = (ParseToken[]){PT_IF_KEYWORD, PT_EXPRESSION, PT_THEN_KEYWORD, PT_BLOCK, PT_OPTIONAL_ELSE_BLOCK, PT_NULL},
                     .ast_types = (ASTNodeType[]){AST_IGNORE, AST_EXPRESSION, AST_IGNORE, AST_SCOPE, AST_FROM_CHILDREN, AST_NULL}},
                 NULL},
         },
