@@ -9,6 +9,8 @@ typedef struct _ProductionRule
     ParseToken *tokens;
     // Null-terminated array of ASTNodeType indicating how to convert each ParseToken into an AST node.
     ASTNodeType *ast_types;
+    // This indicates the index of the token that should be promoted to replace parent node. Setting this index to (size_t)-1 indicates that no promotion should occur.
+    size_t promote_index;
 } ProductionRule;
 
 typedef struct _GrammarRule

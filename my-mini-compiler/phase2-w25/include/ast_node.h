@@ -18,12 +18,8 @@ typedef enum _ASTNodeType {
 
     // used by grammar rules to indicate that the ParseToken should be ignored in the AST.
     AST_IGNORE,
-    // used by grammar rules to indicate that the child node should be used to replace the type of the parent node. (e.g. for operators). At most one child should be given this designation
-    AST_PROMOTE, 
     // used by grammar rules to indicate that the ParseToken children should be passed directly to the parent node.
     AST_FROM_CHILDREN,
-    // used by grammar rules to indicate that the ParseToken child should be used to replace the parent node. 
-    AST_FROM_PROMOTED_CHILD,
     
     // Non-terminal nodes
     AST_PROGRAM, 
