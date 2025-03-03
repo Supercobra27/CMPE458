@@ -86,17 +86,17 @@ const char *token_type_to_string(TokenType type)
     {
     case TOKEN_EOF:
         return "EOF";
-    case TOKEN_INTEGER:
+    case TOKEN_INTEGER_CONST:
         return "INTEGER";
-    case TOKEN_FLOAT:
+    case TOKEN_FLOAT_CONST:
         return "FLOAT";
-    case TOKEN_OPERATOR:
+    case TOKEN_SINGLE_EQUALS: // got to change
         return "OPERATOR";
     case TOKEN_KEYWORD:
         return "KEYWORD";
     case TOKEN_IDENTIFIER:
         return "IDENTIFIER";
-    case TOKEN_STRING_LITERAL:
+    case TOKEN_STRING_CONST:
         return "STRING_LITERAL";
     case TOKEN_ERROR:
         return "ERROR";
@@ -206,7 +206,7 @@ Token get_next_token(const char *input, int *pos)
     if (isdigit(c))
     {
         int i = 0;
-        token.type = TOKEN_INTEGER;
+        token.type = TOKEN_INTEGER_CONST;
 
         do
         {
@@ -215,7 +215,7 @@ Token get_next_token(const char *input, int *pos)
                 token.lexeme[i++] = c;
                 token.lexeme[i++] = cn;
                 (*pos) += 2; // skip over the starter and dot so not to return error for unknown character
-                token.type = TOKEN_FLOAT;
+                token.type = TOKEN_FLOAT_CONST;
             }
             else
             {
@@ -309,7 +309,7 @@ Token get_next_token(const char *input, int *pos)
             token.lexeme[i++] = c; // store closing quote
             token.lexeme[i] = '\0';
             (*pos)++;
-            token.type = TOKEN_STRING_LITERAL;
+            token.type = TOKEN_STRING_CONST;
             token.position.col_end += i - 1;
             return token;
         }
@@ -327,7 +327,7 @@ Token get_next_token(const char *input, int *pos)
     int operator_len = isOperatorStr(input + *pos);
     if (operator_len)
     {
-        token.type = TOKEN_OPERATOR;
+        token.type = (TokenType)(findMappableIndex(input + *pos)+22);
         strncpy(token.lexeme, input + *pos, operator_len);
         (*pos) += operator_len;
         return token;
@@ -337,7 +337,7 @@ Token get_next_token(const char *input, int *pos)
     const char *const punctuation = ";{}(),";
     if (strchr(punctuation, c))
     {
-        token.type = TOKEN_PUNCTUATOR;
+        token.type = TOKEN_SEMICOLON;
         token.lexeme[0] = c;
         token.lexeme[1] = '\0';
         (*pos)++;

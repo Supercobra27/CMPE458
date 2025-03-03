@@ -44,7 +44,7 @@ static void parse_error(ParseError error, Token token)
     // - Invalid operator
     // - Function call errors
 
-    printf("Parse Error at line %d: ", token.line);
+    printf("Parse Error at line %d: ", token.position.line);
     switch (error)
     {
     case PARSE_ERROR_UNEXPECTED_TOKEN:

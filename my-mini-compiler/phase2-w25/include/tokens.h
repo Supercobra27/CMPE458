@@ -9,24 +9,21 @@
 /* Token types that need to be recognized by the lexer */
 typedef enum
 {
+    /* Original Tokens */
     TOKEN_EOF,
-    TOKEN_INTEGER, // regex: ^[0-9]+$
-    TOKEN_FLOAT,
-    TOKEN_OPERATOR,
-    TOKEN_KEYWORD,        // regex: ^(if|else|while|factorial|repeat|until|int|string)$
     TOKEN_IDENTIFIER,     // regex: ^[a-zA-Z_][a-zA-Z0-9_]*$
-    TOKEN_STRING_LITERAL, // regex: ^"[ -~]*"$
-    TOKEN_PUNCTUATOR,     // ispunct()
     TOKEN_ERROR,
 
     /* New Tokens for Parsing */
 
     /* Values */
+    TOKEN_INTEGER_CONST, // regex: ^[0-9]+$
     TOKEN_FLOAT_CONST,
-    TOKEN_INTEGER_CONST,
-    TOKEN_STRING_CONST,
+    TOKEN_STRING_CONST, // regex: ^"[ -~]*"$
 
     /* Keywords */
+    TOKEN_KEYWORD, // regex: ^(if|else|while|factorial|repeat|until|int|string)$
+
     TOKEN_INT_KEYWORD,
     TOKEN_FLOAT_KEYWORD,
     TOKEN_STRING_KEYWORD,
@@ -40,11 +37,13 @@ typedef enum
     TOKEN_FACTORIAL_KEYWORD,
 
     /* Punctuators */
+    TOKEN_PUNCTUATOR, // ispunct()
+
     TOKEN_SEMICOLON,
-    TOKEN_LBRACE,
-    TOKEN_RBRACE,
-    TOKEN_LPAREN,
-    TOKEN_RPAREN,
+    TOKEN_LEFT_BRACE,
+    TOKEN_RIGHT_BRACE,
+    TOKEN_LEFT_PAREN,
+    TOKEN_RIGHT_PAREN,
 
     /* Operators */
     TOKEN_SINGLE_EQUALS,
