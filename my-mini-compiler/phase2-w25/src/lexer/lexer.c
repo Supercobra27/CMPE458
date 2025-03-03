@@ -14,10 +14,27 @@ void print_error(ErrorType error, int line, const char *lexeme)
     printf("print_error unimplemented\n");
 }
 
+// punctuators
+static const char *punctuators[] = {
+";", "{", "}", "(", ")", ","
+};
+
+static int is_punctuator(const char *str)
+{
+    for (int i = 0; i < 6; i++)
+    {
+        if (strcmp(str, punctuators[i]) == 0)
+        {
+            return i+1; // 1 to say it found something
+        }
+    }
+    return 0;
+}
+
 // keywords
 static const char *keywords[] = {
-    "if", "else", "while", "factorial",
-    "repeat", "until", "int", "string"};
+    "int", "float", "string", "print", "if", "then", "else", "while",
+    "repeat", "until", "factorial"};
 static const int num_keywords = sizeof(keywords) / sizeof(keywords[0]);
 
 // to check if a string is a keyword
@@ -27,7 +44,7 @@ static int is_keyword(const char *str)
     {
         if (strcmp(str, keywords[i]) == 0)
         {
-            return 1;
+            return i+1; // 1 to say it found something
         }
     }
     return 0;
@@ -82,6 +99,7 @@ const char *const error_type_to_error_message(ErrorType error)
 
 const char *token_type_to_string(TokenType type)
 {
+    // need to change to work within ranges or its a huge case statement
     switch (type)
     {
     case TOKEN_EOF:
@@ -92,15 +110,15 @@ const char *token_type_to_string(TokenType type)
         return "FLOAT";
     case TOKEN_SINGLE_EQUALS: // got to change
         return "OPERATOR";
-    case TOKEN_KEYWORD:
-        return "KEYWORD";
+    case TOKEN_INT_KEYWORD:
+        return "KEYWORD"; // got to change
     case TOKEN_IDENTIFIER:
         return "IDENTIFIER";
     case TOKEN_STRING_CONST:
         return "STRING_LITERAL";
     case TOKEN_ERROR:
         return "ERROR";
-    case TOKEN_PUNCTUATOR:
+    case TOKEN_SEMICOLON: // got to change
         return "PUNCTUATOR";
     default:
         return "UNKNOWN";
@@ -245,9 +263,10 @@ Token get_next_token(const char *input, int *pos)
         token.position.col_end += i - 1;
 
         // Check if it's a keyword
-        if (is_keyword(token.lexeme))
+        int keyword_id = is_keyword(token.lexeme);
+        if (keyword_id)
         {
-            token.type = TOKEN_KEYWORD;
+            token.type = (TokenType)(i-1+TOKEN_INT_KEYWORD);
         }
         else
         {
@@ -327,7 +346,7 @@ Token get_next_token(const char *input, int *pos)
     int operator_len = isOperatorStr(input + *pos);
     if (operator_len)
     {
-        token.type = (TokenType)(findMappableIndex(input + *pos)+22);
+        token.type = (TokenType)(findMappableIndex(input + *pos)+TOKEN_SINGLE_EQUALS);
         strncpy(token.lexeme, input + *pos, operator_len);
         (*pos) += operator_len;
         return token;
@@ -335,9 +354,10 @@ Token get_next_token(const char *input, int *pos)
 
     // Handle punctuation & delimiters
     const char *const punctuation = ";{}(),";
-    if (strchr(punctuation, c))
+    char* punctcheck = strchr(punctuation, c);
+    if (punctcheck)
     {
-        token.type = TOKEN_SEMICOLON;
+        token.type = (TokenType)((punctcheck-punctuation)+TOKEN_SEMICOLON);
         token.lexeme[0] = c;
         token.lexeme[1] = '\0';
         (*pos)++;

@@ -21,9 +21,7 @@ typedef enum
     TOKEN_FLOAT_CONST,
     TOKEN_STRING_CONST, // regex: ^"[ -~]*"$
 
-    /* Keywords */
-    TOKEN_KEYWORD, // regex: ^(if|else|while|factorial|repeat|until|int|string)$
-
+    /* Keywords */ // regex: ^(if|else|while|factorial|repeat|until|int|string)$
     TOKEN_INT_KEYWORD,
     TOKEN_FLOAT_KEYWORD,
     TOKEN_STRING_KEYWORD,
@@ -37,8 +35,6 @@ typedef enum
     TOKEN_FACTORIAL_KEYWORD,
 
     /* Punctuators */
-    TOKEN_PUNCTUATOR, // ispunct()
-
     TOKEN_SEMICOLON,
     TOKEN_LEFT_BRACE,
     TOKEN_RIGHT_BRACE,
