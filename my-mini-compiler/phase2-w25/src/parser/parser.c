@@ -8,12 +8,12 @@
 #include "../../include/parser.h"
 
 /*
-TODO: Delete everything below, and implement just one function to parse according to a grammar rule.abort
+TODO: Delete everything below, and implement just one function to parse according to a grammar rule.
 
-We have to define the grammar rules for parsing in a data structure. Grammar is an array(indexed by ParseToken enum) of GrammarRule, GrammarRule is an array of ProductionRule. ProductionRule is an array of ParseToken. 
+We have to define the grammar rules for parsing in a data structure. Grammar is an array(indexed by ParseToken enum) of GrammarRule, GrammarRule is an array of ProductionRule. ProductionRule is an array of ParseToken. TODO: incorporate promotion_index as needed into the ProductionRules.
 
-parsing will be recursive descent parsing. we need two functions to accomplish this:
-- right-recursive parsing function
+parsing will be recursive descent parsing. Need 1 function to accomplish this that handles two cases:
+- right-recursive parsing (standard)
 - left-recursive parsing function (only for operator grammar that does not have indirect left recursion https://www.geeksforgeeks.org/removing-direct-and-indirect-left-recursion-in-a-grammar/)
 
 Errors will all be of the form:
