@@ -13,12 +13,12 @@ typedef enum _ASTNodeType {
     AST_INTEGER,
     AST_FLOAT,
     AST_STRING,
-    // Terminal Nodes that are do not have tokens associated with them
-    AST_OPERATOR,
+    // Terminal Nodes that are do not have tokens associated with them. These Nodes will be selected for promotion.
+    AST_OPERATION,
 
-    // used by grammar rules to indicate that the ParseToken should be ignored in the AST.
+    // used by grammar rules to indicate that the ParseToken and its subtree should be ignored in the AST.
     AST_IGNORE,
-    // used by grammar rules to indicate that the ParseToken children should be passed directly to the parent node.
+    // used by grammar rules to indicate that the ParseToken's children should be passed directly to the parent node.
     AST_FROM_CHILDREN,
     
     // Non-terminal nodes

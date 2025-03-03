@@ -419,7 +419,7 @@ int main()
             .rules = (ProductionRule[]){
                 (ProductionRule){
                     .tokens = (ParseToken[]){PT_IF_KEYWORD, PT_EXPRESSION, PT_THEN, PT_BLOCK, PT_OPTIONAL_ELSE_BLOCK, PT_NULL},
-                    .ast_types = (ASTNodeType[]){AST_IGNORE, AST_FROM_PROMOTED_CHILD, AST_IGNORE, AST_SCOPE, AST_FROM_CHILDREN, AST_NULL}},
+                    .ast_types = (ASTNodeType[]){AST_IGNORE, AST_EXPRESSION, AST_IGNORE, AST_SCOPE, AST_FROM_CHILDREN, AST_NULL}},
                 NULL},
         },
         (GrammarRule){
@@ -501,8 +501,9 @@ int main()
             .lhs = PT_ASSIGNMENTEX_R12,
             .rules = (ProductionRule[]){
                 (ProductionRule){
-                    .tokens = (ParseToken[]){PT_MUTABLE, PT_ASSIGNMENT_OPERATOR, PT_OREX_L11, PT_NULL},
-                    .ast_types = (ASTNodeType[]){AST_EXPRESSION, AST_PROMOTE, AST_EXPRESSION, AST_NULL}},
+                    .tokens = (ParseToken[]){PT_ASSIGNMENTEX_R12, PT_ASSIGNMENT_OPERATOR, PT_OREX_L11, PT_NULL},
+                    .ast_types = (ASTNodeType[]){AST_EXPRESSION, AST_OPERATION, AST_EXPRESSION, AST_NULL},
+                    .promote_index = 1},
                 (ProductionRule){
                     .tokens = (ParseToken[]){PT_OREX_L11, PT_NULL},
                     .ast_types = (ASTNodeType[]){AST_FROM_CHILDREN, AST_NULL}},
@@ -622,11 +623,29 @@ int main()
             .lhs = PT_FACTOR,
             .rules = (ProductionRule[]){
                 (ProductionRule){
-                    .tokens = (ParseToken[]){PT_IMMUTABLE, PT_NULL},
-                    .ast_types = (ASTNodeType[]){AST_FROM_CHILDREN, AST_NULL}},
+                    .tokens = (ParseToken[]){PT_LEFT_PAREN, PT_EXPRESSION, PT_RIGHT_PAREN, PT_NULL},
+                    .ast_types = (ASTNodeType[]){AST_IGNORE, AST_FROM_CHILDREN, AST_IGNORE, AST_NULL},
+                    .promote_index = 1},
                 (ProductionRule){
-                    .tokens = (ParseToken[]){PT_MUTABLE, PT_NULL},
-                    .ast_types = (ASTNodeType[]){AST_MUTABLE, AST_NULL}},
+                    .tokens = (ParseToken[]){PT_INTEGER_CONST, PT_NULL},
+                    .ast_types = (ASTNodeType[]){AST_INTEGER, AST_NULL},
+                    .promote_index = 0},
+                (ProductionRule){
+                    .tokens = (ParseToken[]){PT_FLOAT_CONST, PT_NULL},
+                    .ast_types = (ASTNodeType[]){AST_FLOAT, AST_NULL},
+                    .promote_index = 0},
+                (ProductionRule){
+                    .tokens = (ParseToken[]){PT_STRING_CONST, PT_NULL},
+                    .ast_types = (ASTNodeType[]){AST_STRING, AST_NULL},
+                    .promote_index = 0},
+                (ProductionRule){
+                    .tokens = (ParseToken[]){PT_FACTORIAL_CALL, PT_NULL},
+                    .ast_types = (ASTNodeType[]){AST_FROM_CHILDREN, AST_NULL},
+                    .promote_index = 0},
+                (ProductionRule){
+                    .tokens = (ParseToken[]){PT_IDENTIFIER, PT_NULL},
+                    .ast_types = (ASTNodeType[]){AST_IDENTIFIER, AST_NULL},
+                    .promote_index = 0},
                 NULL},
         },
 
@@ -635,7 +654,8 @@ int main()
             .rules = (ProductionRule[]){
                 (ProductionRule){
                     .tokens = (ParseToken[]){PT_ASSIGN_EQUAL, PT_NULL},
-                    .ast_types = (ASTNodeType[]){AST_ASSIGN_EQUAL, AST_NULL}},
+                    .ast_types = (ASTNodeType[]){AST_ASSIGN_EQUAL, AST_NULL},
+                    .promote_index = 0},
                 NULL},
         },
         (GrammarRule){
@@ -683,22 +703,22 @@ int main()
             .rules = (ProductionRule[]){
                 (ProductionRule){
                     .tokens = (ParseToken[]){PT_COMPARE_LESS_EQUAL, PT_NULL},
-                    .ast_types = (ASTNodeType[]){AST_OPERATOR, AST_NULL}},
+                    .ast_types = (ASTNodeType[]){AST_OPERATION, AST_NULL}},
                 (ProductionRule){
                     .tokens = (ParseToken[]){PT_COMPARE_LESS, PT_NULL},
-                    .ast_types = (ASTNodeType[]){AST_OPERATOR, AST_NULL}},
+                    .ast_types = (ASTNodeType[]){AST_OPERATION, AST_NULL}},
                 (ProductionRule){
                     .tokens = (ParseToken[]){PT_COMPARE_GREATER_EQUAL, PT_NULL},
-                    .ast_types = (ASTNodeType[]){AST_OPERATOR, AST_NULL}},
+                    .ast_types = (ASTNodeType[]){AST_OPERATION, AST_NULL}},
                 (ProductionRule){
                     .tokens = (ParseToken[]){PT_COMPARE_GREATER, PT_NULL},
-                    .ast_types = (ASTNodeType[]){AST_OPERATOR, AST_NULL}},
+                    .ast_types = (ASTNodeType[]){AST_OPERATION, AST_NULL}},
                 (ProductionRule){
                     .tokens = (ParseToken[]){PT_COMPARE_EQUAL, PT_NULL},
-                    .ast_types = (ASTNodeType[]){AST_OPERATOR, AST_NULL}},
+                    .ast_types = (ASTNodeType[]){AST_OPERATION, AST_NULL}},
                 (ProductionRule){
                     .tokens = (ParseToken[]){PT_COMPARE_NOT_EQUAL, PT_NULL},
-                    .ast_types = (ASTNodeType[]){AST_OPERATOR, AST_NULL}},
+                    .ast_types = (ASTNodeType[]){AST_OPERATION, AST_NULL}},
                 NULL},
         },
         (GrammarRule){
@@ -706,10 +726,10 @@ int main()
             .rules = (ProductionRule[]){
                 (ProductionRule){
                     .tokens = (ParseToken[]){PT_SHIFT_LEFT, PT_NULL},
-                    .ast_types = (ASTNodeType[]){AST_OPERATOR, AST_NULL}},
+                    .ast_types = (ASTNodeType[]){AST_OPERATION, AST_NULL}},
                 (ProductionRule){
                     .tokens = (ParseToken[]){PT_SHIFT_RIGHT, PT_NULL},
-                    .ast_types = (ASTNodeType[]){AST_OPERATOR, AST_NULL}},
+                    .ast_types = (ASTNodeType[]){AST_OPERATION, AST_NULL}},
                 NULL},
         },
         (GrammarRule){
@@ -717,10 +737,10 @@ int main()
             .rules = (ProductionRule[]){
                 (ProductionRule){
                     .tokens = (ParseToken[]){PT_ADD, PT_NULL},
-                    .ast_types = (ASTNodeType[]){AST_OPERATOR, AST_NULL}},
+                    .ast_types = (ASTNodeType[]){AST_OPERATION, AST_NULL}},
                 (ProductionRule){
                     .tokens = (ParseToken[]){PT_SUBTRACT, PT_NULL},
-                    .ast_types = (ASTNodeType[]){AST_OPERATOR, AST_NULL}},
+                    .ast_types = (ASTNodeType[]){AST_OPERATION, AST_NULL}},
                 NULL},
         },
         (GrammarRule){
@@ -728,13 +748,13 @@ int main()
             .rules = (ProductionRule[]){
                 (ProductionRule){
                     .tokens = (ParseToken[]){PT_MULTIPLY, PT_NULL},
-                    .ast_types = (ASTNodeType[]){AST_OPERATOR, AST_NULL}},
+                    .ast_types = (ASTNodeType[]){AST_OPERATION, AST_NULL}},
                 (ProductionRule){
                     .tokens = (ParseToken[]){PT_DIVIDE, PT_NULL},
-                    .ast_types = (ASTNodeType[]){AST_OPERATOR, AST_NULL}},
+                    .ast_types = (ASTNodeType[]){AST_OPERATION, AST_NULL}},
                 (ProductionRule){
                     .tokens = (ParseToken[]){PT_MODULO, PT_NULL},
-                    .ast_types = (ASTNodeType[]){AST_OPERATOR, AST_NULL}},
+                    .ast_types = (ASTNodeType[]){AST_OPERATION, AST_NULL}},
                 NULL},
         },
         (GrammarRule){
@@ -742,13 +762,13 @@ int main()
             .rules = (ProductionRule[]){
                 (ProductionRule){
                     .tokens = (ParseToken[]){PT_BITWISE_NOT, PT_NULL},
-                    .ast_types = (ASTNodeType[]){AST_OPERATOR, AST_NULL}},
+                    .ast_types = (ASTNodeType[]){AST_OPERATION, AST_NULL}},
                 (ProductionRule){
                     .tokens = (ParseToken[]){PT_LOGICAL_NOT, PT_NULL},
-                    .ast_types = (ASTNodeType[]){AST_OPERATOR, AST_NULL}},
+                    .ast_types = (ASTNodeType[]){AST_OPERATION, AST_NULL}},
                 (ProductionRule){
                     .tokens = (ParseToken[]){PT_NEGATE, PT_NULL},
-                    .ast_types = (ASTNodeType[]){AST_OPERATOR, AST_NULL}},
+                    .ast_types = (ASTNodeType[]){AST_OPERATION, AST_NULL}},
                 NULL},
         },
         (GrammarRule){
@@ -929,47 +949,11 @@ int main()
         },
 
         (GrammarRule){
-            .lhs = PT_IMMUTABLE,
-            .rules = (ProductionRule[]){
-                (ProductionRule){
-                    .tokens = (ParseToken[]){PT_LEFT_PAREN, PT_EXPRESSION, PT_RIGHT_PAREN, PT_NULL},
-                    .ast_types = (ASTNodeType[]){AST_IGNORE, AST_EXPRESSION, AST_IGNORE, AST_NULL}},
-                (ProductionRule){
-                    .tokens = (ParseToken[]){PT_CONSTANT, PT_NULL},
-                    .ast_types = (ASTNodeType[]){AST_FROM_CHILDREN, AST_NULL}},
-                (ProductionRule){
-                    .tokens = (ParseToken[]){PT_FACTORIAL_CALL, PT_NULL},
-                    .ast_types = (ASTNodeType[]){AST_FACTORIAL, AST_NULL}},
-                NULL},
-        },
-        (GrammarRule){
-            .lhs = PT_MUTABLE,
-            .rules = (ProductionRule[]){
-                (ProductionRule){
-                    .tokens = (ParseToken[]){PT_IDENTIFIER, PT_NULL},
-                    .ast_types = (ASTNodeType[]){AST_IDENTIFIER, AST_NULL}},
-                NULL},
-        },
-        (GrammarRule){
             .lhs = PT_FACTORIAL_CALL,
             .rules = (ProductionRule[]){
                 (ProductionRule){
                     .tokens = (ParseToken[]){PT_FACTORIAL_KEYWORD, PT_LEFT_PAREN, PT_EXPRESSION, PT_RIGHT_PAREN, PT_NULL},
                     .ast_types = (ASTNodeType[]){AST_IGNORE, AST_IGNORE, AST_EXPRESSION, AST_IGNORE, AST_NULL}},
-                NULL},
-        },
-        (GrammarRule){
-            .lhs = PT_CONSTANT,
-            .rules = (ProductionRule[]){
-                (ProductionRule){
-                    .tokens = (ParseToken[]){PT_INTEGER_CONST, PT_NULL},
-                    .ast_types = (ASTNodeType[]){AST_INTEGER, AST_NULL}},
-                (ProductionRule){
-                    .tokens = (ParseToken[]){PT_FLOAT_CONST, PT_NULL},
-                    .ast_types = (ASTNodeType[]){AST_FLOAT, AST_NULL}},
-                (ProductionRule){
-                    .tokens = (ParseToken[]){PT_STRING_CONST, PT_NULL},
-                    .ast_types = (ASTNodeType[]){AST_STRING, AST_NULL}},
                 NULL},
         },
     };
@@ -983,7 +967,12 @@ int main()
             printf("Grammar rule for %d is missing\n", i);
             exit(1);
         }
+        // remove all promotion_index for now until it is implemented properly.
+        for (ProductionRule *rule = grammar[i-FIRST_NONTERMINAL_ParseToken].rules; rule != NULL; ++rule)
+            rule->promote_index = -1;
     }
+    // TODO: Must ensure there is no indirect left recursion in the grammar. (direct left recursion will be handled by the parser).
+     
 
 
 

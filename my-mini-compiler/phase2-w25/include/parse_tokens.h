@@ -120,9 +120,6 @@ typedef enum _ParseToken {
     PT_LOGICAL_NOT,
     PT_NEGATE,
 
-    PT_IMMUTABLE,
-    PT_MUTABLE,
-
     PT_FACTORIAL_CALL,
     PT_CONSTANT,
     // Used by to indicate the end of a Null-terminated array of ParseToken.
