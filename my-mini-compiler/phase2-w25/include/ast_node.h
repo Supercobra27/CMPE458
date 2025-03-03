@@ -17,9 +17,13 @@ typedef enum _ASTNodeType {
     AST_OPERATOR,
 
     // used by grammar rules to indicate that the ParseToken should be ignored in the AST.
-    AST_IGNORE, 
+    AST_IGNORE,
+    // used by grammar rules to indicate that the child node should be used to replace the type of the parent node. (e.g. for operators). At most one child should be given this designation
+    AST_PROMOTE, 
     // used by grammar rules to indicate that the ParseToken children should be passed directly to the parent node.
     AST_FROM_CHILDREN,
+    // used by grammar rules to indicate that the ParseToken child should be used to replace the parent node. 
+    AST_FROM_PROMOTED_CHILD,
     
     // Non-terminal nodes
     AST_PROGRAM, 
@@ -31,10 +35,32 @@ typedef enum _ASTNodeType {
     AST_CODITIONAL,
     AST_WHILE_LOOP,
     AST_REPEAT_UNTIL_LOOP,
-    AST_EVALUATE_EXPRESSION,
     AST_EXPRESSION,
+
+    AST_ASSIGN_EQUAL,
+    AST_LOGICAL_OR,
+    AST_LOGICAL_AND,
+    AST_BITWISE_OR,
+    AST_BITWISE_XOR,
+    AST_BITWISE_AND,
+    AST_COMPARE_EQUAL,
+    AST_COMPARE_NOT_EQUAL,
+    AST_COMPARE_LESS_EQUAL,
+    AST_COMPARE_LESS_THAN,
+    AST_COMPARE_GREATER_EQUAL,
+    AST_COMPARE_GREATER_THAN,
+    AST_SHIFT_LEFT,
+    AST_SHIFT_RIGHT,
+    AST_ADD,
+    AST_SUBTRACT,
+    AST_MULTIPLY,
+    AST_DIVIDE,
+    AST_MODULO,
+    AST_BITWISE_NOT,
+    AST_LOGICAL_NOT,
+    AST_NEGATE,
     AST_FACTORIAL,
-    AST_MUTABLE, // Mutable is needed to indicate that we have to calculate a memory address and store a value there.
+
     AST_ERROR,
     // used for null-terminated arrays of ASTNodeType
     AST_NULL,

@@ -356,7 +356,7 @@ int main()
                     .ast_types = (ASTNodeType[]){AST_DECLARATION, AST_NULL}},
                 (ProductionRule){
                     .tokens = (ParseToken[]){PT_EXPRESSION_STATEMENT, PT_NULL},
-                    .ast_types = (ASTNodeType[]){AST_EVALUATE_EXPRESSION, AST_NULL}},
+                    .ast_types = (ASTNodeType[]){AST_EXPRESSION, AST_NULL}},
                 (ProductionRule){
                     .tokens = (ParseToken[]){PT_PRINT_STATEMENT, PT_NULL},
                     .ast_types = (ASTNodeType[]){AST_PRINT, AST_NULL}},
@@ -419,7 +419,7 @@ int main()
             .rules = (ProductionRule[]){
                 (ProductionRule){
                     .tokens = (ParseToken[]){PT_IF_KEYWORD, PT_EXPRESSION, PT_THEN, PT_BLOCK, PT_OPTIONAL_ELSE_BLOCK, PT_NULL},
-                    .ast_types = (ASTNodeType[]){AST_IGNORE, AST_EXPRESSION, AST_IGNORE, AST_SCOPE, AST_FROM_CHILDREN, AST_NULL}},
+                    .ast_types = (ASTNodeType[]){AST_IGNORE, AST_FROM_PROMOTED_CHILD, AST_IGNORE, AST_SCOPE, AST_FROM_CHILDREN, AST_NULL}},
                 NULL},
         },
         (GrammarRule){
@@ -496,12 +496,13 @@ int main()
                     .ast_types = (ASTNodeType[]){AST_IGNORE, AST_NULL}},
                 NULL},
         },
+        // TODO: fix these rules
         (GrammarRule){
             .lhs = PT_ASSIGNMENTEX_R12,
             .rules = (ProductionRule[]){
                 (ProductionRule){
                     .tokens = (ParseToken[]){PT_MUTABLE, PT_ASSIGNMENT_OPERATOR, PT_OREX_L11, PT_NULL},
-                    .ast_types = (ASTNodeType[]){AST_MUTABLE, AST_FROM_CHILDREN, AST_EXPRESSION, AST_NULL}},
+                    .ast_types = (ASTNodeType[]){AST_EXPRESSION, AST_PROMOTE, AST_EXPRESSION, AST_NULL}},
                 (ProductionRule){
                     .tokens = (ParseToken[]){PT_OREX_L11, PT_NULL},
                     .ast_types = (ASTNodeType[]){AST_FROM_CHILDREN, AST_NULL}},
@@ -634,7 +635,7 @@ int main()
             .rules = (ProductionRule[]){
                 (ProductionRule){
                     .tokens = (ParseToken[]){PT_ASSIGN_EQUAL, PT_NULL},
-                    .ast_types = (ASTNodeType[]){AST_OPERATOR, AST_NULL}},
+                    .ast_types = (ASTNodeType[]){AST_ASSIGN_EQUAL, AST_NULL}},
                 NULL},
         },
         (GrammarRule){
@@ -642,7 +643,7 @@ int main()
             .rules = (ProductionRule[]){
                 (ProductionRule){
                     .tokens = (ParseToken[]){PT_LOGICAL_OR, PT_NULL},
-                    .ast_types = (ASTNodeType[]){AST_OPERATOR, AST_NULL}},
+                    .ast_types = (ASTNodeType[]){AST_LOGICAL_OR, AST_NULL}},
                 NULL},
         },
         (GrammarRule){
@@ -650,7 +651,7 @@ int main()
             .rules = (ProductionRule[]){
                 (ProductionRule){
                     .tokens = (ParseToken[]){PT_LOGICAL_AND, PT_NULL},
-                    .ast_types = (ASTNodeType[]){AST_OPERATOR, AST_NULL}},
+                    .ast_types = (ASTNodeType[]){AST_LOGICAL_AND, AST_NULL}},
                 NULL},
         },
         (GrammarRule){
@@ -658,7 +659,7 @@ int main()
             .rules = (ProductionRule[]){
                 (ProductionRule){
                     .tokens = (ParseToken[]){PT_BITWISE_OR, PT_NULL},
-                    .ast_types = (ASTNodeType[]){AST_OPERATOR, AST_NULL}},
+                    .ast_types = (ASTNodeType[]){AST_BITWISE_OR, AST_NULL}},
                 NULL},
         },
         (GrammarRule){
@@ -666,7 +667,7 @@ int main()
             .rules = (ProductionRule[]){
                 (ProductionRule){
                     .tokens = (ParseToken[]){PT_BITWISE_XOR, PT_NULL},
-                    .ast_types = (ASTNodeType[]){AST_OPERATOR, AST_NULL}},
+                    .ast_types = (ASTNodeType[]){AST_BITWISE_XOR, AST_NULL}},
                 NULL},
         },
         (GrammarRule){
@@ -674,7 +675,7 @@ int main()
             .rules = (ProductionRule[]){
                 (ProductionRule){
                     .tokens = (ParseToken[]){PT_BITWISE_AND, PT_NULL},
-                    .ast_types = (ASTNodeType[]){AST_OPERATOR, AST_NULL}},
+                    .ast_types = (ASTNodeType[]){AST_BITWISE_AND, AST_NULL}},
                 NULL},
         },
         (GrammarRule){

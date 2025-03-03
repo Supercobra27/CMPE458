@@ -43,28 +43,75 @@ parse_cfg(production_rule="E->EEEa|b", input_string="") -> ASTNode:
 - to add `break` and `continue` keywords for loops
 
 ### Abstract Syntax Tree Grammar
+- the ^ symbol following a token indicates that that token is promoted in-place of the left-hand side of the production rule
+- the @ symbol following a token indicates that it's children are promoted to replace it
 ```
 Program -> StatementList
 Scope -> StatementList
 StatementList -> Statement StatementList | epsilon
 Statement -> Scope
             | Declaration
-            | EvaluateExpression
+            | Evaluate
             | Print
             | Conditional
             | WhileLoop
             | RepeatUntilLoop
 
 Declaration -> Declaration_Type Identifier
-EvaluateExpression -> Expression
+Evaluate -> Expression
 Print -> Expression
 Conditional -> Expression Scope Scope | Expression Scope
 WhileLoop -> Expression Scope
 RepeatUntilLoop -> Scope Expression
 
-Expression -> Expression operator Expression | operator Expression | int_const | float_const | string_const | Mutable | FactorialExpr
-FactorialExpr -> Expression
-Mutable -> identifier
+Expression -> Operation^ | int_const^ | float_const^ | string_const^ | identifier^
+Operation -> AssignEqual^
+           | LogicalOr^
+           | LogicalAnd^ 
+           | BitwiseOr^
+           | BitwiseXor^
+           | BitwiseAnd^
+           | CompareEqual^
+           | CompareNotEqual^
+           | CompareLessEqual^
+           | CompareLessThan^
+           | CompareGreaterEqual^
+           | CompareGreaterThan^
+           | ShiftLeft^
+           | ShiftRight^
+           | Add^
+           | Subtract^
+           | Multiply^
+           | Divide^
+           | Modulo^
+           | BitwiseNot^
+           | LogicalNot^
+           | Negate^
+           | Factorial^
+
+AssignEqual         -> Expression Expression
+LogicalOr           -> Expression Expression
+LogicalAnd          -> Expression Expression
+BitwiseOr           -> Expression Expression
+BitwiseXor          -> Expression Expression
+BitwiseAnd          -> Expression Expression
+CompareEqual        -> Expression Expression
+CompareNotEqual     -> Expression Expression
+CompareLessEqual    -> Expression Expression
+CompareLessThan     -> Expression Expression
+CompareGreaterEqual -> Expression Expression
+CompareGreaterThan  -> Expression Expression
+ShiftLeft           -> Expression Expression
+ShiftRight          -> Expression Expression
+Add                 -> Expression Expression
+Subtract            -> Expression Expression
+Multiply            -> Expression Expression
+Divide              -> Expression Expression
+Modulo              -> Expression Expression
+BitwiseNot          -> Expression 
+LogicalNot          -> Expression 
+Negate              -> Expression 
+Factorial           -> Expression 
 ```
 
 ### Statement-Level Grammar
@@ -156,11 +203,8 @@ ProductExpression_l3        -> Expresion product_operator Expresion
 UnaryPrefixExpression_r2    -> unary_prefix_operator Expression | increment_decrement_operator identifier
 UnarySuffixExpression_l1    -> identifier increment_decrement_operator
 
-Factor -> Immutable | Immutable
-Mutable -> identifier
-Immutable -> "(" Expression ")" | constant | FactorialCall
+Factor -> "(" Expression ")" | int_const | float_const | string_const | FactorialCall | identifier
 FactorialCall ->  factorial_keyword "(" Expression ")"
-constant -> int_literal | float_literal | string_literal
 ```
 
 Full operator grammar including increment_decrement_operator and complex assignment operators.
@@ -178,10 +222,8 @@ ProductExpression_l3 -> ProductExpression_l3 product_operator UnaryPrefixExpress
 UnaryPrefixExpression_r2 -> increment_decrement_operator Mutable | unary_prefix_operator UnarySuffixExpression_l1 | UnarySuffixExpression_l1
 UnarySuffix_l1 -> Mutable increment_decrement_operator | Factor
 
-Factor -> Immutable | Mutable
-Mutable -> identifier
-Immutable -> "(" Expression ")" | constant | factorial_keyword "(" Expression ")"
-constant -> int_literal | float_literal | string_literal
+Factor -> "(" Expression ")" | int_const | float_const | string_const | FactorialCall | identifier
+FactorialCall -> factorial_keyword "(" Expression ")"
 
 factorial_keyword -> "factorial"
 int_literal -> "[0-9]+"
@@ -230,10 +272,8 @@ SumExpression_l4            -> Expresion sum_operator Expresion
 ProductExpression_l3        -> Expresion product_operator Expresion
 UnaryPrefixExpression_r2    -> unary_prefix_operator Expression 
 
-Factor -> Immutable | identifier
-Mutable -> identifier
-Immutable -> "(" Expression ")" | constant | factorial_keyword "(" Expression ")"
-constant -> int_literal | float_literal | string_literal
+Factor -> "(" Expression ")" | int_const | float_const | string_const | FactorialCall | identifier
+FactorialCall -> factorial_keyword "(" Expression ")"
 ```
 
 Simplified operator grammmar that only includes the simple assignment operator "=" and no increment_decrement_operator.
@@ -250,10 +290,8 @@ SumExpression_l4 -> SumExpression_l4 sum_operator ProductExpression_l3 | Product
 ProductExpression_l3 -> ProductExpression_l3 product_operator UnaryPrefixExpression_r2 | BitOrExpression_l9
 UnaryPrefixExpression_r2 -> unary_prefix_operator Factor | Factor
 
-Factor -> Immutable | Mutable
-Mutable -> identifier
-Immutable -> "(" Expression ")" | constant | factorial_keyword "(" Expression ")"
-constant -> int_literal | float_literal | string_literal
+Factor -> "(" Expression ")" | int_const | float_const | string_const | FactorialCall | identifier
+FactorialCall -> factorial_keyword "(" Expression ")"
 
 factorial_keyword -> "factorial"
 int_literal -> "[0-9]+"
