@@ -4,32 +4,15 @@
 
 ## Phase 2: Parser
 
-### How to parse left-recursive production rule
-example conversion (using ? as the empty string) 
-E -> EEEa | EEa | Ea | b | c
+To Do:
+- function for file opening that checks for ".cisc" file extension etc.
+- test and validate the parse_cfg_recursive_descent_parse_tree on our actual grammar
+- refine the error handling a bit (error messages and types)
+- ParseTreeNode_free function (implement in parser.c)
+- ASTNode_from_ParseTreeNode function using grammar rules to simplify (https://stackoverflow.com/questions/5026517/whats-the-difference-between-parse-trees-and-abstract-syntax-trees-asts)
+- finish merge
+- improve/simplify the parse_cfg_recursive_descent_parse_tree
 
-E -> bE' | cE'
-E'-> EEaE' | EaE' | aE' | ?
-
-```python
-# lowercase letters are terminals, uppercase letters are non-terminals
-parse_cfg(production_rule="E->EEEa|b", input_string="") -> ASTNode:
-    node = ASTNode()
-    node.symbol = production_rule.left
-    if production_rule.left = production_rule.right[0]:
-        # now we have to deal with left-recursive rule
-        # parse as right-recursive, but build nodes as if it were left-recursive
-        lower_node = ASTNode()
-        for i in range(len(input_string)):
-    else:
-        node.children = []
-
-    return null
-
-
-
-
-```
 
 ## Phase 3: Semantic Analyzer
 
