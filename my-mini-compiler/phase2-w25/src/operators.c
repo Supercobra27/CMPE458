@@ -85,7 +85,10 @@ int isOperator(char c)
 int findMappableIndex(const char *_Str)
 {
     for (int i = 0; i < OrderedLength; i++){
-        if (strcmp(_Str, ordered_operators[i]) == 0){
+        if (strncmp(_Str, ordered_operators[i], 2) == 0){
+            return i;
+        }
+        if (strncmp(_Str, ordered_operators[i], 1) == 0){
             return i;
         }
     }
