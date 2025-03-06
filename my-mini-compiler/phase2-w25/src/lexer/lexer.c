@@ -374,8 +374,7 @@ Token get_next_token(const char *input, int *pos)
     return token;
 }
 
-Token* run_lexer();
-
+/*
 int main(int argc, char *argv[])
 {
 
@@ -462,3 +461,4 @@ int main(int argc, char *argv[])
     free(input);
     return 0;
 }
+*/
