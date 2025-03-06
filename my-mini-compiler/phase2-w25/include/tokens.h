@@ -10,7 +10,6 @@
 typedef enum
 {
     /* Original Tokens */
-    TOKEN_EOF,
     TOKEN_IDENTIFIER,     // regex: ^[a-zA-Z_][a-zA-Z0-9_]*$
     TOKEN_ERROR,
 
@@ -40,6 +39,7 @@ typedef enum
     TOKEN_RIGHT_BRACE,
     TOKEN_LEFT_PAREN,
     TOKEN_RIGHT_PAREN,
+    TOKEN_EOF,
 
     /* Operators */
     TOKEN_SINGLE_EQUALS,
