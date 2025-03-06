@@ -16,4 +16,10 @@ int isOperatorStr(const char *_Str);
  */
 int isOperator(char c);
 
+/**
+ * @param _Str Input string.
+ * @return The index of the correct operator value.
+*/
+int findMappableIndex(const char *_Str);
+
 #endif
