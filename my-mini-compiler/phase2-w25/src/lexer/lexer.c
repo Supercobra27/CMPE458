@@ -6,6 +6,7 @@
 #include "../../include/tokens.h"
 #include "../../include/dynamic_array.h"
 #include "../../include/operators.h"
+#include "../../include/token_list.h"
 
 #define FILE_EXT ".cisc"
 
@@ -373,6 +374,8 @@ Token get_next_token(const char *input, int *pos)
     return token;
 }
 
+Token* run_lexer();
+
 int main(int argc, char *argv[])
 {
 
@@ -422,7 +425,7 @@ int main(int argc, char *argv[])
     int position = 0;
     Token token;
     init_lexer(&position, &current_line, &line_start);
-
+    TokenNode* head = init_tl();
     printf("Analyzing input:\n%s\n\n", input);
 
     // Get all tokens from input and print them.
@@ -430,7 +433,11 @@ int main(int argc, char *argv[])
     {
         token = get_next_token(input, &position);
         print_token(token);
+        insertEnd(&head, token);
     } while (token.type != TOKEN_EOF);
+
+    display(head);
+    free_tl_list(&head);
 
     // Print line start positions.
     for (size_t i = 0; i < array_size(line_start); i++)
