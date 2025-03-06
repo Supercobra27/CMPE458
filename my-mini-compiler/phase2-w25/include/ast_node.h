@@ -87,4 +87,4 @@ typedef struct ASTNode {
     struct ASTNode* children[MAX_AST_CHILDREN+1]; // NULL-terminated array of Pointers to child nodes
 } ASTNode;
 
-#endif AST_NODE_H
+#endif /* AST_NODE_H */

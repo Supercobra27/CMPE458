@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <stdlib.h>
 
+
 /*
 ASTNode *parse_cfg_recursive_descent(ASTNodeType result_type, const CFG_GrammarRule *grammar, const size_t grammar_size, const size_t lhs_rule_index, const Token *tokens, size_t *index)
 {
@@ -96,12 +97,78 @@ ASTNode *parse_cfg_recursive_descent(ASTNodeType result_type, const CFG_GrammarR
 }
 */
 
+
+size_t is_direct_left_recursive(const CFG_GrammarRule *rule)
+{
+    assert(rule != NULL);
+    for (size_t i = 0; i < rule->num_rules; ++i)
+    {
+        if (rule->rules[i].tokens[0] == rule->lhs)
+        {
+            return i;
+        }
+    }
+    return (size_t)-1;
+}
+
+
+size_t is_indirect_left_recursive(const CFG_GrammarRule *grammar, const size_t grammar_size, const ParseToken lhs_token)
+{
+    assert(grammar != NULL);
+    assert(grammar_size > 0);
+    assert(ParseToken_IS_NONTERMINAL(lhs_token));
+    // need bool array to keep track of visited non-terminals.
+    bool *visited = calloc(grammar_size, sizeof(bool));
+    struct elem
+    {
+        size_t token;
+        size_t rule;
+    };
+    // can only add at most each non-terminal once to the queue (since we only add unvisited non-terminals).
+    struct elem *queue = malloc(grammar_size * sizeof(struct elem));
+    size_t queue_back = 0;
+    size_t queue_front = 0;
+    size_t result = (size_t)-1;
+    const size_t target = lhs_token - ParseToken_FIRST_NONTERMINAL;
+    // add all left-most non-terminals from production ruls of lhs_token to the queue. So we can keep track of the rules that are left-recursive.
+    for (size_t i = 0; i < grammar[target].num_rules; ++i)
+    {
+        if (ParseToken_IS_NONTERMINAL(grammar[target].rules[i].tokens[0]) && !visited[grammar[target].rules[i].tokens[0] - ParseToken_FIRST_NONTERMINAL] && grammar[target].rules[i].tokens[0] != lhs_token)
+        {
+            queue[queue_back++] = (struct elem){grammar[target].rules[i].tokens[0] - ParseToken_FIRST_NONTERMINAL, i};
+            visited[grammar[target].rules[i].tokens[0] - ParseToken_FIRST_NONTERMINAL] = 1;
+        }
+    }
+    while (queue_front < queue_back)
+    {
+        struct elem e = queue[queue_front++];
+        if (e.token == target)
+        {
+            result = e.rule;
+            break;
+        }
+        for (size_t i = 0; i < grammar[e.token].num_rules; ++i)
+        {
+            if (ParseToken_IS_NONTERMINAL(grammar[e.token].rules[i].tokens[0]) && !visited[grammar[e.token].rules[i].tokens[0] - ParseToken_FIRST_NONTERMINAL])
+            {
+                assert(queue_back < grammar_size);
+                queue[queue_back++] = (struct elem){grammar[e.token].rules[i].tokens[0] - ParseToken_FIRST_NONTERMINAL, e.rule};
+                visited[grammar[e.token].rules[i].tokens[0] - ParseToken_FIRST_NONTERMINAL] = 1;
+            }
+        }
+    }
+    free(visited);
+    free(queue);
+    return result;
+}
+
 /**
  * WARNING: This can go into infinite recursion if the grammar has left-recursion or indirect left-recursion.
  */
-int ParseToken_starts_with(const CFG_GrammarRule *grammar, const ParseToken token_to_check, const ParseToken starts_with)
+int ParseToken_starts_with(const CFG_GrammarRule *grammar, const size_t grammar_size, const ParseToken token_to_check, const ParseToken starts_with)
 {
     assert(grammar != NULL);
+    assert(grammar_size >= ParseToken_COUNT_NONTERMINAL);
     assert(ParseToken_IS_TERMINAL(starts_with) || starts_with == PT_NULL);
 
     if (token_to_check == starts_with)
@@ -113,7 +180,7 @@ int ParseToken_starts_with(const CFG_GrammarRule *grammar, const ParseToken toke
         const CFG_GrammarRule *g_rule = grammar + token_to_check - ParseToken_COUNT_NONTERMINAL;
         for (const ProductionRule *p_rule = g_rule->rules; p_rule != NULL; ++p_rule)
         {
-            if (ParseToken_starts_with(grammar, p_rule->tokens[0], starts_with))
+            if (ParseToken_starts_with(grammar, grammar_size, p_rule->tokens[0], starts_with))
             {
                 return 1;
             }
@@ -122,21 +189,21 @@ int ParseToken_starts_with(const CFG_GrammarRule *grammar, const ParseToken toke
     return 0;
 }
 
-ParseTreeNode *parse_cfg_recursive_descent_parse_tree(const CFG_GrammarRule *grammar, const size_t grammar_size, const ParseToken lhs_token, Token *tokens, size_t *index)
+ParseTreeNode *parse_cfg_recursive_descent_parse_tree(const CFG_GrammarRule *grammar, const size_t grammar_size, const ParseToken lhs_rule_token, const Token *tokens, size_t *index)
 {
     assert(grammar != NULL);
     assert(grammar_size > 0);
-    assert(ParseToken_IS_NONTERMINAL(lhs_token));
+    assert(ParseToken_IS_NONTERMINAL(lhs_rule_token));
     assert(tokens != NULL);
     assert(index != NULL);
 
 
     ParseTreeNode *node = malloc(sizeof(ParseTreeNode));
-    node->type = grammar[lhs_token - ParseToken_COUNT_NONTERMINAL].lhs;
+    node->type = grammar[lhs_rule_token - ParseToken_COUNT_NONTERMINAL].lhs;
     node->children = NULL;
     node->token = NULL;
 
-    CFG_GrammarRule *g_rule = grammar + lhs_token - ParseToken_COUNT_NONTERMINAL;
+    const CFG_GrammarRule *g_rule = grammar + lhs_rule_token - ParseToken_COUNT_NONTERMINAL;
     assert(g_rule != NULL);
 
     // look for a rule that matches the tokens. If a token matches, then the rule must work (the rules are assumed to be deterministic, i.e. prefix-free).
@@ -150,7 +217,7 @@ ParseTreeNode *parse_cfg_recursive_descent_parse_tree(const CFG_GrammarRule *gra
             rule_success = 0;
         }
         // check for terminal token base case or empty rule.
-        else if (p_rule->tokens[0] == PT_NULL || ParseToken_starts_with(grammar, p_rule->tokens[0], tokens[*index].type))
+        else if (p_rule->tokens[0] == PT_NULL || ParseToken_starts_with(grammar, grammar_size, p_rule->tokens[0], tokens[*index].type))
         {
             rule_success = 1;
         }
@@ -172,7 +239,7 @@ ParseTreeNode *parse_cfg_recursive_descent_parse_tree(const CFG_GrammarRule *gra
         ParseToken token = p_rule->tokens[i];
         if (ParseToken_IS_TERMINAL(token) || token == PT_NULL)
         {
-            if (token == tokens[*index].type)
+            if (token == (ParseToken)tokens[*index].type)
             {
                 node->children[i].type = token;
                 node->children[i].children = NULL;
