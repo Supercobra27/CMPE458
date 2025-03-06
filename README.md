@@ -6,6 +6,7 @@
 
 To Do:
 - function for file opening that checks for ".cisc" file extension etc.
+- make sure TokenType, ParseToken, and ASTNodeType all make coinside nicely
 - test and validate the parse_cfg_recursive_descent_parse_tree on our actual grammar
 - refine the error handling a bit (error messages and types)
 - ParseTreeNode_free function (implement in parser.c)

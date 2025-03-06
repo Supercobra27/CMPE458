@@ -7,7 +7,7 @@
 #define TOKENS_H
 
 /* Token types that need to be recognized by the lexer */
-typedef enum
+typedef enum _TokenType
 {
     /* Original Tokens */
     TOKEN_IDENTIFIER,     // regex: ^[a-zA-Z_][a-zA-Z0-9_]*$
