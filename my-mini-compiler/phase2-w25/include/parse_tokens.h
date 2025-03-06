@@ -12,6 +12,7 @@ typedef enum _ParseToken {
     PT_INTEGER_CONST,
     PT_FLOAT_CONST,
     PT_STRING_CONST,
+
     PT_INT_KEYWORD,
     PT_FLOAT_KEYWORD,
     PT_STRING_KEYWORD,
@@ -23,9 +24,12 @@ typedef enum _ParseToken {
     PT_REPEAT_KEYWORD,
     PT_UNTIL_KEYWORD,
     PT_FACTORIAL_KEYWORD,
+
+    PT_SEMICOLON,
+    PT_LEFT_BRACE,
+    PT_RIGHT_BRACE,
     PT_LEFT_PAREN,
     PT_RIGHT_PAREN,
-    PT_EOF,
 
     // Operator tokens (still terminals)
     PT_SINGLE_EQUALS,
