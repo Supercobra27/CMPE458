@@ -13,6 +13,7 @@ To Do:
 - ASTNode_from_ParseTreeNode function using grammar rules to simplify (https://stackoverflow.com/questions/5026517/whats-the-difference-between-parse-trees-and-abstract-syntax-trees-asts)
 - finish merge
 - improve/simplify the parse_cfg_recursive_descent_parse_tree
+- address all C compiler warnings/errors
 
 
 ## Phase 3: Semantic Analyzer
