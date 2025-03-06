@@ -367,12 +367,13 @@ static const char *parse_token_to_string(ParseToken t)
 typedef enum _ParseErrorType {
     PARSE_ERROR_WRONG_TOKEN,
     PARSE_ERROR_NO_RULE_MATCHES,
+    PARSE_ERROR_MULTIPLE_LEFT_RECURSIVE_RULES,
 } ParseErrorType;
 
 typedef struct _ParseTreeNode {
     ParseToken type;
     size_t num_children;
-    struct _ParseTreeNode *children; // Null-terminated array of children.
+    struct _ParseTreeNode *children; // Array of `num_children` children.
     const Token *token; // Token in the case of a terminal node.
     ParseErrorType error;
 } ParseTreeNode;

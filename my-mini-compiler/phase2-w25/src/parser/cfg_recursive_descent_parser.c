@@ -173,17 +173,19 @@ int ParseToken_starts_with(const CFG_GrammarRule *grammar, const size_t grammar_
 {
     assert(grammar != NULL);
     assert(grammar_size >= ParseToken_COUNT_NONTERMINAL);
-    assert(ParseToken_IS_TERMINAL(starts_with) || starts_with == PT_NULL);
-
-    if (token_to_check == starts_with)
+    if (starts_with == PT_NULL || token_to_check == starts_with)
     {
         return 1;
     }
     else if (ParseToken_IS_NONTERMINAL(token_to_check))
     {
-        const CFG_GrammarRule *g_rule = grammar + token_to_check - ParseToken_COUNT_NONTERMINAL;
-        for (const ProductionRule *p_rule = g_rule->rules; p_rule != NULL; ++p_rule)
+        const CFG_GrammarRule *g_rule = grammar + token_to_check - ParseToken_FIRST_NONTERMINAL;
+        for (const ProductionRule *p_rule = g_rule->rules; p_rule < g_rule->rules + g_rule->num_rules; ++p_rule)
         {
+            // direct left-recursive rule. skip this rule and check the next one.
+            if (p_rule->tokens[0] == token_to_check) continue;
+
+            // this is where infinite recursion can happen if the grammar has indirect left-recursion.
             if (ParseToken_starts_with(grammar, grammar_size, p_rule->tokens[0], starts_with))
             {
                 return 1;
@@ -193,102 +195,112 @@ int ParseToken_starts_with(const CFG_GrammarRule *grammar, const size_t grammar_
     return 0;
 }
 
-ParseTreeNode *parse_cfg_recursive_descent_parse_tree(const CFG_GrammarRule *grammar, const size_t grammar_size, const ParseToken lhs_token, const Token *tokens, size_t *index)
+ParseTreeNode *parse_cfg_recursive_descent_parse_tree(const CFG_GrammarRule *grammar, const size_t grammar_size, const ParseToken token, const Token *tokens, size_t *index)
 {
-    // still a work in progress
-    return NULL;
-    assert(grammar != NULL);
-    assert(grammar_size > 0);
-    assert(ParseToken_IS_NONTERMINAL(lhs_token));
     assert(tokens != NULL);
     assert(index != NULL);
-
+    assert(grammar != NULL);
+    assert(grammar_size > 0);
 
     ParseTreeNode *node = malloc(sizeof(ParseTreeNode));
-    node->type = grammar[lhs_token - ParseToken_COUNT_NONTERMINAL].lhs;
+    node->type = token;
     node->children = NULL;
+    node->num_children = 0;
     node->token = NULL;
+    node->error = PARSE_ERROR_NONE;
 
-    const CFG_GrammarRule *g_rule = grammar + lhs_token - ParseToken_COUNT_NONTERMINAL;
-    assert(g_rule != NULL);
+    // terminal is only consumed if there is a match.
+    if (ParseToken_IS_TERMINAL(token))
+    {
+        if (token == (ParseToken)tokens[*index].type)
+        {
+            node->token = tokens + *index;
+            ++(*index);
+        }
+        else if (token != PT_NULL)
+            node->error = PARSE_ERROR_WRONG_TOKEN;
+        return node;
+    }
 
-    // Since the grammar is prefix-free (deterministic), there must can be at most 1 left-recursive rule.
-    // if there was a left-recursive rule that came first, 
-    bool left_recursive = 0;
+    // non-terminal now 
+    const CFG_GrammarRule *g_rule = grammar + token - ParseToken_COUNT_NONTERMINAL;
 
+    // Since the grammar is prefix-free (deterministic), there must can be at most 1 left-recursive rule. 
     // look for a rule that matches the tokens. If a token matches, then the rule must work (the rules are assumed to be deterministic, i.e. prefix-free).
-    int rule_success = 0;
-    const ProductionRule *p_rule = g_rule->rules, *other_rule = NULL;
-    for (; !rule_success && p_rule < g_rule->rules + g_rule->num_rules; ++p_rule)
+    bool rule_match = 0;
+    const ProductionRule *p_rule = g_rule->rules, *left_recursive_rule = NULL;
+    for (; !rule_match && p_rule < g_rule->rules + g_rule->num_rules; ++p_rule)
     {
         if (p_rule->tokens[0] == PT_NULL)
         {
-            rule_success = 1;
+            rule_match = 1;
         }
-        else if (p_rule->tokens[0] == lhs_token)
+        else if (p_rule->tokens[0] == token)
         {
-            // left recursive, deal with this later.
-            rule_success = 0;
-            // check whether right-recursive part of the rule matches.
-            // find first right-recursive rule for lhs_token.
-            other_rule = p_rule + 1;
-            do
+            // if left-recursive, rule must be of the form A -> A B1 B2 ... | C1 C2 C3 ... | D1 D2 D3 ...; where neither C1, nor D1, nor ..., start with A and "B1 B2 ..."!=(empty-string).
+            if (left_recursive_rule != NULL)
             {
-                for (; other_rule < g_rule->rules + g_rule->num_rules && other_rule->tokens[0] == lhs_token; ++other_rule);
-                if (other_rule == g_rule->rules + g_rule->num_rules)
-                {
-                    // impossible to parse this rule since it is left-recursive always (recursion never ends).
-                    node->error = PARSE_ERROR_NO_RULE_MATCHES;
-                    return node;
-                }
-            } while (!ParseToken_starts_with(grammar, grammar_size, other_rule->tokens[0], tokens[*index].type));
-            // we have a match, now parse the part of the rule following the left-recursive part.
-            rule_success = 1;
+                node->error = PARSE_ERROR_MULTIPLE_LEFT_RECURSIVE_RULES;
+                return node;
+            }
+            // if the rule was just A -> A | B, then this is not a deterministic grammar, handling this case like this just because it works, if proper validation was done during grammar creation then this check wouldn't be necessary.
+            if (p_rule->tokens[1] != PT_NULL)
+                left_recursive_rule = p_rule;
         }
-        // check for terminal token base case or empty rule.
         else if (ParseToken_starts_with(grammar, grammar_size, p_rule->tokens[0], tokens[*index].type))
         {
-            rule_success = 1;
+            rule_match = 1;
         }
     }
 
-    if (!rule_success)
+    if (!rule_match)
     {
         node->error = PARSE_ERROR_NO_RULE_MATCHES;
         return node;
     }
 
-    // now parse the tokens according to the rule.
-    node->num_children = 0;
+    // now parse according to the rule.
     while (p_rule->tokens[node->num_children] != PT_NULL) ++node->num_children;
-    node->children = malloc(node->num_children * sizeof(ParseTreeNode));
-
+    // allocate memory for the children (if no children, then this was an empty string rule that consumes no input).
+    if (node->num_children)
+        node->children = malloc(node->num_children * sizeof(ParseTreeNode));
+    // parse children (if any). 
+    // TODO: make this for loop into a function that parses according to a sequence of ParseTokens with ability to specify how to handle errors.
+    ParseTreeNode *temp;
     for (size_t i = 0; i < node->num_children; ++i)
     {
-        ParseToken token = p_rule->tokens[i];
-        if (ParseToken_IS_TERMINAL(token) || token == PT_NULL)
+        temp = parse_cfg_recursive_descent_parse_tree(grammar, grammar_size, p_rule->tokens[i], tokens, index);
+        node->children[i] = *temp;
+        free(temp);
+        // TODO: add customizability for how to handle parsing errors.
+        if (node->children[i].error != PARSE_ERROR_NONE)
+            break;
+    }
+    // if the rule is not left-recursive, or there was a parsing error, then we are done.
+    if (left_recursive_rule == NULL || node->error != PARSE_ERROR_NONE)
+        return node;
+
+    size_t left_recursive_rule_num_children = 0;
+    while (left_recursive_rule->tokens[left_recursive_rule_num_children] != PT_NULL) ++left_recursive_rule_num_children;
+    // Try repeatedly parsing the rest of the left-recursive rule until it fails. When it fails, just stop and return what worked so far.
+    // might have to change this to rollback if parsing fails even when the first token matches.
+    while (node->error == PARSE_ERROR_NONE && ParseToken_starts_with(grammar, grammar_size, left_recursive_rule->tokens[1], tokens[*index].type))
+    {
+        temp = malloc(sizeof(ParseTreeNode));
+        temp->type = token;
+        temp->children = malloc((left_recursive_rule_num_children) * sizeof(ParseTreeNode));
+        temp->num_children = left_recursive_rule_num_children;
+        temp->children[0] = *node;
+        free(node);
+        node = temp;
+        // TODO: replace this with function idea mentioned above.
+        for (size_t i = 1; i < node->num_children; ++i)
         {
-            if (token == (ParseToken)tokens[*index].type)
-            {
-                node->children[i].type = token;
-                node->children[i].children = NULL;
-                node->children[i].token = tokens + *index;
-                node->children[i].error = PARSE_ERROR_NONE;
-                ++(*index);
-            }
-            else
-            {
-                node->children[i].type = token;
-                node->children[i].children = NULL;
-                node->children[i].token = tokens + *index;
-                node->children[i].error = PARSE_ERROR_WRONG_TOKEN;
-            }
-        }
-        else // non-terminal
-        {
-            ParseTreeNode *p = parse_cfg_recursive_descent_parse_tree(grammar, grammar_size, token, tokens, index);
-            node->children[i] = *p;
-            free(p);
+            temp = parse_cfg_recursive_descent_parse_tree(grammar, grammar_size, token, tokens, &index);
+            node->children[i] = *temp;
+            free(temp);
+            if (temp->children[i].error != PARSE_ERROR_NONE)
+                break;
         }
     }
     return node;

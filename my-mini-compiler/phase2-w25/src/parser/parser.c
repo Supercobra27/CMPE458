@@ -49,7 +49,7 @@ static const char *parse_error(ParseErrorType error)
 */
 
 
-void print_pst(ParseTreeNode *node, int level)
+void ParseTreeNode_print(ParseTreeNode *node, int level)
 {
     for (int i = 0; i < level; ++i)
     {
@@ -65,7 +65,7 @@ void print_pst(ParseTreeNode *node, int level)
     }
     for (size_t i = 0; i < node->num_children; ++i)
     {
-        print_pst(node->children + i, level + 1);
+        ParseTreeNode_print(node->children + i, level + 1);
     }
 }
 
@@ -767,6 +767,7 @@ int main()
         if (is_direct_left_recursive(grammar + (t - ParseToken_FIRST_NONTERMINAL)) != (size_t)-1)
         {
             printf("Grammar has direct left recursion for %d\n", t);
+            // TODO: validate that the left recursive rule is in the correct format: A -> A B1 B2 ... | C1 C2 ... | D1 D2 ... | ... where non of C1, C2, D1, D2, ... start with A
         }
         // check for indirect left recursion
         if (is_indirect_left_recursive(grammar, ParseToken_COUNT_NONTERMINAL, t) != (size_t)-1)
@@ -775,9 +776,6 @@ int main()
         }
     }
     
-    // TODO: Must ensure there is no indirect left recursion in the grammar. (direct left recursion will be handled by the parser).
-     
-
 
 
     /*

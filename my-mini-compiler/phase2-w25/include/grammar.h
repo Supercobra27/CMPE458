@@ -67,7 +67,7 @@ size_t is_indirect_left_recursive(const CFG_GrammarRule *grammar, const size_t g
  * @param grammar_size The size of the grammar array.
  * @param lhs_token The index of the rule to parse in the grammar array.
  * @param tokens The tokens coming from the Lexer to use for parsing. This array must be terminated with TokenType of TOKEN_EOF.
- * @param index The index of the current token to parse, upon termination, this index will point to the next token to parse (will be unchanged if parsing fails or if the grammar rule consumes no tokens).
+ * @param index The index of the current token to parse, upon termination, this index will point to the next token to parse (if parsing fails, it will point to the first token that could not be parsed).
  */
 ParseTreeNode *parse_cfg_recursive_descent_parse_tree(const CFG_GrammarRule *grammar, const size_t grammar_size, const size_t lhs_token, const Token *tokens, size_t *index);
 
