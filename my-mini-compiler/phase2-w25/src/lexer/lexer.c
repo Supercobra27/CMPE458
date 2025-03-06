@@ -250,15 +250,17 @@ Token get_next_token(const char *input, int *pos)
     {
         int i = 0;
         token.type = TOKEN_INTEGER_CONST;
+        int float_found = 0;
 
         do
         {
-            if (cn == '.')
+            if (cn == '.' && float_found == 0)
             {
                 token.lexeme[i++] = c;
                 token.lexeme[i++] = cn;
                 (*pos) += 2; // skip over the starter and dot so not to return error for unknown character
                 token.type = TOKEN_FLOAT_CONST;
+                float_found = 1;
             }
             else
             {
