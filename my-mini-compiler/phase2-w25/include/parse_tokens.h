@@ -12,7 +12,6 @@ typedef enum _ParseToken {
     PT_INTEGER_CONST,
     PT_FLOAT_CONST,
     PT_STRING_CONST,
-    // Terminal nodes that don't have tokens associated with them.
     PT_INT_KEYWORD,
     PT_FLOAT_KEYWORD,
     PT_STRING_KEYWORD,
@@ -24,16 +23,11 @@ typedef enum _ParseToken {
     PT_REPEAT_KEYWORD,
     PT_UNTIL_KEYWORD,
     PT_FACTORIAL_KEYWORD,
-
-    // Terminal nodes that don't appear in the AST.
-    PT_SEMICOLON,
-    PT_LEFT_BRACE,
-    PT_RIGHT_BRACE,
     PT_LEFT_PAREN,
     PT_RIGHT_PAREN,
     PT_EOF,
 
-    // Operator tokens (still terminals), these also don' appear in the AST.
+    // Operator tokens (still terminals)
     PT_SINGLE_EQUALS,
     PT_DOUBLE_PIPE,
     PT_DOUBLE_AMPERSAND,

@@ -14,10 +14,27 @@ void print_error(ErrorType error, int line, const char *lexeme)
     printf("print_error unimplemented\n");
 }
 
+// punctuators
+static const char *punctuators[] = {
+";", "{", "}", "(", ")", ","
+};
+
+static int is_punctuator(const char *str)
+{
+    for (int i = 0; i < 6; i++)
+    {
+        if (strcmp(str, punctuators[i]) == 0)
+        {
+            return i+1; // 1 to say it found something
+        }
+    }
+    return 0;
+}
+
 // keywords
 static const char *keywords[] = {
-    "if", "else", "while", "factorial",
-    "repeat", "until", "int", "string"};
+    "int", "float", "string", "print", "if", "then", "else", "while",
+    "repeat", "until", "factorial"};
 static const int num_keywords = sizeof(keywords) / sizeof(keywords[0]);
 
 // to check if a string is a keyword
@@ -27,7 +44,7 @@ static int is_keyword(const char *str)
     {
         if (strcmp(str, keywords[i]) == 0)
         {
-            return 1;
+            return i+1; // 1 to say it found something
         }
     }
     return 0;
@@ -82,27 +99,27 @@ const char *const error_type_to_error_message(ErrorType error)
 
 const char *token_type_to_string(TokenType type)
 {
-    switch (type)
-    {
-    case TOKEN_EOF:
+    // need to change to work within ranges or its a huge case statement
+
+    if (type == TOKEN_EOF){
         return "EOF";
-    case TOKEN_INTEGER:
+    } else if (type == TOKEN_INTEGER_CONST){
         return "INTEGER";
-    case TOKEN_FLOAT:
+    }else if (type == TOKEN_FLOAT_CONST){
         return "FLOAT";
-    case TOKEN_OPERATOR:
-        return "OPERATOR";
-    case TOKEN_KEYWORD:
-        return "KEYWORD";
-    case TOKEN_IDENTIFIER:
-        return "IDENTIFIER";
-    case TOKEN_STRING_LITERAL:
+    }else if (type == TOKEN_STRING_CONST){
         return "STRING_LITERAL";
-    case TOKEN_ERROR:
-        return "ERROR";
-    case TOKEN_PUNCTUATOR:
+    }else if (type >= TOKEN_SINGLE_EQUALS && type <= TOKEN_BANG){
+        return "OPERATOR";
+    }else if (type >= TOKEN_INT_KEYWORD && type <= TOKEN_FACTORIAL_KEYWORD){
+        return "KEYWORD";
+    }else if (type >= TOKEN_SEMICOLON && type <= TOKEN_RIGHT_PAREN){
         return "PUNCTUATOR";
-    default:
+    }else if (type == TOKEN_ERROR){
+        return "ERROR";
+    }else if(type == TOKEN_IDENTIFIER){
+        return "IDENTIFIER";
+    }else {
         return "UNKNOWN";
     }
 }
@@ -110,8 +127,8 @@ const char *token_type_to_string(TokenType type)
 /* Print token information */
 void print_token(Token token)
 {
-    printf("Token type=%-10s, lexeme='%s', line=%-2d, column:%d-%d, error_message=\"%s\"\n",
-           token_type_to_string(token.type), token.lexeme, token.position.line, token.position.col_start, token.position.col_end, error_type_to_error_message(token.error));
+    printf("Token type=%-10s, lexeme='%s', line=%-2d, column:%d-%d, error_message=\"%s\"; ENUM: %d\n",
+           token_type_to_string(token.type), token.lexeme, token.position.line, token.position.col_start, token.position.col_end, error_type_to_error_message(token.error), token.type);
 }
 
 // Do we want to distinguish between errors and warnings?
@@ -206,16 +223,18 @@ Token get_next_token(const char *input, int *pos)
     if (isdigit(c))
     {
         int i = 0;
-        token.type = TOKEN_INTEGER;
+        token.type = TOKEN_INTEGER_CONST;
+        int float_found = 0;
 
         do
         {
-            if (cn == '.')
+            if (cn == '.' && float_found == 0)
             {
                 token.lexeme[i++] = c;
                 token.lexeme[i++] = cn;
                 (*pos) += 2; // skip over the starter and dot so not to return error for unknown character
-                token.type = TOKEN_FLOAT;
+                token.type = TOKEN_FLOAT_CONST;
+                float_found = 1;
             }
             else
             {
@@ -245,9 +264,10 @@ Token get_next_token(const char *input, int *pos)
         token.position.col_end += i - 1;
 
         // Check if it's a keyword
-        if (is_keyword(token.lexeme))
+        int keyword_id = is_keyword(token.lexeme);
+        if (keyword_id)
         {
-            token.type = TOKEN_KEYWORD;
+            token.type = (TokenType)(i-1+TOKEN_INT_KEYWORD);
         }
         else
         {
@@ -309,7 +329,7 @@ Token get_next_token(const char *input, int *pos)
             token.lexeme[i++] = c; // store closing quote
             token.lexeme[i] = '\0';
             (*pos)++;
-            token.type = TOKEN_STRING_LITERAL;
+            token.type = TOKEN_STRING_CONST;
             token.position.col_end += i - 1;
             return token;
         }
@@ -327,7 +347,7 @@ Token get_next_token(const char *input, int *pos)
     int operator_len = isOperatorStr(input + *pos);
     if (operator_len)
     {
-        token.type = TOKEN_OPERATOR;
+        token.type = (TokenType)(findMappableIndex(input + *pos)+TOKEN_SINGLE_EQUALS);
         strncpy(token.lexeme, input + *pos, operator_len);
         (*pos) += operator_len;
         return token;
@@ -335,9 +355,10 @@ Token get_next_token(const char *input, int *pos)
 
     // Handle punctuation & delimiters
     const char *const punctuation = ";{}(),";
-    if (strchr(punctuation, c))
+    char* punctcheck = strchr(punctuation, c);
+    if (punctcheck)
     {
-        token.type = TOKEN_PUNCTUATOR;
+        token.type = (TokenType)((punctcheck-punctuation)+TOKEN_SEMICOLON);
         token.lexeme[0] = c;
         token.lexeme[1] = '\0';
         (*pos)++;
