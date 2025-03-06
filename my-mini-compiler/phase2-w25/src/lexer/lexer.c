@@ -122,32 +122,6 @@ const char *token_type_to_string(TokenType type)
     }else {
         return "UNKNOWN";
     }
-
-/*
-    switch (type)
-    {
-    case TOKEN_EOF:
-        return "EOF";
-    case TOKEN_INTEGER_CONST:
-        return "INTEGER";
-    case TOKEN_FLOAT_CONST:
-        return "FLOAT";
-    case TOKEN_SINGLE_EQUALS: // got to change
-        return "OPERATOR";
-    case TOKEN_INT_KEYWORD:
-        return "KEYWORD"; // got to change
-    case TOKEN_IDENTIFIER:
-        return "IDENTIFIER";
-    case TOKEN_STRING_CONST:
-        return "STRING_LITERAL";
-    case TOKEN_ERROR:
-        return "ERROR";
-    case TOKEN_SEMICOLON: // got to change
-        return "PUNCTUATOR";
-    default:
-        return "UNKNOWN";
-    }
-    */
 }
 
 /* Print token information */
