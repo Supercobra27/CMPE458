@@ -778,7 +778,6 @@ int main()
     
 
 
-    /*
     // Test with both valid and invalid inputs
     const char *input = "int x;\n"   // Valid declaration
                         "x = 42;\n"; // Valid assignment;
@@ -788,13 +787,17 @@ int main()
                                 "int ;";
 
     printf("Parsing input:\n%s\n", invalid_input);
-    parser_init(invalid_input);
-    ASTNode *ast = parse();
+    Array *tokens = array_new(10, sizeof(Token));
+    // init lexer and stuff
+    
+    // Tokenize the input
+    size_t token_index = 0;
+    ParseTreeNode *root = parse_cfg_recursive_descent_parse_tree(grammar, ParseToken_COUNT_NONTERMINAL, ParseToken_START_NONTERMINAL, (Token *)array_begin(tokens), &token_index);
+    
+    printf("\n Parse Tree:\n");
+    
+    ParseTreeNode_print(root, 0);
 
-    printf("\nAbstract Syntax Tree:\n");
-    print_ast(ast, 0);
-
-    free_ast(ast);
-    */
+    // ParseTreeNode_free();
     return 0;
 }

@@ -29,7 +29,6 @@ typedef enum _ASTNodeType {
     AST_PROGRAM, 
     AST_BLOCK,
     AST_STATEMENT_LIST,
-    AST_STATEMENT,
     AST_DECLARATION,
     AST_PRINT,
     AST_CODITIONAL,
@@ -71,14 +70,10 @@ typedef enum _ASTNodeType {
 #define MAX_ASTNode_WITH_TOKEN AST_STRING
 #define ASTNodeType_HAS_TOKEN(type) ((type) <= MAX_ASTNode_WITH_TOKEN)
 
+// These errors should be determined by semantic analysis.
 typedef enum {
-    PARSE_ERROR_NONE,
-    PARSE_ERROR_UNEXPECTED_TOKEN,
-    PARSE_ERROR_MISSING_SEMICOLON,
-    PARSE_ERROR_MISSING_IDENTIFIER,
-    PARSE_ERROR_MISSING_EQUALS,
-    PARSE_ERROR_INVALID_EXPRESSION
-} ParseError;
+    AST_ERROR_NONE,
+} ASTErrorType;
 
 // AST Node structure
 typedef struct ASTNode {

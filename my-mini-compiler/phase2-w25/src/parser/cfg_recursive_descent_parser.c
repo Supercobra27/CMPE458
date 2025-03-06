@@ -207,7 +207,7 @@ ParseTreeNode *parse_cfg_recursive_descent_parse_tree(const CFG_GrammarRule *gra
     node->children = NULL;
     node->num_children = 0;
     node->token = NULL;
-    node->error = PARSE_ERROR_NONE;
+    node->error = AST_ERROR_NONE;
 
     // terminal is only consumed if there is a match.
     if (ParseToken_IS_TERMINAL(token))
@@ -274,7 +274,10 @@ ParseTreeNode *parse_cfg_recursive_descent_parse_tree(const CFG_GrammarRule *gra
         free(temp);
         // TODO: add customizability for how to handle parsing errors.
         if (node->children[i].error != PARSE_ERROR_NONE)
+        {
+            node->error = PARSE_ERROR_NO_RULE_MATCHES;
             break;
+        }
     }
     // if the rule is not left-recursive, or there was a parsing error, then we are done.
     if (left_recursive_rule == NULL || node->error != PARSE_ERROR_NONE)
@@ -296,11 +299,14 @@ ParseTreeNode *parse_cfg_recursive_descent_parse_tree(const CFG_GrammarRule *gra
         // TODO: replace this with function idea mentioned above.
         for (size_t i = 1; i < node->num_children; ++i)
         {
-            temp = parse_cfg_recursive_descent_parse_tree(grammar, grammar_size, token, tokens, &index);
+            temp = parse_cfg_recursive_descent_parse_tree(grammar, grammar_size, token, tokens, index);
             node->children[i] = *temp;
             free(temp);
-            if (temp->children[i].error != PARSE_ERROR_NONE)
+            if (node->children[i].error != PARSE_ERROR_NONE)
+            {
+                node->error = PARSE_ERROR_NO_RULE_MATCHES;
                 break;
+            }
         }
     }
     return node;

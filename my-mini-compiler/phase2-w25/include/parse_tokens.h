@@ -133,7 +133,8 @@ typedef enum _ParseToken {
 } ParseToken;
 
 #define ParseToken_FIRST_TERMINAL PT_IDENTIFIER
-#define ParseToken_FIRST_NONTERMINAL PT_PROGRAM
+#define ParseToken_START_NONTERMINAL PT_PROGRAM
+#define ParseToken_FIRST_NONTERMINAL ParseToken_START_NONTERMINAL
 #define ParseToken_COUNT_TERMINAL FIRST_NONTERMINAL_ParseToken
 #define ParseToken_COUNT_NONTERMINAL (PT_NULL - ParseToken_FIRST_NONTERMINAL)
 #define ParseToken_IS_TERMINAL(token) ((token) < ParseToken_FIRST_NONTERMINAL)
@@ -365,6 +366,7 @@ static const char *parse_token_to_string(ParseToken t)
 
 
 typedef enum _ParseErrorType {
+    PARSE_ERROR_NONE,
     PARSE_ERROR_WRONG_TOKEN,
     PARSE_ERROR_NO_RULE_MATCHES,
     PARSE_ERROR_MULTIPLE_LEFT_RECURSIVE_RULES,
