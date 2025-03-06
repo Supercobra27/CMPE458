@@ -100,6 +100,30 @@ const char *const error_type_to_error_message(ErrorType error)
 const char *token_type_to_string(TokenType type)
 {
     // need to change to work within ranges or its a huge case statement
+
+    if (type == TOKEN_EOF){
+        return "EOF";
+    } else if (type == TOKEN_INTEGER_CONST){
+        return "INTEGER";
+    }else if (type == TOKEN_FLOAT_CONST){
+        return "FLOAT";
+    }else if (type == TOKEN_STRING_CONST){
+        return "STRING_LITERAL";
+    }else if (type >= TOKEN_SINGLE_EQUALS && type <= TOKEN_BANG){
+        return "OPERATOR";
+    }else if (type >= TOKEN_INT_KEYWORD && type <= TOKEN_FACTORIAL_KEYWORD){
+        return "KEYWORD";
+    }else if (type >= TOKEN_SEMICOLON && type <= TOKEN_RIGHT_PAREN){
+        return "PUNCTUATOR";
+    }else if (type == TOKEN_ERROR){
+        return "ERROR";
+    }else if(type == TOKEN_IDENTIFIER){
+        return "IDENTIFIER";
+    }else {
+        return "UNKNOWN";
+    }
+
+/*
     switch (type)
     {
     case TOKEN_EOF:
@@ -123,13 +147,14 @@ const char *token_type_to_string(TokenType type)
     default:
         return "UNKNOWN";
     }
+    */
 }
 
 /* Print token information */
 void print_token(Token token)
 {
-    printf("Token type=%-10s, lexeme='%s', line=%-2d, column:%d-%d, error_message=\"%s\"\n",
-           token_type_to_string(token.type), token.lexeme, token.position.line, token.position.col_start, token.position.col_end, error_type_to_error_message(token.error));
+    printf("Token type=%-10s, lexeme='%s', line=%-2d, column:%d-%d, error_message=\"%s\"; ENUM: %d\n",
+           token_type_to_string(token.type), token.lexeme, token.position.line, token.position.col_start, token.position.col_end, error_type_to_error_message(token.error), token.type);
 }
 
 // Do we want to distinguish between errors and warnings?
