@@ -6,27 +6,34 @@ typedef enum _ParseToken {
     // Terminal tokens (these enum values must directly correspond to the token values in tokens.h)
     PT_EOF,
     PT_IDENTIFIER,
+    PT_ERROR, // placeholder for consistency
+
+    /* Values */
     PT_INTEGER_CONST,
     PT_FLOAT_CONST,
     PT_STRING_CONST,
+
+    /* Keywords */
     PT_INT_KEYWORD,
     PT_FLOAT_KEYWORD,
     PT_STRING_KEYWORD,
-    PT_SEMICOLON,
-    PT_LEFT_BRACE,
-    PT_RIGHT_BRACE,
     PT_PRINT_KEYWORD,
     PT_IF_KEYWORD,
-    PT_THEN,
+    PT_THEN_KEYWORD,
     PT_ELSE_KEYWORD,
     PT_WHILE_KEYWORD,
     PT_REPEAT_KEYWORD,
     PT_UNTIL_KEYWORD,
     PT_FACTORIAL_KEYWORD,
+
+    /* Punctuators */
+    PT_SEMICOLON,
+    PT_LEFT_BRACE,
+    PT_RIGHT_BRACE,
     PT_LEFT_PAREN,
     PT_RIGHT_PAREN,
 
-    // Operator tokens (still terminals)
+    /* Terminal Operators */
     PT_SINGLE_EQUALS,
     PT_DOUBLE_PIPE,
     PT_DOUBLE_AMPERSAND,

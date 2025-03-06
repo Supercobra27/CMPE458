@@ -9,15 +9,61 @@
 /* Token types that need to be recognized by the lexer */
 typedef enum
 {
+    /* Original Tokens */
     TOKEN_EOF,
-    TOKEN_INTEGER, // regex: ^[0-9]+$
-    TOKEN_FLOAT,
-    TOKEN_OPERATOR,
-    TOKEN_KEYWORD,        // regex: ^(if|else|while|factorial|repeat|until|int|string)$
     TOKEN_IDENTIFIER,     // regex: ^[a-zA-Z_][a-zA-Z0-9_]*$
-    TOKEN_STRING_LITERAL, // regex: ^"[ -~]*"$
-    TOKEN_PUNCTUATOR,     // ispunct()
     TOKEN_ERROR,
+
+    /* New Tokens for Parsing */
+
+    /* Values */
+    TOKEN_INTEGER_CONST, // regex: ^[0-9]+$
+    TOKEN_FLOAT_CONST,
+    TOKEN_STRING_CONST, // regex: ^"[ -~]*"$
+
+    /* Keywords */ // regex: ^(if|else|while|factorial|repeat|until|int|string)$
+    TOKEN_INT_KEYWORD,
+    TOKEN_FLOAT_KEYWORD,
+    TOKEN_STRING_KEYWORD,
+    TOKEN_PRINT_KEYWORD,
+    TOKEN_IF_KEYWORD,
+    TOKEN_THEN_KEYWORD,
+    TOKEN_ELSE_KEYWORD,
+    TOKEN_WHILE_KEYWORD,
+    TOKEN_REPEAT_KEYWORD,
+    TOKEN_UNTIL_KEYWORD,
+    TOKEN_FACTORIAL_KEYWORD,
+
+    /* Punctuators */
+    TOKEN_SEMICOLON,
+    TOKEN_LEFT_BRACE,
+    TOKEN_RIGHT_BRACE,
+    TOKEN_LEFT_PAREN,
+    TOKEN_RIGHT_PAREN,
+
+    /* Operators */
+    TOKEN_SINGLE_EQUALS,
+    TOKEN_DOUBLE_PIPE,
+    TOKEN_DOUBLE_AMPERSAND,
+    TOKEN_SINGLE_PIPE,
+    TOKEN_CARET,
+    TOKEN_SINGLE_AMPERSAND,
+    TOKEN_LESS_THAN_EQUALS,
+    TOKEN_LESS_THAN,
+    TOKEN_GREATER_THAN_EQUALS,
+    TOKEN_GREATER_THAN,
+    TOKEN_DOUBLE_EQUALS,
+    TOKEN_BANG_EQUALS,
+    TOKEN_DOUBLE_LESS_THAN,
+    TOKEN_DOUBLE_GREATER_THAN,
+    TOKEN_PLUS,
+    TOKEN_MINUS,
+    TOKEN_STAR,
+    TOKEN_FORWARD_SLASH,
+    TOKEN_PERCENT,
+    TOKEN_TILDE,
+    TOKEN_BANG,
+
 } TokenType;
 
 /* Error types for lexical analysis */
