@@ -8,12 +8,17 @@ typedef struct _TokenNode {
     struct _TokenNode* next;
 } TokenNode;
 
-TokenNode* init_tl();
+typedef struct _token_list {
+    TokenNode *head;
+    size_t size;
+}token_list;
+
+token_list* init_tl();
 TokenNode* createNode(Token token);
-void insertEnd(TokenNode** head, Token token);
-void display(TokenNode* head);
-void deleteNode(TokenNode** head, Token token);
-TokenNode* search(TokenNode* head, Token token);
-void free_tl_list(TokenNode** head);
+void insertEnd(token_list *list, Token token);
+void display(token_list *list);
+void deleteNode(TokenNode** head, Token token); //deprecated
+TokenNode* search(TokenNode* head, Token token); //deprecated
+void free_tl_list(token_list *list);
 
 #endif /* _LL_H_ */

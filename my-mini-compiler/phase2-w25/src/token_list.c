@@ -3,8 +3,11 @@
 #include "../include/token_list.h"
 #include <string.h>
 
-TokenNode* init_tl() {
-    return NULL;
+token_list* init_tl() {
+    token_list *tl = (token_list*)malloc(sizeof(token_list));
+    tl->head = NULL;
+    tl->size = 0;
+    return tl;
 }
 
 TokenNode* createNode(Token token){
@@ -20,19 +23,21 @@ TokenNode* createNode(Token token){
     return newNode;
 }
 
-void insertEnd(TokenNode** head, Token token){
+void insertEnd(token_list *list, Token token){
 
     TokenNode* insertedNode = createNode(token);
 
-    if (*head == NULL) {
-        *head = insertedNode;
+    if (list->head == NULL) {
+        list->head = insertedNode;
     } else {
-        TokenNode* temp = *head;
+        TokenNode* temp = list->head;
 
         while(temp->next != NULL) temp = temp->next;
 
         temp->next = insertedNode;
     }
+
+    list->size++;
 }
 
 const char *node_to_string(TokenType type)
@@ -62,13 +67,15 @@ const char *node_to_string(TokenType type)
     }
 }
 
-void display(TokenNode* head) {
-    TokenNode* temp = head;
+void display(token_list *list) {
+    TokenNode* temp = list->head;
     while (temp != NULL) {
-        printf("%s -> ", node_to_string(temp->token.type));  // Print the data of the TokenNode
+        printf("Lexeme: %s | %s\n", temp->token.lexeme, node_to_string(temp->token.type));  // Print the data of the TokenNode
         temp = temp->next;  // Move to the next TokenNode
     }
     printf("NULL\n");
+
+    printf("List Size -> %zu\n", list->size);
 }
 
 // Function to delete a TokenNode with a given value
@@ -88,12 +95,13 @@ TokenNode* search(TokenNode* head, Token token) {
     return NULL;  // TokenNode not found
 }
 
-void free_tl_list(TokenNode** head) {
-    TokenNode* temp = *head;
+void free_tl_list(token_list *list) {
+    TokenNode* temp = list->head;
     while (temp != NULL) {
         TokenNode* next = temp->next;
         free(temp);
         temp = next;
     }
-    *head = NULL;
+    list->head = NULL;
+    free(list);
 }

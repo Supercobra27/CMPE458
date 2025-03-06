@@ -59,7 +59,7 @@ static const char *const ordered_operators[] = {
     "-",
     "*",
     "/",
-    "%%",
+    "%",
     "~",
     "!"
 };
