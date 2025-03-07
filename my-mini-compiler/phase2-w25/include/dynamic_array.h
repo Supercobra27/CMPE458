@@ -3,6 +3,16 @@
 
 #include <stddef.h>
 
+// Array data structure
+/**
+ * WARNING:
+ * - The array capacity/size is not checked for overflow when increasing the capacity. (underflow is handled by setting the capacity to 0).
+ * TODO:
+ * - Implement array_increase_capacity overflow checking.
+ * - Add ability to push multiple elements at once (by passing a pointer to an array of elements).
+ * - Add a
+ * - Add ability to create elements in place by passing a function pointer if needed.
+ */
 typedef struct Array_t Array;
 typedef void *Element;
 
@@ -41,7 +51,10 @@ size_t array_size(Array *const a);
 size_t array_capacity(Array *const a);
 
 /**
- * Increases the capacity of the array by the given amount.
+ * Increases the capacity of the array by the given amount. 
+ * 
+ * WARNING: If `array_capacity(a) + increase` overflows, Undefined behavior.
+ * 
  * @param a The array to increase the capacity of. If `a` is NULL or invalid, Undefined behavior.
  * @param increase The amount to increase the capacity by.
  */
@@ -49,6 +62,9 @@ void array_increase_capacity(Array *const a, const size_t increase);
 
 /**
  * Decreases the capacity of the array by the given amount.
+ * 
+ * If `array_capacity(a) - decrease` is less than `array_size(a)`, the array is truncated and the truncated elements are freed.
+ * 
  * @param a The array to decrease the capacity of. If `a` is NULL or invalid, Undefined behavior.
  * @param decrease The amount to decrease the capacity by. If `decrease` is greater than or equal to the current capacity, then the decrease is equivalent to `array_set_capacity(a, 0)`.
  */
@@ -56,14 +72,21 @@ void array_decrease_capacity(Array *const a, const size_t decrease);
 
 /**
  * Resizes the array to the new capacity.
- * If `new_capacity` is less than `a->size`, the array is truncated and the truncated elements are freed.
+ * 
+ * If `new_capacity` is less than `array_size(a)`, the array is truncated and the truncated elements are freed.
+ * 
  * @param a The array to resize.
  * @param new_capacity The new capacity of the array. If new_capacity == 0, the array elements are all freed.
  */
 void array_set_capacity(Array *const a, const size_t new_capacity);
 
 /**
- * Inserts an element at the end of the array by memcpy, resizing if necessary.
+ * Inserts an element at the end of the array by memcpy, resizing if necessary. 
+ * 
+ * This increase the size of the array by 1. This is the only way to increase the size of the array.
+ * 
+ * WARNING: if resizing the array causes the capacity to overflow a `size_t`, Undefined behavior.
+ * 
  * @param a The array. If `a` is NULL or invalid, Undefined behavior.
  * @param e A pointer to the element to push. If `e` is NULL or invalid, Undefined behavior.
  */
@@ -80,7 +103,7 @@ Element *array_get(Array *const a, const size_t index);
 /**
  * Sets the element at the given index by using memcpy.
  * @param a The array to set. If `a` is NULL or invalid, Undefined behavior.
- * @param index The index of the element to set.
+ * @param index The index of the element to set. (0 <= index < array_size(a)) If `index` is out of bounds, Undefined behavior (likely Segmentation fault).
  * @param e The element to be copied into the array.
  */
 void array_set(Array *const a, const size_t index, const Element *const e);
@@ -88,7 +111,7 @@ void array_set(Array *const a, const size_t index, const Element *const e);
 /**
  * Returns a pointer to the first element in the array.
  * @param a The array to get the first element of. If `a` is NULL or invalid, Undefined behavior.
- * @return A pointer to the first element in the array.
+ * @return A pointer to the first element in the array. If the array is empty, then this pointer is invalid.
  */
 Element *array_begin(Array *const a);
 
@@ -98,7 +121,5 @@ Element *array_begin(Array *const a);
  * @return A pointer to the element after the last element in the array. (`array_end(a) + array_size(a)` is equivalent to what is returned)
  */
 Element *array_end(Array *const a);
-
-// Could add ability to create elements in place by passing a function pointer if needed.
 
 #endif
