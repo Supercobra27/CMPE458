@@ -10,11 +10,6 @@
 
 #define FILE_EXT ".cisc"
 
-void print_error(ErrorType error, int line, const char *lexeme)
-{
-    printf("print_error unimplemented\n");
-}
-
 // punctuators
 static const char *punctuators[] = {
 ";", "{", "}", "(", ")", ","
@@ -77,54 +72,6 @@ void record_newline(const char *input, int position)
 }
 
 /* Error messages for lexical errors */
-const char *const error_type_to_error_message(ErrorType error)
-{
-    switch (error)
-    {
-    case ERROR_NONE:
-        return "No error";
-    case ERROR_INVALID_CHAR:
-        return "error: invalid character";
-    case ERROR_INVALID_NUMBER:
-        return "error: invalid number format";
-    case ERROR_UNTERMINATED_STRING:
-        return "error: unterminated string literal";
-    case ERROR_STRING_TOO_LONG:
-        return "error: string literal too long";
-    case ERROR_UNTERMINATED_COMMENT:
-        return "error: unterminated comment, missing matching '!?'";
-    default:
-        return "Unknown error";
-    }
-}
-
-const char *token_type_to_string(TokenType type)
-{
-    // need to change to work within ranges or its a huge case statement
-
-    if (type == TOKEN_EOF){
-        return "EOF";
-    } else if (type == TOKEN_INTEGER_CONST){
-        return "INTEGER";
-    }else if (type == TOKEN_FLOAT_CONST){
-        return "FLOAT";
-    }else if (type == TOKEN_STRING_CONST){
-        return "STRING_LITERAL";
-    }else if (type >= TOKEN_SINGLE_EQUALS && type <= TOKEN_BANG){
-        return "OPERATOR";
-    }else if (type >= TOKEN_INT_KEYWORD && type <= TOKEN_FACTORIAL_KEYWORD){
-        return "KEYWORD";
-    }else if (type >= TOKEN_SEMICOLON && type <= TOKEN_RIGHT_PAREN){
-        return "PUNCTUATOR";
-    }else if (type == TOKEN_ERROR){
-        return "ERROR";
-    }else if(type == TOKEN_IDENTIFIER){
-        return "IDENTIFIER";
-    }else {
-        return "UNKNOWN";
-    }
-}
-
 /* Print token information */
 void print_token(Token token)
 {
@@ -137,7 +84,7 @@ void print_token_compiler_message(const char *input_file_path, const char *input
 {
     const int line_start_pos = *(int *)array_get(line_start, token.position.line - 1);
     const char *const line_end = strchr(input + line_start_pos, '\n');
-    const int line_length = line_end == NULL ? strlen(input + line_start_pos) : line_end - (input + line_start_pos);
+    const int line_length = line_end == NULL ? (int)strlen(input + line_start_pos) : line_end - (input + line_start_pos);
     // tildes is supposed to be as long as the longest token lexeme so that it can always be chopped to the right length.
     static const char *tildes = "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
     printf(

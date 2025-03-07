@@ -703,7 +703,7 @@ int main()
         if (is_direct_left_recursive(grammar + (t - ParseToken_FIRST_NONTERMINAL)) != (size_t)-1)
         {
             printf("Grammar has direct left recursion for %d\n", t);
-            // TODO: validate that the left recursive rule is in the correct format: A -> A B1 B2 ... | C1 C2 ... | D1 D2 ... | ... where non of C1, C2, D1, D2, ... start with A
+            // TODO: validate that the left recursive rule is in the correct format: A -> A B1 B2 ... | C1 C2 ... | D1 D2 ... | ... where non of C1, D1, ... start with A
         }
         // check for indirect left recursion
         if (is_indirect_left_recursive(grammar, ParseToken_COUNT_NONTERMINAL, t) != (size_t)-1)
@@ -715,15 +715,17 @@ int main()
 
 
     // Test with both valid and invalid inputs
+    /*
     const char *input = "int x;\n"   // Valid declaration
                         "x = 42;\n"; // Valid assignment;
+    */
     // TODO 8: Add more test cases and read from a file:
     const char *invalid_input = "int x;\n"
                                 "x = 42;\n"
                                 "int ;";
 
     printf("Parsing input:\n%s\n", invalid_input);
-    Array *tokens = array_new(10, sizeof(Token));
+    Array *tokens = array_new(8, sizeof(Token));
     // init lexer and stuff
     
     // Tokenize the input
@@ -740,7 +742,7 @@ int main()
 
     printf("\nParse Tree:\n");
     
-    ParseTreeNode_print(root, 0);
+    ParseTreeNode_print(root, 0, 1);
 
     // ParseTreeNode_free();
     return 0;

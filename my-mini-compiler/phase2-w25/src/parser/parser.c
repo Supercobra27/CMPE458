@@ -3,10 +3,10 @@
 #include <stdlib.h>
 #include <assert.h>
 
+#include "../../include/parser.h"
 #include "../../include/tokens.h"
 #include "../../include/parse_tokens.h"
 #include "../../include/grammar.h"
-#include "../../include/parser.h"
 
 
 /*
@@ -47,7 +47,7 @@ static const char *parse_error(ParseErrorType error)
 */
 
 
-void ParseTreeNode_print(ParseTreeNode *node, int level)
+void ParseTreeNode_print(ParseTreeNode *node, int level, bool with_error)
 {
     for (int i = 0; i < level; ++i)
     {
@@ -55,15 +55,17 @@ void ParseTreeNode_print(ParseTreeNode *node, int level)
     }
     if (node->token != NULL)
     {
-        printf("%d\n", node->token->type);
+        printf("%s\n", token_type_to_string(node->token->type));
     }
     else
     {
-        printf("%d\n", node->type);
+        printf("%s", parse_token_to_string(node->type));
+        if (with_error) printf(" (%s)", parse_error_type_to_string(node->error));
+        printf("\n");
     }
     for (size_t i = 0; i < node->num_children; ++i)
     {
-        ParseTreeNode_print(node->children + i, level + 1);
+        ParseTreeNode_print(node->children + i, level + 1, with_error);
     }
 }
 

@@ -2,11 +2,13 @@
 #ifndef PARSER_H
 #define PARSER_H
 
+#include <stdbool.h>
 #include "parse_tokens.h"
 #include "ast_node.h"
+#include "grammar.h"
 
 // Parser functions
-void ParseTreeNode_print(ParseTreeNode *node, int level);
+void ParseTreeNode_print(ParseTreeNode *node, int level, bool with_error);
 
 
 /**

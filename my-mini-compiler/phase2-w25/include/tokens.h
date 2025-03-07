@@ -9,18 +9,15 @@
 /* Token types that need to be recognized by the lexer */
 typedef enum _TokenType
 {
-    /* Original Tokens */
-    TOKEN_IDENTIFIER,     // regex: ^[a-zA-Z_][a-zA-Z0-9_]*$
+    TOKEN_IDENTIFIER,     
     TOKEN_ERROR,
 
-    /* New Tokens for Parsing */
-
     /* Values */
-    TOKEN_INTEGER_CONST, // regex: ^[0-9]+$
+    TOKEN_INTEGER_CONST, 
     TOKEN_FLOAT_CONST,
-    TOKEN_STRING_CONST, // regex: ^"[ -~]*"$
+    TOKEN_STRING_CONST, 
 
-    /* Keywords */ // regex: ^(if|else|while|factorial|repeat|until|int|string)$
+    /* Keywords */ 
     TOKEN_INT_KEYWORD,
     TOKEN_FLOAT_KEYWORD,
     TOKEN_STRING_KEYWORD,
@@ -66,6 +63,33 @@ typedef enum _TokenType
 
 } TokenType;
 
+static const char *token_type_to_string(TokenType type)
+{
+    // need to change to work within ranges or its a huge case statement
+
+    if (type == TOKEN_EOF){
+        return "EOF";
+    } else if (type == TOKEN_INTEGER_CONST){
+        return "INTEGER";
+    }else if (type == TOKEN_FLOAT_CONST){
+        return "FLOAT";
+    }else if (type == TOKEN_STRING_CONST){
+        return "STRING_LITERAL";
+    }else if (type >= TOKEN_SINGLE_EQUALS && type <= TOKEN_BANG){
+        return "OPERATOR";
+    }else if (type >= TOKEN_INT_KEYWORD && type <= TOKEN_FACTORIAL_KEYWORD){
+        return "KEYWORD";
+    }else if (type >= TOKEN_SEMICOLON && type <= TOKEN_RIGHT_PAREN){
+        return "PUNCTUATOR";
+    }else if (type == TOKEN_ERROR){
+        return "ERROR";
+    }else if(type == TOKEN_IDENTIFIER){
+        return "IDENTIFIER";
+    }else {
+        return "UNKNOWN";
+    }
+}
+
 /* Error types for lexical analysis */
 typedef enum
 {
@@ -76,6 +100,27 @@ typedef enum
     ERROR_STRING_TOO_LONG,
     ERROR_UNTERMINATED_COMMENT,
 } ErrorType;
+
+static const char *error_type_to_error_message(ErrorType error)
+{
+    switch (error)
+    {
+    case ERROR_NONE:
+        return "No error";
+    case ERROR_INVALID_CHAR:
+        return "error: invalid character";
+    case ERROR_INVALID_NUMBER:
+        return "error: invalid number format";
+    case ERROR_UNTERMINATED_STRING:
+        return "error: unterminated string literal";
+    case ERROR_STRING_TOO_LONG:
+        return "error: string literal too long";
+    case ERROR_UNTERMINATED_COMMENT:
+        return "error: unterminated comment, missing matching '!?'";
+    default:
+        return "Unknown error";
+    }
+}
 
 /* Details for positions of tokens in a file. */
 typedef struct _LexemePosition

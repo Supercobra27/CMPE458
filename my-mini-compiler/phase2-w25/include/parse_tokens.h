@@ -368,13 +368,31 @@ static const char *parse_token_to_string(ParseToken t)
     }
 }
 
-
 typedef enum _ParseErrorType {
     PARSE_ERROR_NONE,
     PARSE_ERROR_WRONG_TOKEN,
     PARSE_ERROR_NO_RULE_MATCHES,
     PARSE_ERROR_MULTIPLE_LEFT_RECURSIVE_RULES,
 } ParseErrorType;
+
+static const char *parse_error_type_to_string(ParseErrorType error)
+{
+    switch (error)
+    {
+    case PARSE_ERROR_NONE:
+        return "PARSE_ERROR_NONE";
+    case PARSE_ERROR_WRONG_TOKEN:
+        return "PARSE_ERROR_WRONG_TOKEN";
+    case PARSE_ERROR_NO_RULE_MATCHES:
+        return "PARSE_ERROR_NO_RULE_MATCHES";
+    case PARSE_ERROR_MULTIPLE_LEFT_RECURSIVE_RULES:
+        return "PARSE_ERROR_MULTIPLE_LEFT_RECURSIVE_RULES";
+    default:
+        return "UNKNOWN";
+        break;
+    }   
+}
+
 
 typedef struct _ParseTreeNode {
     ParseToken type;
