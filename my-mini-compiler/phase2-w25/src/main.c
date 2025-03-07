@@ -727,12 +727,18 @@ int main()
     // init lexer and stuff
     
     // Tokenize the input
+    // put in just an EOF token for now
+    array_push(tokens, (Element *)&(Token){
+        .error = ERROR_NONE, 
+        .type = PT_EOF, 
+        .lexeme = "", 
+        .position = (LexemePosition){.line = 0, .col_end = 0, .col_start = 0},});
 
     // Parse the input
     size_t token_index = 0;
     ParseTreeNode *root = parse_cfg_recursive_descent_parse_tree(grammar, ParseToken_COUNT_NONTERMINAL, ParseToken_START_NONTERMINAL, (Token *)array_begin(tokens), &token_index);
 
-    printf("\n Parse Tree:\n");
+    printf("\nParse Tree:\n");
     
     ParseTreeNode_print(root, 0);
 
