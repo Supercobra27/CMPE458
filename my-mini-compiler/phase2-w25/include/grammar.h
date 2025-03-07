@@ -44,33 +44,5 @@ size_t is_direct_left_recursive(const CFG_GrammarRule *rule);
  */
 size_t is_indirect_left_recursive(const CFG_GrammarRule *grammar, const size_t grammar_size, const ParseToken lhs_token);
 
-/**
- * Parse a CFG_GrammarRule using the given tokens and return the resulting ASTNode.
- * 
- * WARNING: This can go into infinite recursion when parsing indirect-left-recursive grammar rules. (direct left recursion will be handled by the parser).
- * 
- * @param result_type The type of ASTNode that should be returned
- * @param grammar The grammar containing the rules to parse
- * @param grammar_size the size of the grammar array
- * @param lhs_rule_index The index of the rule to parse in the grammar array
- * @param tokens The tokens coming from the Lexer to use for parsing. This array must be terminated with TOKEN_EOF.
- * @param index The index of the current token to parse, upon termination, this index will point to the next token to parse (will be unchanged if parsing fails or if the grammar rule consumes no tokens).
- */
-// ASTNode *parse_cfg_recursive_descent(ASTNodeType result_type, CFG_GrammarRule *grammar, const size_t grammar_size, const size_t lhs_rule_index, Token *tokens, size_t *index);
-
-/**
- * Parse a deterministic CFG_GrammarRule using the given tokens and return the resulting ParseTreeNode.
- * 
- * WARNING: This can go into infinite recursion when parsing indirect-left-recursive grammar rules. (direct left recursion will be handled by the parser).
- * 
- * @param grammar The context free grammar representing the rules to parse.
- * @param grammar_size The size of the grammar array.
- * @param lhs_token The index of the rule to parse in the grammar array.
- * @param tokens The tokens coming from the Lexer to use for parsing. This array must be terminated with TokenType of TOKEN_EOF.
- * @param index The index of the current token to parse, upon termination, this index will point to the next token to parse (if parsing fails, it will point to the first token that could not be parsed).
- */
-ParseTreeNode *parse_cfg_recursive_descent_parse_tree(const CFG_GrammarRule *grammar, const size_t grammar_size, const size_t lhs_token, const Token *tokens, size_t *index);
-
-
 
 #endif /* GRAMMAR_H */

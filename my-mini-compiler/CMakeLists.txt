@@ -20,5 +20,6 @@ add_executable(my-mini-compiler-phase2
         phase2-w25/src/lexer/lexer.c
         phase2-w25/src/dynamic_array.c
         phase2-w25/src/operators.c
-        phase2-w25/src/parser/cfg_recursive_descent_parser.c
-        phase2-w25/src/parser/parser.c)
+        phase2-w25/src/parser/grammar.c
+        phase2-w25/src/parser/parser.c
+        phase2-w25/src/main.c)
