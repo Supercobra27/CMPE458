@@ -24,6 +24,8 @@ To Do:
 - [ ] Write up documentation
     - [ ] Grammar
     - [ ] file structure
+    - [ ] list of changes
+
 
 
 ## Phase 3: Semantic Analyzer
