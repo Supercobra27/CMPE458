@@ -16,4 +16,10 @@ int isOperatorStr(const char *_Str);
  */
 int isOperator(char c);
 
+
+/**
+ * returns the index of the operator in the ordered_operators array. This index will correspond to the ordering of operator tokens in the TokenType and ParseToken enum. 
+ */
+int findMappableIndex(const char *_Str);
+
 #endif

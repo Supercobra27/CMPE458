@@ -66,28 +66,146 @@ typedef enum _TokenType
 static const char *token_type_to_string(TokenType type)
 {
     // need to change to work within ranges or its a huge case statement
-
-    if (type == TOKEN_EOF){
-        return "EOF";
-    } else if (type == TOKEN_INTEGER_CONST){
-        return "INTEGER";
-    }else if (type == TOKEN_FLOAT_CONST){
-        return "FLOAT";
-    }else if (type == TOKEN_STRING_CONST){
-        return "STRING_LITERAL";
-    }else if (type >= TOKEN_SINGLE_EQUALS && type <= TOKEN_BANG){
-        return "OPERATOR";
-    }else if (type >= TOKEN_INT_KEYWORD && type <= TOKEN_FACTORIAL_KEYWORD){
-        return "KEYWORD";
-    }else if (type >= TOKEN_SEMICOLON && type <= TOKEN_RIGHT_PAREN){
-        return "PUNCTUATOR";
-    }else if (type == TOKEN_ERROR){
-        return "ERROR";
-    }else if(type == TOKEN_IDENTIFIER){
-        return "IDENTIFIER";
-    }else {
+    switch (type)
+    {
+    case TOKEN_IDENTIFIER:
+        return "TOKEN_IDENTIFIER";
+        break;
+    case TOKEN_ERROR:
+        return "TOKEN_ERROR";
+        break;
+    /* Values */
+    case TOKEN_INTEGER_CONST:
+        return "TOKEN_INTEGER_CONST";
+        break;
+    case TOKEN_FLOAT_CONST:
+        return "TOKEN_FLOAT_CONST";
+        break;
+    case TOKEN_STRING_CONST:
+        return "TOKEN_STRING_CONST";
+        break;
+    /* Keywords */
+    case TOKEN_INT_KEYWORD:
+        return "TOKEN_INT_KEYWORD";
+        break;
+    case TOKEN_FLOAT_KEYWORD:
+        return "TOKEN_FLOAT_KEYWORD";
+        break;
+    case TOKEN_STRING_KEYWORD:
+        return "TOKEN_STRING_KEYWORD";
+        break;
+    case TOKEN_PRINT_KEYWORD:
+        return "TOKEN_PRINT_KEYWORD";
+        break;
+    case TOKEN_IF_KEYWORD:
+        return "TOKEN_IF_KEYWORD";
+        break;
+    case TOKEN_THEN_KEYWORD:
+        return "TOKEN_THEN_KEYWORD";
+        break;
+    case TOKEN_ELSE_KEYWORD:
+        return "TOKEN_ELSE_KEYWORD";
+        break;
+    case TOKEN_WHILE_KEYWORD:
+        return "TOKEN_WHILE_KEYWORD";
+        break;
+    case TOKEN_REPEAT_KEYWORD:
+        return "TOKEN_REPEAT_KEYWORD";
+        break;
+    case TOKEN_UNTIL_KEYWORD:
+        return "TOKEN_UNTIL_KEYWORD";
+        break;
+    case TOKEN_FACTORIAL_KEYWORD:
+        return "TOKEN_FACTORIAL_KEYWORD";
+        break;
+    /* Punctuators */
+    case TOKEN_SEMICOLON:
+        return "TOKEN_SEMICOLON";
+        break;
+    case TOKEN_LEFT_BRACE:
+        return "TOKEN_LEFT_BRACE";
+        break;
+    case TOKEN_RIGHT_BRACE:
+        return "TOKEN_RIGHT_BRACE";
+        break;
+    case TOKEN_LEFT_PAREN:
+        return "TOKEN_LEFT_PAREN";
+        break;
+    case TOKEN_RIGHT_PAREN:
+        return "TOKEN_RIGHT_PAREN";
+        break;
+    case TOKEN_EOF:
+        return "TOKEN_EOF";
+        break;
+    /* Operators */
+    case TOKEN_SINGLE_EQUALS:
+        return "TOKEN_SINGLE_EQUALS";
+        break;
+    case TOKEN_DOUBLE_PIPE:
+        return "TOKEN_DOUBLE_PIPE";
+        break;
+    case TOKEN_DOUBLE_AMPERSAND:
+        return "TOKEN_DOUBLE_AMPERSAND";
+        break;
+    case TOKEN_SINGLE_PIPE:
+        return "TOKEN_SINGLE_PIPE";
+        break;
+    case TOKEN_CARET:
+        return "TOKEN_CARET";
+        break;
+    case TOKEN_SINGLE_AMPERSAND:
+        return "TOKEN_SINGLE_AMPERSAND";
+        break;
+    case TOKEN_LESS_THAN_EQUALS:
+        return "TOKEN_LESS_THAN_EQUALS";
+        break;
+    case TOKEN_LESS_THAN:
+        return "TOKEN_LESS_THAN";
+        break;
+    case TOKEN_GREATER_THAN_EQUALS:
+        return "TOKEN_GREATER_THAN_EQUALS";
+        break;
+    case TOKEN_GREATER_THAN:
+        return "TOKEN_GREATER_THAN";
+        break;
+    case TOKEN_DOUBLE_EQUALS:
+        return "TOKEN_DOUBLE_EQUALS";
+        break;
+    case TOKEN_BANG_EQUALS:
+        return "TOKEN_BANG_EQUALS";
+        break;
+    case TOKEN_DOUBLE_LESS_THAN:
+        return "TOKEN_DOUBLE_LESS_THAN";
+        break;
+    case TOKEN_DOUBLE_GREATER_THAN:
+        return "TOKEN_DOUBLE_GREATER_THAN";
+        break;
+    case TOKEN_PLUS:
+        return "TOKEN_PLUS";
+        break;
+    case TOKEN_MINUS:
+        return "TOKEN_MINUS";
+        break;
+    case TOKEN_STAR:
+        return "TOKEN_STAR";
+        break;
+    case TOKEN_FORWARD_SLASH:
+        return "TOKEN_FORWARD_SLASH";
+        break;
+    case TOKEN_PERCENT:
+        return "TOKEN_PERCENT";
+        break;
+    case TOKEN_TILDE:
+        return "TOKEN_TILDE";
+        break;
+    case TOKEN_BANG:
+        return "TOKEN_BANG";
+        break;
+    default:
         return "UNKNOWN";
+        break;
     }
+
 }
 
 /* Error types for lexical analysis */

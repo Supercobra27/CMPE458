@@ -110,7 +110,7 @@ ParseTreeNode *parse_cfg_recursive_descent_parse_tree(const CFG_GrammarRule *gra
     node->children = NULL;
     node->num_children = 0;
     node->token = NULL;
-    node->error = AST_ERROR_NONE;
+    node->error = PARSE_ERROR_NONE;
 
     // terminal is only consumed if there is a match.
     if (ParseToken_IS_TERMINAL(token))
@@ -126,17 +126,16 @@ ParseTreeNode *parse_cfg_recursive_descent_parse_tree(const CFG_GrammarRule *gra
     }
 
     // non-terminal now 
-    const CFG_GrammarRule *g_rule = grammar + token - ParseToken_COUNT_NONTERMINAL;
+    const CFG_GrammarRule *g_rule = grammar + token - ParseToken_FIRST_NONTERMINAL;
 
     // Since the grammar is prefix-free (deterministic), there must can be at most 1 left-recursive rule. 
     // look for a rule that matches the tokens. If a token matches, then the rule must work (the rules are assumed to be deterministic, i.e. prefix-free).
-    bool rule_match = 0;
     const ProductionRule *p_rule = g_rule->rules, *left_recursive_rule = NULL;
-    for (; !rule_match && p_rule < g_rule->rules + g_rule->num_rules; ++p_rule)
+    for (; p_rule < g_rule->rules + g_rule->num_rules; ++p_rule)
     {
         if (p_rule->tokens[0] == PT_NULL)
         {
-            rule_match = 1;
+            break;
         }
         else if (p_rule->tokens[0] == token)
         {
@@ -152,18 +151,19 @@ ParseTreeNode *parse_cfg_recursive_descent_parse_tree(const CFG_GrammarRule *gra
         }
         else if (ParseToken_starts_with(grammar, grammar_size, p_rule->tokens[0], tokens[*index].type))
         {
-            rule_match = 1;
+            break;
         }
     }
 
-    if (!rule_match)
+    if (p_rule == g_rule->rules + g_rule->num_rules)
     {
         node->error = PARSE_ERROR_NO_RULE_MATCHES;
         return node;
     }
 
     // now parse according to the rule.
-    while (p_rule->tokens[node->num_children] != PT_NULL) ++node->num_children;
+    while (p_rule->tokens[node->num_children] != PT_NULL) 
+        ++node->num_children;
     // allocate memory for the children (if no children, then this was an empty string rule that consumes no input).
     if (node->num_children)
         node->children = malloc(node->num_children * sizeof(ParseTreeNode));

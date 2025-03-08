@@ -29,9 +29,9 @@ static int is_keyword(const char *str)
 }
 
 // Line tracking
-static int current_line;
+static int global_current_line;
 // This is a dynamic array of type int to track the start position of each line.
-static Array *line_start;
+static Array *global_line_start;
 // Could save all tokens in a dynamic array if needed.
 
 void init_lexer(int *position, int *line, Array **line_start_positions)
@@ -45,12 +45,12 @@ void init_lexer(int *position, int *line, Array **line_start_positions)
 // Call this function to record a newline character.
 // If the input[position] is a newline character, it will record the position of the next character.
 // if the input[position] is not a newline character, nothing will happen.
-void record_newline(const char *input, int position)
+void record_if_newline(const char *input, int position)
 {
     if (input[position] != '\n')
         return;
     position++;
-    array_push(line_start, (Element *)&position);
+    array_push(global_line_start, (Element *)&position);
 }
 
 /* Error messages for lexical errors */
@@ -112,7 +112,7 @@ void print_token(Token token)
 // Do we want to distinguish between errors and warnings?
 void print_token_compiler_message(const char *input_file_path, const char *input, Token token)
 {
-    const int line_start_pos = *(int *)array_get(line_start, token.position.line - 1);
+    const int line_start_pos = *(int *)array_get(global_line_start, token.position.line - 1);
     const char *const line_end = strchr(input + line_start_pos, '\n');
     const int line_length = line_end == NULL ? strlen(input + line_start_pos) : line_end - (input + line_start_pos);
     // tildes is supposed to be as long as the longest token lexeme so that it can always be chopped to the right length.
@@ -136,8 +136,8 @@ Token get_next_token(const char *input, int *pos)
     {
         if (c == '\n')
         {
-            current_line++;
-            record_newline(input, *pos);
+            global_current_line++;
+            record_if_newline(input, *pos);
         }
         (*pos)++;
     }
@@ -145,7 +145,7 @@ Token get_next_token(const char *input, int *pos)
     Token token = {
         .type = TOKEN_ERROR,
         .lexeme = "",
-        .position = {current_line, (*pos) - *(int *)array_get(line_start, current_line - 1) + 1, (*pos) - *(int *)array_get(line_start, current_line - 1) + 1},
+        .position = {global_current_line, (*pos) - *(int *)array_get(global_line_start, global_current_line - 1) + 1, (*pos) - *(int *)array_get(global_line_start, global_current_line - 1) + 1},
         .error = ERROR_NONE};
 
     if (input[*pos] == '\0')
@@ -177,8 +177,8 @@ Token get_next_token(const char *input, int *pos)
         {
             if (input[*pos] == '\n')
             {
-                current_line++;
-                record_newline(input, *pos);
+                global_current_line++;
+                record_if_newline(input, *pos);
             }
             (*pos)++;
         }
@@ -395,7 +395,7 @@ int main(int argc, char *argv[])
 
     int position = 0;
     Token token;
-    init_lexer(&position, &current_line, &line_start);
+    init_lexer(&position, &global_current_line, &global_line_start);
 
     printf("Analyzing input:\n%s\n\n", input);
 
@@ -407,21 +407,21 @@ int main(int argc, char *argv[])
     } while (token.type != TOKEN_EOF);
 
     // Print line start positions.
-    for (size_t i = 0; i < array_size(line_start); i++)
+    for (size_t i = 0; i < array_size(global_line_start); i++)
     {
-        printf("Line %zu starts at position %d\n", i + 1U, *(int *)array_get(line_start, i));
+        printf("Line %zu starts at position %d\n", i + 1U, *(int *)array_get(global_line_start, i));
     }
-    array_free(line_start);
+    array_free(global_line_start);
 
     // Get all tokens and print all possible compiler messages for tokens.
-    init_lexer(&position, &current_line, &line_start);
+    init_lexer(&position, &global_current_line, &global_line_start);
     do
     {
         token = get_next_token(input, &position);
         print_token_compiler_message(file_name, input, token);
     } while (token.type != TOKEN_EOF);
 
-    array_free(line_start);
+    array_free(global_line_start);
     free(input);
     return 0;
 }

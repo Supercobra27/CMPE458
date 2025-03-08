@@ -6,7 +6,7 @@
 typedef enum _ParseToken {
     // Terminal tokens (these enum values must directly correspond to the token values in tokens.h)
     PT_IDENTIFIER,
-    PT_ERROR, // placeholder for consistency
+    PT_TOKEN_ERROR, // placeholder for consistency
 
     /* Values */
     PT_INTEGER_CONST,

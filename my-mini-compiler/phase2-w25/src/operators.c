@@ -5,6 +5,7 @@
 
 static const int num_multi_operators = 18;
 static const char *const single_operators = "=+-*/~|&^!><";
+// These operators are ordered in non-increasing length. Not all of these operators (namely the compound assignment operators) are actually used (see ordered_operators for all operators used in the programming language).
 static const char *const multi_operators[] = {
     "<<=",
     ">>=",
@@ -30,16 +31,17 @@ static const char *const multi_operators[] = {
     "-",
     "/",
     "*",
+    "%",
     "~",
     "&",
     "|",
     "^",
     "!",
     "<",
-    ">"};
+    ">"
+};
 
-    // We have no percent?
-
+// These operators are ordered such that the ordering coincides with the Token enum.
 static const char *const ordered_operators[] = {
     "=",
     "||",

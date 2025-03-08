@@ -1,14 +1,19 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <assert.h>
 #include "../include/dynamic_array.h"
 #include "../include/grammar.h"
 #include "../include/lexer.h"
 #include "../include/parser.h"
 
+#define FILE_EXT ".cisc"
+
 // Main function for testing
-int main()
+int main(int argc, char *argv[])
 {
+    setbuf(stdout, NULL);  // Disable buffering
+    // not sure if there is any other way to statically initialize this so that it's not right in the middle of the main function.
     const CFG_GrammarRule grammar[ParseToken_COUNT_NONTERMINAL] = {
         (CFG_GrammarRule){
             .lhs = PT_PROGRAM,
@@ -712,38 +717,95 @@ int main()
         }
     }
     
+    // input
+    char *input = NULL;
+    bool must_free_input = false;
+    if (argc == 2)
+    {
+        // Input file extension check
+        int file_len = strlen(argv[1]);
+        char *file_name = argv[1];
+        if (file_len < 5 || strncmp(file_name + file_len - 5, FILE_EXT, 5) != 0)
+        {
+            printf("Incorrect file extension, the correct extension is .cisc");
+            return -1;
+        }
+        // Load file into input.
+        FILE *file = fopen(file_name, "r");
+        if (file == NULL)
+        {
+            printf("Error: Unable to open file %s\n", file_name);
+            return -1;
+        }
+        fseek(file, 0, SEEK_END);
+        size_t file_size = ftell(file);
+        fseek(file, 0, SEEK_SET);
+        input = malloc(file_size + 1);
+        if (input == NULL)
+        {
+            printf("Error: Unable to allocate memory for file %s\n", file_name);
+            return -1;
+        }
+        must_free_input = true;
 
+        size_t bytes_read = 0;
+        char ch;
+        while (bytes_read < file_size && (ch = fgetc(file)) != EOF && ch != '\0')
+            input[bytes_read++] = ch;
+        input[bytes_read] = '\0';
+        fclose(file);
+    }
+    else
+    {
+        // Print usage for file input.
+        printf("Usage: .\\my-mini-compiler.exe <Input File Name>.cisc");
+        // Test with both valid and invalid inputs
+        input = "int x;\n"   // Valid declaration
+                "x = 42;\n"; // Valid assignment;
+        /*
+        input = "int x;\n"
+                "x = 42;\n"
+                "int ;";
+        */
+    }
 
-    // Test with both valid and invalid inputs
-    /*
-    const char *input = "int x;\n"   // Valid declaration
-                        "x = 42;\n"; // Valid assignment;
-    */
-    // TODO 8: Add more test cases and read from a file:
-    const char *invalid_input = "int x;\n"
-                                "x = 42;\n"
-                                "int ;";
+    // TODO: Add more test cases
+    printf("Processing input:\n%s\n", input);
 
-    printf("Parsing input:\n%s\n", invalid_input);
     Array *tokens = array_new(8, sizeof(Token));
-    // init lexer and stuff
-    
     // Tokenize the input
-    // put in just an EOF token for now
-    array_push(tokens, (Element *)&(Token){
+    printf("Tokenizing:\n");
+    init_lexer(input, 0);
+    Token token = (Token){
         .error = ERROR_NONE, 
         .type = PT_EOF, 
         .lexeme = "", 
-        .position = (LexemePosition){.line = 0, .col_end = 0, .col_start = 0},});
+        .position = (LexemePosition){.line = 0, .col_end = 0, .col_start = 0},};
+    do
+    {
+        token = get_next_token();
+        // if (token.error != ERROR_NONE)
+        // {
+        //     printf("Error: %s\n", token.lexeme);
+        //     exit(1);
+        // }
+        array_push(tokens, (Element *)&token);
+        print_token(token);
+    } while (token.type != TOKEN_EOF);
+
+    
 
     // Parse the input
+    printf("Parsing\n");
     size_t token_index = 0;
     ParseTreeNode *root = parse_cfg_recursive_descent_parse_tree(grammar, ParseToken_COUNT_NONTERMINAL, ParseToken_START_NONTERMINAL, (Token *)array_begin(tokens), &token_index);
 
-    printf("\nParse Tree:\n");
+    printf("Parse Tree:\n");
     
     ParseTreeNode_print(root, 0, 1);
 
     // ParseTreeNode_free();
+    if (must_free_input)
+        free(input);
     return 0;
 }
