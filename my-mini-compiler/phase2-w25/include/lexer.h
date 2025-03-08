@@ -28,4 +28,6 @@ Token get_next_token();
 
 void print_token(Token token);
 
+void print_token_compiler_message(const char *input_file_path, Token token);
+
 #endif /* LEXER_H */
