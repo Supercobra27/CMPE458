@@ -11,7 +11,10 @@ To Do:
     - [ ] Scope Statements
     - [ ] Declaration Statements
     - [ ] Expression Statements ---- lots of stuff to test here
-    - [ ] Print Statements
+    - [ ] ADD READ Statements !!!! NOTICED THIS ON ONQ (we can make this be "read_keyword identifier statement_end" where the identifier must be of type int and this gets one character from the input just as if you did "x = getc(stdin);" in C)
+        - [ ] add "read" as a keyword to the lexer
+        - [ ] add TOKEN_READ_KEYWORD to TokenType, PT_READ_KEYWORD to ParseToken, and AST_READ to ASTNodeType.
+    - [ ] Print Statements 
     - [ ] Conditional Statements
     - [ ] WhileLoop Statements
     - [ ] RepeatUntilLoop Statements
@@ -26,6 +29,7 @@ To Do:
 ## Phase 3: Semantic Analyzer
 - [ ] decide whether Program is present in the AST, or if it is removed and only Scope exists
 - [ ] ASTNode_from_ParseTreeNode function using grammar rules to simplify (https://stackoverflow.com/questions/5026517/whats-the-difference-between-parse-trees-and-abstract-syntax-trees-asts)
+- [ ] implement runtime error detection (for division by zero)
 - [ ] Optional: add `break` and `continue` keyword statements for loops
 - [ ] Optional: improve/simplify the parse_cfg_recursive_descent_parse_tree function
 
