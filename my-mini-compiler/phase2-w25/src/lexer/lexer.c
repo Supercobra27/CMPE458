@@ -29,6 +29,8 @@ static int is_punctuator(const char *str)
 
 // keywords
 // to check if a string is a keyword
+// return the offset of the keyword in the keywords array
+// return -1 if it is not a keyword
 static int is_keyword(const char *str)
 {
     static const char *const keywords[] = {
@@ -40,10 +42,10 @@ static int is_keyword(const char *str)
     {
         if (strcmp(str, keywords[i]) == 0)
         {
-            return i+1; // 1 to say it found something
+            return i; 
         }
     }
-    return 0;
+    return -1;
 }
 
 // global state of the lexer
@@ -101,7 +103,7 @@ void record_if_newline()
 /* Print token information */
 void print_token(Token token)
 {
-    printf("Token type=%-10s(%d), lexeme='%s', line=%-2d, column:%d-%d, error_message=\"%s\"",
+    printf("Token type=%-10s(%d), lexeme=\"%s\", line=%-2d, column:%d-%d, error_message=\"%s\"",
            token_type_to_string(token.type), token.type, token.lexeme, token.position.line, token.position.col_start, token.position.col_end, error_type_to_error_message(token.error));
 }
 
@@ -245,9 +247,9 @@ Token get_next_token()
 
         // Check if it's a keyword
         int keyword_id = is_keyword(token.lexeme);
-        if (keyword_id)
+        if (keyword_id != -1)
         {
-            token.type = (TokenType)(i-1+TOKEN_INT_KEYWORD);
+            token.type = (TokenType)(keyword_id+TOKEN_INT_KEYWORD);
         }
         else
         {
