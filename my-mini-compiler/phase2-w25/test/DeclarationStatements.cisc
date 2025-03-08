@@ -1,0 +1,19 @@
+?? valid declarations
+int x;
+float y;
+string z;
+
+?? invalid identifier
+int 2131;
+float 33d33;
+string ***73;
+
+?? additional token before semicolon
+int u &KJH;
+float v 33d33;
+string w ***73;
+
+?? missing semicolon
+int a
+float b
+string c

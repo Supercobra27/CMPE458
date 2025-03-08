@@ -8,6 +8,8 @@ To Do:
 - [x] implement ParseTreeNode_print function properly.
 - [x] make sure TokenType, ParseToken, and ASTNodeType all make coinside nicely
 - [x] write validation logic to ensure grammar is deterministic and that left-recursive rules are in the correct format
+- [x] refine the error handling a bit (error messages and types)
+- [x] ParseTreeNode_free function (implement in parser.c)
 - [ ] test and validate the parse_cfg_recursive_descent_parse_tree on our actual grammar for 
     - [ ] Scope Statements
     - [ ] Declaration Statements
@@ -19,8 +21,6 @@ To Do:
     - [ ] Conditional Statements
     - [ ] WhileLoop Statements
     - [ ] RepeatUntilLoop Statements
-- [x] refine the error handling a bit (error messages and types)
-- [x] ParseTreeNode_free function (implement in parser.c)
 - [x] address all C compiler warnings/errors (they are all just -Wunused-function warnings for enum to const char* switch case functions)
 - [ ] Write up documentation
     - [ ] Grammar
