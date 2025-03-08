@@ -216,7 +216,7 @@ ParseTreeNode *parse_cfg_recursive_descent_parse_tree(const CFG_GrammarRule *gra
             if (p_rule->tokens[1] != PT_NULL)
                 left_recursive_rule = p_rule;
         }
-        else if (ParseToken_can_start_with(grammar, grammar_size, p_rule->tokens[0], tokens[*index].type))
+        else if (ParseToken_can_start_with(grammar, grammar_size, p_rule->tokens[0], (ParseToken)tokens[*index].type))
         {
             break;
         }
@@ -269,7 +269,7 @@ ParseTreeNode *parse_cfg_recursive_descent_parse_tree(const CFG_GrammarRule *gra
     while (left_recursive_rule->tokens[left_recursive_rule_num_children] != PT_NULL) ++left_recursive_rule_num_children;
     // Try repeatedly parsing the rest of the left-recursive rule until it fails. When it fails, just stop and return what worked so far.
     // might have to change this to rollback if parsing fails even when the first token matches.
-    while (node->error == PARSE_ERROR_NONE && ParseToken_can_start_with(grammar, grammar_size, left_recursive_rule->tokens[1], tokens[*index].type))
+    while (node->error == PARSE_ERROR_NONE && ParseToken_can_start_with(grammar, grammar_size, left_recursive_rule->tokens[1], (ParseToken)tokens[*index].type))
     {
         temp = malloc(sizeof(ParseTreeNode));
         temp->type = token;

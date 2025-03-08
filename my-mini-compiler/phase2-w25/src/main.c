@@ -784,7 +784,7 @@ int main(int argc, char *argv[])
                 if (grammar[t-ParseToken_FIRST_NONTERMINAL].rules[i].tokens[0] == t)
                 {
                     grammar_contains_invalid_direct_left_recursive_rule = true;
-                    printf("Grammar has invalid direct left recursive rule for %d. Rule %u should not also be left recursive.\n", t, i);
+                    printf("Grammar has invalid direct left recursive rule for %d. Rule %llu should not also be left recursive.\n", t, i);
                 }
             }
         }
@@ -867,7 +867,7 @@ int main(int argc, char *argv[])
     init_lexer(input, 0);
     Token token = (Token){
         .error = ERROR_NONE, 
-        .type = PT_EOF, 
+        .type = TOKEN_EOF, 
         .lexeme = "", 
         .position = (LexemePosition){.line = 0, .col_end = 0, .col_start = 0},};
     do
