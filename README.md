@@ -27,6 +27,7 @@ To Do:
     - convert the parse tree to a stream of tokens
     - parse the stream of tokens to build a parse tree
     - check that the two parse trees match.
+    - for each valid parse tree, create invalid parse trees. Do this by replacing a token in the corresponding valid token stream with an invalid token.
 - [x] address all C compiler warnings/errors (they are all just -Wunused-function warnings for enum to const char* switch case functions)
 - [ ] Write up documentation
     - [ ] Grammar
