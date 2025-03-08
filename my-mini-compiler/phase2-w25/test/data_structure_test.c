@@ -5,29 +5,35 @@
 
 int main()
 {
-    CFG_GrammarRule grammar[2] = {
+    CFG_GrammarRule grammar[3] = {
         (CFG_GrammarRule){
             .lhs = PT_PROGRAM,
             .rules = (ProductionRule[]){
                 (ProductionRule){
-                    .tokens = (ParseToken[]){PT_STATEMENT_LIST, PT_EOF, PT_NULL},
-                    .ast_types = (ASTNodeType[]){AST_STATEMENT_LIST, AST_IGNORE, AST_NULL},
-                    .promote_index = -1},
-                (ProductionRule){0}},
+                    .tokens = (ParseToken[]){PT_SCOPE, PT_EOF, PT_NULL},
+                    .ast_types = (ASTNodeType[]){AST_SCOPE, AST_IGNORE, AST_NULL},
+                    .promote_index = -1}},
+            .num_rules = 1U},
+        (CFG_GrammarRule){
+            .lhs = PT_SCOPE,
+            .rules = (ProductionRule[]){
+                (ProductionRule){
+                    .tokens = (ParseToken[]){PT_STATEMENT_LIST, PT_NULL},
+                    .ast_types = (ASTNodeType[]){AST_FROM_CHILDREN, AST_NULL},
+                    .promote_index = -1}},
             .num_rules = 1U},
         (CFG_GrammarRule){
             .lhs = PT_STATEMENT_LIST,
             .rules = (ProductionRule[]){
                 (ProductionRule){
                     .tokens = (ParseToken[]){PT_STATEMENT, PT_STATEMENT_LIST, PT_NULL},
-                    .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_STATEMENT_LIST, AST_NULL},
+                    .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_FROM_CHILDREN, AST_NULL},
                     .promote_index = -1},
                 (ProductionRule){
                     .tokens = (ParseToken[]){PT_NULL},
                     .ast_types = (ASTNodeType[]){AST_NULL},
-                    .promote_index = -1},
-                (ProductionRule){0}},
-            .num_rules = 2U}
+                    .promote_index = -1}},
+            .num_rules = 2U},
     };
     // print the contents of the grammar
     for (size_t i = 0; i < 2; ++i)
