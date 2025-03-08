@@ -83,14 +83,14 @@ int isOperator(char c)
     return c != '\0' && strchr(single_operators, c) != NULL;
 }
 
-#define OrderedLength 21
+#define OrderedLength (sizeof(ordered_operators)/sizeof(ordered_operators[0]))
 int findMappableIndex(const char *_Str)
 {
-    for (int i = 0; i < OrderedLength; i++){
+    for (unsigned int i = 0; i < OrderedLength; i++){
         if (strncmp(_Str, ordered_operators[i], 2) == 0){
             return i;
         }
-        if (strncmp(_Str, ordered_operators[i], 1) == 0){
+        else if (strncmp(_Str, ordered_operators[i], 1) == 0){
             return i;
         }
     }
