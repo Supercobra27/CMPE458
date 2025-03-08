@@ -10,7 +10,7 @@
 typedef enum _TokenType
 {
     TOKEN_ERROR,
-    TOKEN_IDENTIFIER,     
+    TOKEN_IDENTIFIER,
 
     /* Values */
     TOKEN_INTEGER_CONST, 
@@ -18,50 +18,53 @@ typedef enum _TokenType
     TOKEN_STRING_CONST, 
 
     /* Keywords */ 
-    TOKEN_INT_KEYWORD,
-    TOKEN_FLOAT_KEYWORD,
-    TOKEN_STRING_KEYWORD,
-    TOKEN_PRINT_KEYWORD,
-    TOKEN_IF_KEYWORD,
-    TOKEN_THEN_KEYWORD,
-    TOKEN_ELSE_KEYWORD,
-    TOKEN_WHILE_KEYWORD,
-    TOKEN_REPEAT_KEYWORD,
-    TOKEN_UNTIL_KEYWORD,
-    TOKEN_FACTORIAL_KEYWORD,
+    TOKEN_INT_KEYWORD, // "int"
+    TOKEN_FLOAT_KEYWORD, // "float"
+    TOKEN_STRING_KEYWORD, // "string"
+    TOKEN_PRINT_KEYWORD, // "print"
+    TOKEN_IF_KEYWORD, // "if"
+    TOKEN_THEN_KEYWORD, // "then"
+    TOKEN_ELSE_KEYWORD, // "else"
+    TOKEN_WHILE_KEYWORD, // "while"
+    TOKEN_REPEAT_KEYWORD, // "repeat"
+    TOKEN_UNTIL_KEYWORD, // "until"
+    TOKEN_FACTORIAL_KEYWORD, // "factorial"
 
     /* Punctuators */
-    TOKEN_SEMICOLON,
-    TOKEN_LEFT_BRACE,
-    TOKEN_RIGHT_BRACE,
-    TOKEN_LEFT_PAREN,
-    TOKEN_RIGHT_PAREN,
-    TOKEN_EOF,
+    TOKEN_SEMICOLON, // ";"
+    TOKEN_LEFT_BRACE, // "{"
+    TOKEN_RIGHT_BRACE, // "}"
+    TOKEN_LEFT_PAREN, // "("
+    TOKEN_RIGHT_PAREN,  // ")"
+    TOKEN_EOF, // End of input "\0"
 
     /* Operators */
-    TOKEN_SINGLE_EQUALS,
-    TOKEN_SINGLE_AMPERSAND,
-    TOKEN_SINGLE_PIPE,
-    TOKEN_CARET,
-    TOKEN_LESS_THAN,
-    TOKEN_GREATER_THAN,
-    TOKEN_PLUS,
-    TOKEN_MINUS,
-    TOKEN_STAR,
-    TOKEN_FORWARD_SLASH,
-    TOKEN_PERCENT,
-    TOKEN_TILDE,
-    TOKEN_BANG,
-    TOKEN_DOUBLE_PIPE,
-    TOKEN_DOUBLE_AMPERSAND,
-    TOKEN_LESS_THAN_EQUALS,
-    TOKEN_GREATER_THAN_EQUALS,
-    TOKEN_DOUBLE_EQUALS,
-    TOKEN_BANG_EQUALS,
-    TOKEN_DOUBLE_LESS_THAN,
-    TOKEN_DOUBLE_GREATER_THAN,
+    TOKEN_EQUAL_EQUAL, // "=="
+    TOKEN_BANG_EQUAL, // "!="
+    TOKEN_GREATER_THAN_EQUAL, // ">="
+    TOKEN_LESS_THAN_EQUAL, // "<="
+    TOKEN_LESS_THAN_LESS_THAN, // "<<"
+    TOKEN_GREATER_THAN_GREATER_THAN, // ">>"
+    TOKEN_AMPERSAND_AMPERSAND, // "&&"
+    TOKEN_PIPE_PIPE, // "||"
+    TOKEN_EQUAL, // "="
+    TOKEN_PLUS, // "+"
+    TOKEN_MINUS, // "-"
+    TOKEN_STAR, // "*"
+    TOKEN_FORWARD_SLASH, // "/"
+    TOKEN_PERCENT, // "%"
+    TOKEN_TILDE, // "~"
+    TOKEN_AMPERSAND, // "&"
+    TOKEN_PIPE, // "|"
+    TOKEN_CARET, // "^"
+    TOKEN_BANG, // "!"
+    TOKEN_LESS_THAN, // "<"
+    TOKEN_GREATER_THAN, // ">"
 
 } TokenType;
+
+#define TokenType_FIRST_OPERATOR TOKEN_EQUAL_EQUAL
+#define TokenType_MAX TOKEN_GREATER_THAN
 
 static const char *token_type_to_string(TokenType type)
 {
@@ -116,48 +119,48 @@ static const char *token_type_to_string(TokenType type)
     case TOKEN_EOF:
         return "TOKEN_EOF";
     /* Operators */
-    case TOKEN_SINGLE_EQUALS:
-        return "TOKEN_SINGLE_EQUALS";
-    case TOKEN_DOUBLE_PIPE:
-        return "TOKEN_DOUBLE_PIPE";
-    case TOKEN_DOUBLE_AMPERSAND:
-        return "TOKEN_DOUBLE_AMPERSAND";
-    case TOKEN_SINGLE_PIPE:
-        return "TOKEN_SINGLE_PIPE";
-    case TOKEN_CARET:
-        return "TOKEN_CARET";
-    case TOKEN_SINGLE_AMPERSAND:
-        return "TOKEN_SINGLE_AMPERSAND";
-    case TOKEN_LESS_THAN_EQUALS:
-        return "TOKEN_LESS_THAN_EQUALS";
-    case TOKEN_LESS_THAN:
-        return "TOKEN_LESS_THAN";
-    case TOKEN_GREATER_THAN_EQUALS:
-        return "TOKEN_GREATER_THAN_EQUALS";
-    case TOKEN_GREATER_THAN:
-        return "TOKEN_GREATER_THAN";
-    case TOKEN_DOUBLE_EQUALS:
-        return "TOKEN_DOUBLE_EQUALS";
-    case TOKEN_BANG_EQUALS:
-        return "TOKEN_BANG_EQUALS";
-    case TOKEN_DOUBLE_LESS_THAN:
-        return "TOKEN_DOUBLE_LESS_THAN";
-    case TOKEN_DOUBLE_GREATER_THAN:
-        return "TOKEN_DOUBLE_GREATER_THAN";
+    case TOKEN_EQUAL_EQUAL:
+        return "TOKEN_EQUAL_EQUAL";
+    case TOKEN_BANG_EQUAL:
+        return "TOKEN_BANG_EQUAL";
+    case TOKEN_GREATER_THAN_EQUAL:
+        return "TOKEN_GREATER_THAN_EQUAL";
+    case TOKEN_LESS_THAN_EQUAL:
+        return "TOKEN_LESS_THAN_EQUAL";
+    case TOKEN_LESS_THAN_LESS_THAN:
+        return "TOKEN_LESS_THAN_LESS_THAN";
+    case TOKEN_GREATER_THAN_GREATER_THAN:
+        return "TOKEN_GREATER_THAN_GREATER_THAN";
+    case TOKEN_AMPERSAND_AMPERSAND:
+        return "TOKEN_AMPERSAND_AMPERSAND";
+    case TOKEN_PIPE_PIPE:
+        return "TOKEN_PIPE_PIPE";
+    case TOKEN_EQUAL:
+        return "TOKEN_EQUAL";
     case TOKEN_PLUS:
         return "TOKEN_PLUS";
     case TOKEN_MINUS:
         return "TOKEN_MINUS";
     case TOKEN_STAR:
-        return "TOKEN_STAR";
+        return "TOKEN_BANG_EQUALS";
     case TOKEN_FORWARD_SLASH:
         return "TOKEN_FORWARD_SLASH";
     case TOKEN_PERCENT:
         return "TOKEN_PERCENT";
     case TOKEN_TILDE:
         return "TOKEN_TILDE";
+    case TOKEN_AMPERSAND:
+        return "TOKEN_AMPERSAND";
+    case TOKEN_PIPE:
+        return "TOKEN_PIPE";
+    case TOKEN_CARET:
+        return "TOKEN_CARET";
     case TOKEN_BANG:
         return "TOKEN_BANG";
+    case TOKEN_LESS_THAN:
+        return "TOKEN_LESS_THAN";
+    case TOKEN_GREATER_THAN:
+        return "TOKEN_GREATER_THAN";
     }
     return "UNKNOWN";
 }
