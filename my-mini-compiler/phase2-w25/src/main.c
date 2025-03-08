@@ -726,13 +726,17 @@ int main(int argc, char *argv[])
     };
 
     // Validate Grammar
+    bool grammar_is_deterministic = true;
+    bool grammar_contains_direct_left_recursion = false;
+    bool grammar_contains_invalid_direct_left_recursive_rule = false;
+    bool grammar_contains_indirect_left_recursion = false;
     for (ParseToken t = ParseToken_FIRST_NONTERMINAL; ParseToken_IS_NONTERMINAL(t); ++t)
     {
         // ensure the grammar has a rule for each non-terminal in the correct index
         if (grammar[t-ParseToken_FIRST_NONTERMINAL].lhs != t)
         {
             printf("Grammar rule for %d is missing (index %d)\n", t, t-ParseToken_FIRST_NONTERMINAL);
-            exit(1);
+            return 1;
         }
         // printf("Checking for production rules for %d\n", t);
         // iterate through all production rules for each non-terminal to ensure there are no segmenation faults and all rule ParseToken strings are terminated with PT_NULL and all ASTNodeType strings are terminated with AST_NULL
@@ -743,19 +747,66 @@ int main(int argc, char *argv[])
             for (j = 0; rule->tokens[j] != PT_NULL && rule->ast_types[j] != AST_NULL; ++j);
             assert(rule->tokens[j] == PT_NULL && rule->ast_types[j] == AST_NULL);
         }
+        // Check that each grammar rule is deterministic
+        for (size_t i = 0; i < grammar[t-ParseToken_FIRST_NONTERMINAL].num_rules; ++i)
+        {
+            for (size_t j = 0; j < grammar[t-ParseToken_FIRST_NONTERMINAL].num_rules; ++j)
+            {
+                if (i != j)
+                {
+                    const ProductionRule *rule1 = &grammar[t-ParseToken_FIRST_NONTERMINAL].rules[i];
+                    const ProductionRule *rule2 = &grammar[t-ParseToken_FIRST_NONTERMINAL].rules[j];
+                    if (rule1->tokens[0] == rule2->tokens[0])
+                    {
+                        printf("Grammar rule for %d is not deterministic\n", t);
+                        grammar_is_deterministic = false;
+                    }
+                }
+            }
+        }
+
         // printf("Now checking for direct left recursion for %d\n", t);
         // check for direct left recursion
         if (is_direct_left_recursive(grammar + (t - ParseToken_FIRST_NONTERMINAL)) != (size_t)-1)
         {
             printf("Grammar has direct left recursion for %d\n", t);
-            // TODO: validate that the left recursive rule is in the correct format: A -> A B1 B2 ... | C1 C2 ... | D1 D2 ... | ... where non of C1, D1, ... start with A
+            grammar_contains_direct_left_recursion = true;
+            // validate that the left recursive rule is in the correct format: A -> A B1 B2 ... | C1 C2 ... | D1 D2 ... | ... where non of C1, D1, ... start with A
+            // check that the first rule is the left recursive rule.
+            if (grammar[t-ParseToken_FIRST_NONTERMINAL].rules[0].tokens[0] != t)
+            {
+                grammar_contains_invalid_direct_left_recursive_rule = true;
+                printf("Grammar has invalid direct left recursive rule for %d. First production must be left recursive.\n", t);
+            }
+            // check that none of the other rules are left recursive.
+            for (size_t i = 1; i < grammar[t-ParseToken_FIRST_NONTERMINAL].num_rules; ++i)
+            {
+                if (grammar[t-ParseToken_FIRST_NONTERMINAL].rules[i].tokens[0] == t)
+                {
+                    grammar_contains_invalid_direct_left_recursive_rule = true;
+                    printf("Grammar has invalid direct left recursive rule for %d. Rule %u should not also be left recursive.\n", t, i);
+                }
+            }
         }
         // check for indirect left recursion
         if (is_indirect_left_recursive(grammar, ParseToken_COUNT_NONTERMINAL, t) != (size_t)-1)
         {
             printf("Grammar has indirect left recursion for %d\n", t);
+            grammar_contains_indirect_left_recursion = true;
         }
     }
+
+    printf("grammar_is_deterministic: %s\n" , grammar_is_deterministic ? "true" : "false");
+    printf("grammar_contains_direct_left_recursion: %s\n" , grammar_contains_direct_left_recursion ? "true" : "false");
+    printf("grammar_contains_invalid_direct_left_recursive_rule: %s\n", grammar_contains_invalid_direct_left_recursive_rule ? "true" : "false");
+    printf("grammar_contains_indirect_left_recursion: %s\n" , grammar_contains_indirect_left_recursion ? "true" : "false");
+    if (!grammar_is_deterministic || grammar_contains_invalid_direct_left_recursive_rule || grammar_contains_indirect_left_recursion)
+    {
+        printf("Grammar is invalid, cannot be parsed correctly\n");
+        return 1;
+    }
+    printf("Grammar is valid\n");
+    
     
     // input
     char *input = NULL;
@@ -830,11 +881,10 @@ int main(int argc, char *argv[])
     
 
     // Parse the input
-    printf("Parsing\n");
+    printf("Parse Tree:\n");
     size_t token_index = 0;
     ParseTreeNode *root = parse_cfg_recursive_descent_parse_tree(grammar, ParseToken_COUNT_NONTERMINAL, ParseToken_START_NONTERMINAL, (Token *)array_begin(tokens), &token_index);
 
-    printf("Parse Tree:\n");
     
     ParseTreeRoot_print(root, ParseTreeNode_print_head);
     // ParseTreeNode_print_simple(root, 0, ParseTreeNode_print_head);

@@ -7,6 +7,7 @@
 To Do:
 - [x] implement ParseTreeNode_print function properly.
 - [x] make sure TokenType, ParseToken, and ASTNodeType all make coinside nicely
+- [x] write validation logic to ensure grammar is deterministic and that left-recursive rules are in the correct format
 - [ ] test and validate the parse_cfg_recursive_descent_parse_tree on our actual grammar for 
     - [ ] Scope Statements
     - [ ] Declaration Statements
@@ -194,7 +195,7 @@ Expression -> AssignmentExpression_r12
             | UnarySuffixExpression_r2 
             | Factor
 
-AssignmentExpression_r12    -> identifier assignment_operator Expression
+AssignmentExpression_r12    -> Expression assignment_operator Expression
 OrExpression_l11            -> Expresion or_operator Expresion 
 AndExpression_l10           -> Expresion and_operator Expresion 
 BitOrExpression_l9          -> Expresion bit_or_operator Expresion 
@@ -204,8 +205,8 @@ RelationExpression_l6       -> Expresion relation_operator Expresion
 ShiftExpression_l5          -> Expresion shift_operator Expresion
 SumExpression_l4            -> Expresion sum_operator Expresion
 ProductExpression_l3        -> Expresion product_operator Expresion
-UnaryPrefixExpression_r2    -> unary_prefix_operator Expression | increment_decrement_operator identifier
-UnarySuffixExpression_l1    -> identifier increment_decrement_operator
+UnaryPrefixExpression_r2    -> unary_prefix_operator Expression | increment_decrement_operator Expression
+UnarySuffixExpression_l1    -> Expression increment_decrement_operator
 
 Factor -> "(" Expression ")" | int_const | float_const | string_const | FactorialCall | identifier
 FactorialCall ->  factorial_keyword "(" Expression ")"
