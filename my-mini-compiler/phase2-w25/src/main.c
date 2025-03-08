@@ -9,6 +9,24 @@
 
 #define FILE_EXT ".cisc"
 
+void ParseTreeNode_print_head(ParseTreeNode* node) {
+    printf("%s", parse_token_to_string(node->type));
+    if (node->error != PARSE_ERROR_NONE) 
+        printf(" (%s)", parse_error_type_to_string(node->error));
+    if (node->token != NULL)
+    {
+        if (node->token->type == TOKEN_ERROR || node->error != PARSE_ERROR_NONE)
+        {
+            printf(" -> ");
+            print_token(*node->token);
+        }
+        else
+            printf(" -> %s", token_type_to_string(node->token->type));
+            
+    }
+    printf("\n");
+}
+
 // Main function for testing
 int main(int argc, char *argv[])
 {
@@ -19,8 +37,16 @@ int main(int argc, char *argv[])
             .lhs = PT_PROGRAM,
             .rules = (ProductionRule[]){
                 (ProductionRule){
-                    .tokens = (ParseToken[]){PT_STATEMENT_LIST, PT_EOF, PT_NULL},
-                    .ast_types = (ASTNodeType[]){AST_STATEMENT_LIST, AST_IGNORE, AST_NULL},
+                    .tokens = (ParseToken[]){PT_SCOPE, PT_EOF, PT_NULL},
+                    .ast_types = (ASTNodeType[]){AST_SCOPE, AST_IGNORE, AST_NULL},
+                    .promote_index = -1}},
+            .num_rules = 1U},
+        (CFG_GrammarRule){
+            .lhs = PT_SCOPE,
+            .rules = (ProductionRule[]){
+                (ProductionRule){
+                    .tokens = (ParseToken[]){PT_STATEMENT_LIST, PT_NULL},
+                    .ast_types = (ASTNodeType[]){AST_FROM_CHILDREN, AST_NULL},
                     .promote_index = -1}},
             .num_rules = 1U},
         (CFG_GrammarRule){
@@ -28,7 +54,7 @@ int main(int argc, char *argv[])
             .rules = (ProductionRule[]){
                 (ProductionRule){
                     .tokens = (ParseToken[]){PT_STATEMENT, PT_STATEMENT_LIST, PT_NULL},
-                    .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_STATEMENT_LIST, AST_NULL},
+                    .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_FROM_CHILDREN, AST_NULL},
                     .promote_index = -1},
                 (ProductionRule){
                     .tokens = (ParseToken[]){PT_NULL},
@@ -56,7 +82,7 @@ int main(int argc, char *argv[])
                     .promote_index =  0},
                 (ProductionRule){
                     .tokens = (ParseToken[]){PT_BLOCK, PT_NULL},
-                    .ast_types = (ASTNodeType[]){AST_BLOCK, AST_NULL},
+                    .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_NULL},
                     .promote_index =  0},
                 (ProductionRule){
                     .tokens = (ParseToken[]){PT_CONDITIONAL, PT_NULL},
@@ -116,16 +142,16 @@ int main(int argc, char *argv[])
             .lhs = PT_BLOCK,
             .rules = (ProductionRule[]){
                 (ProductionRule){
-                    .tokens = (ParseToken[]){PT_BLOCK_BEGIN, PT_STATEMENT_LIST, PT_BLOCK_END, PT_NULL},
-                    .ast_types = (ASTNodeType[]){AST_IGNORE, AST_STATEMENT_LIST, AST_IGNORE, AST_NULL},
-                    .promote_index = -1}},
+                    .tokens = (ParseToken[]){PT_BLOCK_BEGIN, PT_SCOPE, PT_BLOCK_END, PT_NULL},
+                    .ast_types = (ASTNodeType[]){AST_IGNORE, AST_FROM_CHILDREN, AST_IGNORE, AST_NULL},
+                    .promote_index = 1}},
             .num_rules = 1U},
         (CFG_GrammarRule){
             .lhs = PT_CONDITIONAL,
             .rules = (ProductionRule[]){
                 (ProductionRule){
                     .tokens = (ParseToken[]){PT_IF_KEYWORD, PT_EXPRESSION_EVAL, PT_THEN_KEYWORD, PT_BLOCK, PT_OPTIONAL_ELSE_BLOCK, PT_NULL},
-                    .ast_types = (ASTNodeType[]){AST_IGNORE, AST_EXPRESSION, AST_IGNORE, AST_BLOCK, AST_FROM_CHILDREN, AST_NULL},
+                    .ast_types = (ASTNodeType[]){AST_IGNORE, AST_EXPRESSION, AST_IGNORE, AST_SCOPE, AST_SCOPE, AST_NULL},
                     .promote_index = -1}},
             .num_rules = 1U},
         (CFG_GrammarRule){
@@ -133,7 +159,7 @@ int main(int argc, char *argv[])
             .rules = (ProductionRule[]){
                 (ProductionRule){
                     .tokens = (ParseToken[]){PT_WHILE_KEYWORD, PT_EXPRESSION_EVAL, PT_BLOCK, PT_NULL},
-                    .ast_types = (ASTNodeType[]){AST_IGNORE, AST_EXPRESSION, AST_BLOCK, AST_NULL},
+                    .ast_types = (ASTNodeType[]){AST_IGNORE, AST_EXPRESSION, AST_SCOPE, AST_NULL},
                     .promote_index = -1}},
             .num_rules = 1U},
         (CFG_GrammarRule){
@@ -141,7 +167,7 @@ int main(int argc, char *argv[])
             .rules = (ProductionRule[]){
                 (ProductionRule){
                     .tokens = (ParseToken[]){PT_REPEAT_KEYWORD, PT_BLOCK, PT_UNTIL_KEYWORD, PT_EXPRESSION_EVAL, PT_STATEMENT_END, PT_NULL},
-                    .ast_types = (ASTNodeType[]){AST_IGNORE, AST_BLOCK, AST_IGNORE, AST_EXPRESSION, AST_IGNORE, AST_NULL},
+                    .ast_types = (ASTNodeType[]){AST_IGNORE, AST_SCOPE, AST_IGNORE, AST_EXPRESSION, AST_IGNORE, AST_NULL},
                     .promote_index = -1}},
             .num_rules = 1U},
         (CFG_GrammarRule){
@@ -149,8 +175,8 @@ int main(int argc, char *argv[])
             .rules = (ProductionRule[]){
                 (ProductionRule){
                     .tokens = (ParseToken[]){PT_ELSE_KEYWORD, PT_BLOCK, PT_NULL},
-                    .ast_types = (ASTNodeType[]){AST_IGNORE, AST_BLOCK, AST_NULL},
-                    .promote_index = -1},
+                    .ast_types = (ASTNodeType[]){AST_IGNORE, AST_SCOPE, AST_NULL},
+                    .promote_index = 1},
                 (ProductionRule){
                     .tokens = (ParseToken[]){PT_NULL},
                     .ast_types = (ASTNodeType[]){AST_NULL},
@@ -206,16 +232,30 @@ int main(int argc, char *argv[])
                     .promote_index = -1}},
             .num_rules = 1U},
             
+        // TODO: PT_ASSIGNMENTEX_R12 was not deterministic (prefix-free), this fixes it. However, this fix does not work with the single promote_index, because the promote index would need to be different for each case as can be seen below.
         (CFG_GrammarRule){
             .lhs = PT_ASSIGNMENTEX_R12,
             .rules = (ProductionRule[]){
                 (ProductionRule){
-                    .tokens = (ParseToken[]){PT_OREX_L11, PT_ASSIGNMENT_OPERATOR, PT_ASSIGNMENTEX_R12, PT_NULL},
-                    .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_IGNORE, AST_FROM_PROMOTION, AST_NULL},
-                    .promote_index = 1},
-                (ProductionRule){
+                    .tokens = (ParseToken[]){PT_OREX_L11, PT_ASSIGNMENT_REST, PT_NULL},
+                    .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_FROM_PROMOTION, AST_NULL},
+                    .promote_index = 1/* want promote_index = 0 if PT_ASSIGNMENT_REST turns out to be AST_NULL*/,
+                    /*.promotion_alternate_if_AST_NULL = {0, 0}*/},
+                /*(ProductionRule){
                     .tokens = (ParseToken[]){PT_OREX_L11, PT_NULL},
                     .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_NULL},
+                    .promote_index = 0}*/},
+            .num_rules = 1U},
+        (CFG_GrammarRule){
+            .lhs = PT_ASSIGNMENT_REST,
+            .rules = (ProductionRule[]){
+                (ProductionRule){
+                    .tokens = (ParseToken[]){PT_ASSIGNMENT_OPERATOR, PT_ASSIGNMENTEX_R12, PT_NULL},
+                    .ast_types = (ASTNodeType[]){AST_IGNORE, AST_FROM_PROMOTION, AST_NULL},
+                    .promote_index = 0},
+                (ProductionRule){
+                    .tokens = (ParseToken[]){PT_NULL},
+                    .ast_types = (ASTNodeType[]){AST_NULL},
                     .promote_index = 0}},
             .num_rules = 2U},
         (CFG_GrammarRule){
@@ -758,15 +798,13 @@ int main(int argc, char *argv[])
     else
     {
         // Print usage for file input.
-        printf("Usage: .\\my-mini-compiler.exe <Input File Name>.cisc");
+        printf("Usage: .\\my-mini-compiler.exe <Input File Name>.cisc\n");
         // Test with both valid and invalid inputs
-        input = "int x;\n"   // Valid declaration
-                "x = 42;\n"; // Valid assignment;
-        /*
+        // input = "int x;\n"   // Valid declaration
+        //         "x = 42;\n"; // Valid assignment;
         input = "int x;\n"
                 "x = 42;\n"
                 "int ;";
-        */
     }
 
     // TODO: Add more test cases
@@ -784,13 +822,9 @@ int main(int argc, char *argv[])
     do
     {
         token = get_next_token();
-        // if (token.error != ERROR_NONE)
-        // {
-        //     printf("Error: %s\n", token.lexeme);
-        //     exit(1);
-        // }
         array_push(tokens, (Element *)&token);
         print_token(token);
+        printf("\n");
     } while (token.type != TOKEN_EOF);
 
     
@@ -802,9 +836,11 @@ int main(int argc, char *argv[])
 
     printf("Parse Tree:\n");
     
-    ParseTreeNode_print(root, 0, 1);
+    ParseTreeRoot_print(root, ParseTreeNode_print_head);
+    // ParseTreeNode_print_simple(root, 0, ParseTreeNode_print_head);
 
-    // ParseTreeNode_free();
+    ParseTreeNode_free(root, 1);
+    array_free(tokens);
     if (must_free_input)
         free(input);
     return 0;

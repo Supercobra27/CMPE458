@@ -20,15 +20,15 @@ typedef enum _ASTNodeType {
     AST_IGNORE_CHILDREN,
     // used by grammar rules to indicate that the ParseToken and its subtree should be ignored in this particular position in the AST. (node type can still be promoted, if not promoted, then it is ignored entirely, in either case the children are not added to the AST)
     AST_IGNORE,
-    // used by grammar rules to indicate that the ParseToken's children should be passed directly to the parent node. Useful when you the parsetoken has multiple children and you want them all on the level of the parent node in the AST. Also useful when the children may be empty and in which case nothing is added to the AST.
+    // used by grammar rules to indicate that the ParseToken's children should be passed directly to the parent node. Useful when the parsetoken has multiple children and you want them all on the level of the parent node in the AST. Also useful when the children may be empty and in which case nothing is added to the AST.
     AST_FROM_CHILDREN,
-    // used when the ParseToken does not have a corresponding ASTNodeType, it's type must be derived from a promoted child, and its children are retained in the . If it's possible to not have promoted children, then this node does not make sense but it will retain the type AST_FROM_PROMOTION (TODO: implement check for this being used incorrectly).
+    // used when the ParseToken does not have a corresponding ASTNodeType, it's type must be derived from a promoted child, and its children are brought up to the parent as in AST_FROM_CHILDREN. If it's possible to not have promoted children, then this node does not make sense but it will retain the type AST_FROM_PROMOTION (TODO: implement check for this being used incorrectly).
     AST_FROM_PROMOTION,
     
     // Non-terminal nodes
-    AST_PROGRAM, 
-    AST_BLOCK,
-    AST_STATEMENT_LIST,
+    AST_PROGRAM,
+    AST_SCOPE,
+    // AST_STATEMENT_LIST, does not exist
     AST_DECLARATION,
     AST_PRINT,
     AST_CODITIONAL,
