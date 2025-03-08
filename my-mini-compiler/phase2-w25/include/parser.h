@@ -18,11 +18,11 @@ void ParseTreeRoot_print(ParseTreeNode *root, void (*print_node)(ParseTreeNode*)
  * 
  * @param grammar The context free grammar representing the rules to parse.
  * @param grammar_size The size of the grammar array.
- * @param token The index of the rule to parse in the grammar array.
+ * @param token The token to parse.
  * @param tokens The tokens coming from the Lexer to use for parsing. This array must be terminated with TokenType of TOKEN_EOF.
  * @param index The index of the current token to parse, upon termination, this index will point to the next token to parse (if parsing fails, it will point to the first token that could not be parsed).
  */
-ParseTreeNode *parse_cfg_recursive_descent_parse_tree(const CFG_GrammarRule *grammar, const size_t grammar_size, const size_t token, const Token *tokens, size_t *index);
+ParseTreeNode *parse_cfg_recursive_descent_parse_tree(const CFG_GrammarRule *grammar, const size_t grammar_size, const ParseToken token, const Token *tokens, size_t *index);
 
 
 #endif /* PARSER_H */
