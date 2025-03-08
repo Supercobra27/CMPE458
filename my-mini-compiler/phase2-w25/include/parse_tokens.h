@@ -35,27 +35,27 @@ typedef enum _ParseToken {
     PT_EOF,
 
     /* Terminal Operators */
-    PT_SINGLE_EQUALS,
-    PT_SINGLE_AMPERSAND,
-    PT_SINGLE_PIPE,
-    PT_CARET,
-    PT_LESS_THAN,
-    PT_GREATER_THAN,
-    PT_PLUS,
-    PT_MINUS,
-    PT_STAR,
-    PT_FORWARD_SLASH,
-    PT_PERCENT,
-    PT_TILDE,
-    PT_BANG,
-    PT_DOUBLE_PIPE,
-    PT_DOUBLE_AMPERSAND,
-    PT_LESS_THAN_EQUALS,
-    PT_GREATER_THAN_EQUALS,
-    PT_DOUBLE_EQUALS,
-    PT_BANG_EQUALS,
-    PT_DOUBLE_LESS_THAN,
-    PT_DOUBLE_GREATER_THAN,
+    PT_EQUAL_EQUAL, // "=="
+    PT_BANG_EQUAL, // "!="
+    PT_GREATER_THAN_EQUAL, // ">="
+    PT_LESS_THAN_EQUAL, // "<="
+    PT_LESS_THAN_LESS_THAN, // "<<"
+    PT_GREATER_THAN_GREATER_THAN, // ">>"
+    PT_AMPERSAND_AMPERSAND, // "&&"
+    PT_PIPE_PIPE, // "||"
+    PT_EQUAL, // "="
+    PT_PLUS, // "+"
+    PT_MINUS, // "-"
+    PT_STAR, // "*"
+    PT_FORWARD_SLASH, // "/"
+    PT_PERCENT, // "%"
+    PT_TILDE, // "~"
+    PT_AMPERSAND, // "&"
+    PT_PIPE, // "|"
+    PT_CARET, // "^"
+    PT_BANG, // "!"
+    PT_LESS_THAN, // "<"
+    PT_GREATER_THAN, // ">"
 
     
     // Non-terminal tokens
@@ -195,34 +195,34 @@ static const char *parse_token_to_string(ParseToken t)
         return "PT_RIGHT_PAREN";
     case PT_EOF:
         return "PT_EOF";
-    case PT_SINGLE_EQUALS:
+    case PT_EQUAL:
         return "PT_SINGLE_EQUALS";
-    case PT_DOUBLE_PIPE:
-        return "PT_DOUBLE_PIPE";
-    case PT_DOUBLE_AMPERSAND:
-        return "PT_DOUBLE_AMPERSAND";
-    case PT_SINGLE_PIPE:
-        return "PT_SINGLE_PIPE";
+    case PT_PIPE_PIPE:
+        return "PT_PIPE_PIPE";
+    case PT_AMPERSAND_AMPERSAND:
+        return "PT_AMPERSAND_AMPERSAND";
+    case PT_PIPE:
+        return "PT_PIPE";
     case PT_CARET:
         return "PT_CARET";
-    case PT_SINGLE_AMPERSAND:
-        return "PT_SINGLE_AMPERSAND";
-    case PT_LESS_THAN_EQUALS:    
-        return "PT_LESS_THAN_EQUALS";
+    case PT_AMPERSAND:
+        return "PT_AMPERSAND";
+    case PT_LESS_THAN_EQUAL:    
+        return "PT_LESS_THAN_EQUAL";
     case PT_LESS_THAN:
         return "PT_LESS_THAN";
-    case PT_GREATER_THAN_EQUALS:
-        return "PT_GREATER_THAN_EQUALS";
+    case PT_GREATER_THAN_EQUAL:
+        return "PT_GREATER_THAN_EQUAL";
     case PT_GREATER_THAN:
         return "PT_GREATER_THAN";
-    case PT_DOUBLE_EQUALS:
-        return "PT_DOUBLE_EQUALS";
-    case PT_BANG_EQUALS:
-        return "PT_BANG_EQUALS";
-    case PT_DOUBLE_LESS_THAN:
-        return "PT_DOUBLE_LESS_THAN";
-    case PT_DOUBLE_GREATER_THAN:
-        return "PT_DOUBLE_GREATER_THAN";
+    case PT_EQUAL_EQUAL:
+        return "PT_EQUAL_EQUAL";
+    case PT_BANG_EQUAL:
+        return "PT_BANG_EQUAL";
+    case PT_LESS_THAN_LESS_THAN:
+        return "PT_LESS_THAN_LESS_THAN";
+    case PT_GREATER_THAN_GREATER_THAN:
+        return "PT_GREATER_THAN_GREATER_THAN";
     case PT_PLUS:
         return "PT_PLUS";
     case PT_MINUS:
@@ -237,6 +237,7 @@ static const char *parse_token_to_string(ParseToken t)
         return "PT_TILDE";
     case PT_BANG:
         return "PT_BANG";
+    // Non-terminal tokens
     case PT_PROGRAM:
         return "PT_PROGRAM";
     case PT_SCOPE:
