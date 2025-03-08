@@ -5,8 +5,8 @@
 
 typedef enum _ParseToken {
     // Terminal tokens (these enum values must directly correspond to the token values in tokens.h)
+    PT_TOKEN_ERROR,
     PT_IDENTIFIER,
-    PT_TOKEN_ERROR, // placeholder for consistency
 
     /* Values */
     PT_INTEGER_CONST,
@@ -60,6 +60,7 @@ typedef enum _ParseToken {
     
     // Non-terminal tokens
     PT_PROGRAM,
+    PT_SCOPE,
     PT_STATEMENT_LIST,
     PT_STATEMENT,
     PT_EMPTY_STATEMENT,
@@ -81,6 +82,7 @@ typedef enum _ParseToken {
 
     /* Expressions */ // These also don't directly appear in the AST, they are used for grouping expressions with the same precedence levels.
     PT_ASSIGNMENTEX_R12,
+    PT_ASSIGNMENT_REST,
     PT_OREX_L11,
     PT_ANDEX_L10,
     PT_BITOREX_L9,
@@ -138,16 +140,19 @@ typedef enum _ParseToken {
 
 #define ParseToken_FIRST_TERMINAL PT_IDENTIFIER
 #define ParseToken_START_NONTERMINAL PT_PROGRAM
+#define ParseToken_MAX PT_NULL
 #define ParseToken_FIRST_NONTERMINAL ParseToken_START_NONTERMINAL
 #define ParseToken_COUNT_TERMINAL FIRST_NONTERMINAL_ParseToken
-#define ParseToken_COUNT_NONTERMINAL (PT_NULL - ParseToken_FIRST_NONTERMINAL)
+#define ParseToken_COUNT_NONTERMINAL (ParseToken_MAX - ParseToken_FIRST_NONTERMINAL)
 #define ParseToken_IS_TERMINAL(token) ((token) < ParseToken_FIRST_NONTERMINAL)
-#define ParseToken_IS_NONTERMINAL(token) ((token) >= ParseToken_FIRST_NONTERMINAL && (token) < PT_NULL)
+#define ParseToken_IS_NONTERMINAL(token) ((token) >= ParseToken_FIRST_NONTERMINAL && (token) < ParseToken_MAX)
 
 static const char *parse_token_to_string(ParseToken t)
 {
     switch (t)
     {
+    case PT_TOKEN_ERROR:
+        return "PT_TOKEN_ERROR";
     case PT_IDENTIFIER:
         return "PT_IDENTIFIER";
     case PT_INTEGER_CONST:
@@ -234,6 +239,8 @@ static const char *parse_token_to_string(ParseToken t)
         return "PT_BANG";
     case PT_PROGRAM:
         return "PT_PROGRAM";
+    case PT_SCOPE:
+        return "PT_SCOPE";
     case PT_STATEMENT_LIST:
         return "PT_STATEMENT_LIST";
     case PT_STATEMENT:
@@ -270,6 +277,8 @@ static const char *parse_token_to_string(ParseToken t)
         return "PT_BLOCK_END";
     case PT_ASSIGNMENTEX_R12:
         return "PT_ASSIGNMENTEX_R12";
+    case PT_ASSIGNMENT_REST:
+        return "PT_ASSIGNMENT_REST";
     case PT_OREX_L11:
         return "PT_OREX_L11";
     case PT_ANDEX_L10:
@@ -362,16 +371,16 @@ static const char *parse_token_to_string(ParseToken t)
         return "PT_FACTORIAL_CALL";
     case PT_NULL:
         return "PT_NULL";
-    default:
-        return "UNKNOWN";
-        break;
     }
+    return "UNKNOWN";
 }
 
 typedef enum _ParseErrorType {
     PARSE_ERROR_NONE,
     PARSE_ERROR_WRONG_TOKEN,
     PARSE_ERROR_NO_RULE_MATCHES,
+    PARSE_ERROR_CHILD_ERROR,
+    PARSE_ERROR_PREVIOUS_TOKEN_FAILED_TO_PARSE,
     PARSE_ERROR_MULTIPLE_LEFT_RECURSIVE_RULES,
 } ParseErrorType;
 
@@ -387,12 +396,13 @@ static const char *parse_error_type_to_string(ParseErrorType error)
         return "PARSE_ERROR_NO_RULE_MATCHES";
     case PARSE_ERROR_MULTIPLE_LEFT_RECURSIVE_RULES:
         return "PARSE_ERROR_MULTIPLE_LEFT_RECURSIVE_RULES";
-    default:
-        return "UNKNOWN";
-        break;
+    case PARSE_ERROR_CHILD_ERROR:
+        return "PARSE_ERROR_CHILD_ERROR";
+    case PARSE_ERROR_PREVIOUS_TOKEN_FAILED_TO_PARSE:
+        return "PARSE_ERROR_PREVIOUS_TOKEN_FAILED_TO_PARSE";
     }   
+    return "UNKNOWN";
 }
-
 
 typedef struct _ParseTreeNode {
     ParseToken type;
