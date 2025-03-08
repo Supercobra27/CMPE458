@@ -5,52 +5,64 @@
 ## Phase 2: Parser
 
 To Do:
-- implement ParseTreeNode_print function properly.
-- function for file opening that checks for ".cisc" file extension etc.
-- make sure TokenType, ParseToken, and ASTNodeType all make coinside nicely
-- test and validate the parse_cfg_recursive_descent_parse_tree on our actual grammar
-- refine the error handling a bit (error messages and types)
-- ParseTreeNode_free function (implement in parser.c)
-- ASTNode_from_ParseTreeNode function using grammar rules to simplify (https://stackoverflow.com/questions/5026517/whats-the-difference-between-parse-trees-and-abstract-syntax-trees-asts)
-- finish merge
-- improve/simplify the parse_cfg_recursive_descent_parse_tree
-- address all C compiler warnings/errors
+- [x] implement ParseTreeNode_print function properly.
+- [x] make sure TokenType, ParseToken, and ASTNodeType all make coinside nicely
+- [ ] test and validate the parse_cfg_recursive_descent_parse_tree on our actual grammar for 
+    - [ ] Scope Statements
+    - [ ] Declaration Statements
+    - [ ] Expression Statements ---- lots of stuff to test here
+    - [ ] Print Statements
+    - [ ] Conditional Statements
+    - [ ] WhileLoop Statements
+    - [ ] RepeatUntilLoop Statements
+- [x] refine the error handling a bit (error messages and types)
+- [x] ParseTreeNode_free function (implement in parser.c)
+- [x] address all C compiler warnings/errors (they are all just -Wunused-function warnings for enum to const char* switch case functions)
+- [ ] Write up documentation
+    - [ ] Grammar
+    - [ ] file structure
 
 
 ## Phase 3: Semantic Analyzer
+- [ ] decide whether Program is present in the AST, or if it is removed and only Scope exists
+- [ ] ASTNode_from_ParseTreeNode function using grammar rules to simplify (https://stackoverflow.com/questions/5026517/whats-the-difference-between-parse-trees-and-abstract-syntax-trees-asts)
+- [ ] Optional: add `break` and `continue` keyword statements for loops
+- [ ] Optional: improve/simplify the parse_cfg_recursive_descent_parse_tree function
 
 ## Phase 4: Code Generation
 
 ## Grammar
 - UpperCase = non-terminals
 - lower_case = terminals/tokens/token-classes
-- there is some regex stuff mixed in here, regular expressions are written within double quotes (") (* for zero or more of the previous symbol, + for one or more of the previous symbol, [] for character set, . for any character)
-- create a right-recursive only version of this grammar so that we can do recursive descent parsing.
-- to add `break` and `continue` keywords for loops
 
 ### Abstract Syntax Tree Grammar
 - the ^ symbol following a token indicates that that token is promoted in-place of the left-hand side of the production rule
 - the @ symbol following a token indicates that it's children are promoted to replace it
 ```
-Program -> StatementList
-Scope -> StatementList
-StatementList -> Statement StatementList | epsilon
-Statement -> Scope
-            | Declaration
-            | Evaluate
-            | Print
-            | Conditional
-            | WhileLoop
-            | RepeatUntilLoop
+Program -> Scope
+Scope -> StatementList@
+StatementList -> Statement StatementList@ | epsilon
+
+Statement -> Scope^
+           | Declaration^
+           | Expression^
+           | Print^
+           | Conditional^
+           | WhileLoop^
+           | RepeatUntilLoop^
 
 Declaration -> Declaration_Type Identifier
-Evaluate -> Expression
 Print -> Expression
-Conditional -> Expression Scope Scope | Expression Scope
+Conditional -> Expression Scope Scope
 WhileLoop -> Expression Scope
 RepeatUntilLoop -> Scope Expression
 
-Expression -> Operation^ | int_const^ | float_const^ | string_const^ | identifier^
+Expression -> Operation^ 
+            | int_const^ 
+            | float_const^ 
+            | string_const^ 
+            | identifier^
+
 Operation -> AssignEqual^
            | LogicalOr^
            | LogicalAnd^ 
