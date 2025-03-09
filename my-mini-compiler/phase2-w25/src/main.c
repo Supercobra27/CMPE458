@@ -21,7 +21,7 @@ void ParseTreeNode_print_head(ParseTreeNode* node) {
             print_token(*node->token);
         }
         else
-            printf(" -> %s", token_type_to_string(node->token->type));
+            printf(" -> %s \"%s\"", token_type_to_string(node->token->type), node->token->lexeme);
             
     }
     printf("\n");
@@ -551,7 +551,7 @@ int main(int argc, char *argv[])
             .lhs = PT_ASSIGN_EQUAL,
             .rules = (ProductionRule[]){
                 (ProductionRule){
-                    .tokens = (ParseToken[]){PT_SINGLE_EQUALS, PT_NULL},
+                    .tokens = (ParseToken[]){PT_EQUAL, PT_NULL},
                     .ast_types = (ASTNodeType[]){AST_IGNORE, AST_NULL},
                     .promote_index = -1}},
             .num_rules = 1U},
@@ -559,7 +559,7 @@ int main(int argc, char *argv[])
             .lhs = PT_LOGICAL_OR,
             .rules = (ProductionRule[]){
                 (ProductionRule){
-                    .tokens = (ParseToken[]){PT_DOUBLE_PIPE, PT_NULL},
+                    .tokens = (ParseToken[]){PT_PIPE_PIPE, PT_NULL},
                     .ast_types = (ASTNodeType[]){AST_IGNORE, AST_NULL},
                     .promote_index = -1}},
             .num_rules = 1U},
@@ -567,7 +567,7 @@ int main(int argc, char *argv[])
             .lhs = PT_LOGICAL_AND,
             .rules = (ProductionRule[]){
                 (ProductionRule){
-                    .tokens = (ParseToken[]){PT_DOUBLE_AMPERSAND, PT_NULL},
+                    .tokens = (ParseToken[]){PT_AMPERSAND_AMPERSAND, PT_NULL},
                     .ast_types = (ASTNodeType[]){AST_IGNORE, AST_NULL},
                     .promote_index = -1}},
             .num_rules = 1U},
@@ -575,7 +575,7 @@ int main(int argc, char *argv[])
             .lhs = PT_BITWISE_OR,
             .rules = (ProductionRule[]){
                 (ProductionRule){
-                    .tokens = (ParseToken[]){PT_SINGLE_PIPE, PT_NULL},
+                    .tokens = (ParseToken[]){PT_PIPE, PT_NULL},
                     .ast_types = (ASTNodeType[]){AST_IGNORE, AST_NULL},
                     .promote_index = -1}},
             .num_rules = 1U},
@@ -591,7 +591,7 @@ int main(int argc, char *argv[])
             .lhs = PT_BITWISE_AND,
             .rules = (ProductionRule[]){
                 (ProductionRule){
-                    .tokens = (ParseToken[]){PT_SINGLE_AMPERSAND, PT_NULL},
+                    .tokens = (ParseToken[]){PT_AMPERSAND, PT_NULL},
                     .ast_types = (ASTNodeType[]){AST_IGNORE, AST_NULL},
                     .promote_index = -1}},
             .num_rules = 1U},
@@ -599,7 +599,7 @@ int main(int argc, char *argv[])
             .lhs = PT_COMPARE_EQUAL,
             .rules = (ProductionRule[]){
                 (ProductionRule){
-                    .tokens = (ParseToken[]){PT_DOUBLE_EQUALS, PT_NULL},
+                    .tokens = (ParseToken[]){PT_EQUAL_EQUAL, PT_NULL},
                     .ast_types = (ASTNodeType[]){AST_IGNORE, AST_NULL},
                     .promote_index = -1}},
             .num_rules = 1U},
@@ -607,7 +607,7 @@ int main(int argc, char *argv[])
             .lhs = PT_COMPARE_NOT_EQUAL,
             .rules = (ProductionRule[]){
                 (ProductionRule){
-                    .tokens = (ParseToken[]){PT_BANG_EQUALS, PT_NULL},
+                    .tokens = (ParseToken[]){PT_BANG_EQUAL, PT_NULL},
                     .ast_types = (ASTNodeType[]){AST_IGNORE, AST_NULL},
                     .promote_index = -1}},
             .num_rules = 1U},
@@ -615,7 +615,7 @@ int main(int argc, char *argv[])
             .lhs = PT_COMPARE_LESS_EQUAL,
             .rules = (ProductionRule[]){
                 (ProductionRule){
-                    .tokens = (ParseToken[]){PT_LESS_THAN_EQUALS, PT_NULL},
+                    .tokens = (ParseToken[]){PT_LESS_THAN_EQUAL, PT_NULL},
                     .ast_types = (ASTNodeType[]){AST_IGNORE, AST_NULL},
                     .promote_index = -1}},
             .num_rules = 1U},
@@ -631,7 +631,7 @@ int main(int argc, char *argv[])
             .lhs = PT_COMPARE_GREATER_EQUAL,
             .rules = (ProductionRule[]){
                 (ProductionRule){
-                    .tokens = (ParseToken[]){PT_GREATER_THAN_EQUALS, PT_NULL},
+                    .tokens = (ParseToken[]){PT_GREATER_THAN_EQUAL, PT_NULL},
                     .ast_types = (ASTNodeType[]){AST_IGNORE, AST_NULL},
                     .promote_index = -1}},
             .num_rules = 1U},
@@ -647,7 +647,7 @@ int main(int argc, char *argv[])
             .lhs = PT_SHIFT_LEFT,
             .rules = (ProductionRule[]){
                 (ProductionRule){
-                    .tokens = (ParseToken[]){PT_DOUBLE_LESS_THAN, PT_NULL},
+                    .tokens = (ParseToken[]){PT_LESS_THAN_LESS_THAN, PT_NULL},
                     .ast_types = (ASTNodeType[]){AST_IGNORE, AST_NULL},
                     .promote_index = -1}},
             .num_rules = 1U},
@@ -655,7 +655,7 @@ int main(int argc, char *argv[])
             .lhs = PT_SHIFT_RIGHT,
             .rules = (ProductionRule[]){
                 (ProductionRule){
-                    .tokens = (ParseToken[]){PT_DOUBLE_GREATER_THAN, PT_NULL},
+                    .tokens = (ParseToken[]){PT_GREATER_THAN_GREATER_THAN, PT_NULL},
                     .ast_types = (ASTNodeType[]){AST_IGNORE, AST_NULL},
                     .promote_index = -1}},
             .num_rules = 1U},
@@ -853,9 +853,12 @@ int main(int argc, char *argv[])
         // Test with both valid and invalid inputs
         // input = "int x;\n"   // Valid declaration
         //         "x = 42;\n"; // Valid assignment;
-        input = "int x;\n"
-                "x = 42;\n"
-                "int ;";
+        // input = "int x;\n"
+        //         "x = 42;\n"
+        //         "int ;";
+
+        // input = "1 + 2 + 3;\n";
+        input = "{}";
     }
 
     // TODO: Add more test cases

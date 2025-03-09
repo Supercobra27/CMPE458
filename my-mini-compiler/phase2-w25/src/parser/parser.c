@@ -127,7 +127,7 @@ bool ParseToken_can_start_with(const CFG_GrammarRule *grammar, const size_t gram
 {
     assert(grammar != NULL);
     assert(grammar_size >= ParseToken_COUNT_NONTERMINAL);
-    if (starts_with == PT_NULL || token_to_check == starts_with)
+    if (starts_with == PT_NULL || token_to_check == starts_with || token_to_check == PT_NULL)
     {
         return 1;
     }
@@ -197,6 +197,7 @@ ParseTreeNode *parse_cfg_recursive_descent_parse_tree(const CFG_GrammarRule *gra
 
     // the grammar must be deterministic (no common prefixes in the production rules for a given non-terminal), this ensures that the first rule that matches is the only rule that can match and that there is at most one left-recursive rule.
 
+    // TODO: don't do this prefix check, just incorporate this as an outer loop to the for-loop below.
     const ProductionRule *p_rule = g_rule->rules, *left_recursive_rule = NULL;
     for (; p_rule < g_rule->rules + g_rule->num_rules; ++p_rule)
     {
@@ -225,6 +226,7 @@ ParseTreeNode *parse_cfg_recursive_descent_parse_tree(const CFG_GrammarRule *gra
     if (p_rule == g_rule->rules + g_rule->num_rules)
     {
         node->error = PARSE_ERROR_NO_RULE_MATCHES;
+        node->token = tokens + *index;
         return node;
     }
 
@@ -281,7 +283,7 @@ ParseTreeNode *parse_cfg_recursive_descent_parse_tree(const CFG_GrammarRule *gra
         // TODO: replace this with function idea mentioned above.
         for (size_t i = 1; i < node->num_children; ++i)
         {
-            temp = parse_cfg_recursive_descent_parse_tree(grammar, grammar_size, token, tokens, index);
+            temp = parse_cfg_recursive_descent_parse_tree(grammar, grammar_size, left_recursive_rule->tokens[i], tokens, index);
             node->children[i] = *temp;
             free(temp);
             if (node->children[i].error != PARSE_ERROR_NONE)

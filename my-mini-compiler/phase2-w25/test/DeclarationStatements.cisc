@@ -1,3 +1,6 @@
+?? single line comment
+?! block comment !?
+
 ?? valid declarations
 int x;
 float y;

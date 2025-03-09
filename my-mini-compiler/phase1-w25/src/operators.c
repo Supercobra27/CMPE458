@@ -38,6 +38,11 @@ static const char *const multi_operators[] = {
     "<",
     ">"};
 
+int isOperator(char c)
+{
+    return c != '\0' && strchr(single_operators, c) != NULL;
+}
+
 int isOperatorStr(const char *_Str)
 {
     for (int i = 0; i < num_multi_operators; i++)
@@ -50,7 +55,3 @@ int isOperatorStr(const char *_Str)
     return 0;
 }
 
-int isOperator(char c)
-{
-    return c != '\0' && strchr(single_operators, c) != NULL;
-}

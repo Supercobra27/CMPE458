@@ -3,23 +3,82 @@
 
 #include "tokens.h"
 
-/**
- * @param _Str Input string to check for operator.
- * @return the length of the longest string that matches. 0 if there is no match.
- */
-int isOperatorStr(const char *_Str);
+// These operators are ordered in non-increasing length so that they can be checked in order of the longest operator first. Not all of these operators (namely the compound assignment operators) are actually used (see reduced_operators for all operators used in the programming language).
+#define STRLEN_MAX_OPERATOR 3
+static const char *const extended_operators[] = {
+    "<<=",
+    ">>=",
+    "==",
+    "!=",
+    ">=",
+    "<=",
+    "+=",
+    "-=",
+    "*=",
+    "/=",
+    "|=",
+    "&=",
+    "^=",
+    "<<",
+    ">>",
+    "&&",
+    "||",
+    "++",
+    "--",
+    "=",
+    "+",
+    "-",
+    "*",
+    "/",
+    "%",
+    "~",
+    "&",
+    "|",
+    "^",
+    "!",
+    "<",
+    ">"
+};
+
+static const char *const reduced_operators[] = {
+    // "<<=",
+    // ">>=",
+    "==",
+    "!=",
+    ">=",
+    "<=",
+    // "+=",
+    // "-=",
+    // "*=",
+    // "/=",
+    // "|=",
+    // "&=",
+    // "^=",
+    "<<",
+    ">>",
+    "&&",
+    "||",
+    // "++",
+    // "--",
+    "=",
+    "+",
+    "-",
+    "*",
+    "/",
+    "%",
+    "~",
+    "&",
+    "|",
+    "^",
+    "!",
+    "<",
+    ">"
+};
 
 /**
- * @param c The character to check.
- * @return 1 the character exists in the set of operators.
- * @details Returns if the character is a valid operator, like addition, logical, or bitwise.
+ * @param s Input string to check for operator.
+ * @return the index of the operator in the reduced_operators array.
  */
-int isOperator(char c);
-
-
-/**
- * returns the index of the operator in the ordered_operators array. This index will correspond to the ordering of operator tokens in the TokenType and ParseToken enum. 
- */
-int findMappableIndex(const char *_Str);
+int operator_index(const char *const s);
 
 #endif

@@ -1,0 +1,13 @@
+?? single line comment
+?! block comment !?
+
+print "hello world";
+
+print "print 'hello world'";
+
+print x + 5;
+
+print 3.14;
+
+?? this will fail since string is a keyword.
+print string;

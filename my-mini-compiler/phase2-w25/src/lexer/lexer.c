@@ -327,11 +327,14 @@ Token get_next_token()
     }
 
     // Handle operators
-    int operator_len = isOperatorStr(global_input + global_position);
-    if (operator_len)
+    int operator_id = operator_index(global_input + global_position);
+    if (operator_id != -1)
     {
-        token.type = (TokenType)(findMappableIndex(global_input + global_position)+TOKEN_SINGLE_EQUALS);
+        size_t operator_len = strlen(reduced_operators[operator_id]);
+        token.type = (TokenType)(TokenType_FIRST_OPERATOR + operator_id);
         strncpy(token.lexeme, global_input + global_position, operator_len);
+        token.lexeme[operator_len] = '\0';
+        token.position.col_end += operator_len;
         global_position += operator_len;
         return token;
     }

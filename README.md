@@ -11,8 +11,8 @@ To Do:
 - [x] refine the error handling a bit (error messages and types)
 - [x] ParseTreeNode_free function (implement in parser.c)
 - [ ] test and validate the parse_cfg_recursive_descent_parse_tree on our actual grammar (hand written test cases)
-    - [ ] Scope Statements
-    - [ ] Declaration Statements
+    - [x] Scope Statements
+    - [x] Declaration Statements
     - [ ] Expression Statements ---- lots of stuff to test here
     - [ ] ADD READ Statements !!!! NOTICED THIS ON ONQ (we can make this be "read_keyword identifier statement_end" where the identifier must be of type int and this gets one character from the input just as if you did "x = getc(stdin);" in C)
         - [ ] add "read" as a keyword to the lexer
