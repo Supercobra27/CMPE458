@@ -10,7 +10,7 @@ To Do:
 - [x] write validation logic to ensure grammar is deterministic and that left-recursive rules are in the correct format
 - [x] refine the error handling a bit (error messages and types)
 - [x] ParseTreeNode_free function (implement in parser.c)
-- [ ] test and validate the parse_cfg_recursive_descent_parse_tree on our actual grammar (hand written test cases)
+- [x] test and validate the parse_cfg_recursive_descent_parse_tree on our actual grammar (hand written test cases)
     - [x] Scope Statements
     - [x] Declaration Statements
     - [x] Expression Statements ---- lots of stuff to test here
@@ -19,8 +19,8 @@ To Do:
         - [X] add TOKEN_READ_KEYWORD to TokenType, PT_READ_KEYWORD to ParseToken, and AST_READ to ASTNodeType.
     - [x] Print Statements 
     - [x] Conditional Statements
-    - [ ] WhileLoop Statements
-    - [ ] RepeatUntilLoop Statements
+    - [x] WhileLoop Statements
+    - [x] RepeatUntilLoop Statements
 - [ ] proper validation of parser would be done as follows:
     - store a list of tokens, for one of each TokenType with correct lexemes.
     - create a valid parse tree using the grammar rules
