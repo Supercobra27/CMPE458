@@ -1,0 +1,11 @@
+?? single line comment
+?! block comment !?
+
+int x;
+read x;
+
+?? read input characters as int ascii codes (like getc), until a newline (ascii code 10).
+repeat {
+    read x;
+    print x;
+} until x == 10;
