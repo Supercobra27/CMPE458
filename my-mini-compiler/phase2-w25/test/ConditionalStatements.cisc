@@ -1,0 +1,21 @@
+?? single line comment
+?! block comment !?
+
+?? if-then with no else
+if you > "success" then { print "you're successful"; }
+
+?? if-then-else
+
+if x >= 999*999*999 then { 
+    print "x is really big"; 
+} else { 
+    print "x is not bigger than 999*999*999";
+}
+
+if !t then {
+    print "t is false";
+} else {
+    if s then { 
+        print "t and s are true"; 
+    }
+}
