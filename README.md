@@ -14,11 +14,11 @@ To Do:
     - [x] Scope Statements
     - [x] Declaration Statements
     - [x] Expression Statements ---- lots of stuff to test here
-    - [ ] ADD READ Statements !!!! NOTICED THIS ON ONQ (we can make this be "read_keyword identifier statement_end" where the identifier must be of type int and this gets one character from the input just as if you did "x = getc(stdin);" in C)
-        - [X] add "read" as a keyword to the lexer
-        - [X] add TOKEN_READ_KEYWORD to TokenType, PT_READ_KEYWORD to ParseToken, and AST_READ to ASTNodeType.
-        - [ ] add gramar rule for read keyword.
-        - [ ] add parsing example test case for reading.
+    - [x] ADD READ Statements !!!! NOTICED THIS ON ONQ (we can make this be "read_keyword identifier statement_end" where the identifier must be of type int and this gets one character from the input just as if you did "x = getc(stdin);" in C)
+        - [x] add "read" as a keyword to the lexer
+        - [x] add TOKEN_READ_KEYWORD to TokenType, PT_READ_KEYWORD to ParseToken, and AST_READ to ASTNodeType.
+        - [x] add gramar rule for read keyword.
+        - [x] add parsing example test case for reading.
     - [x] Print Statements 
     - [x] Conditional Statements
     - [x] WhileLoop Statements
