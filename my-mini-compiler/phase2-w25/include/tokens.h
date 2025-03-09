@@ -22,6 +22,7 @@ typedef enum _TokenType
     TOKEN_FLOAT_KEYWORD,
     TOKEN_STRING_KEYWORD,
     TOKEN_PRINT_KEYWORD,
+    TOKEN_READ_KEYWORD,
     TOKEN_IF_KEYWORD,
     TOKEN_THEN_KEYWORD,
     TOKEN_ELSE_KEYWORD,
@@ -158,6 +159,8 @@ static const char *token_type_to_string(TokenType type)
         return "TOKEN_TILDE";
     case TOKEN_BANG:
         return "TOKEN_BANG";
+    case TOKEN_READ_KEYWORD:
+        return "TOKEN_READ_KEYWORD";
     }
     return "UNKNOWN";
 }

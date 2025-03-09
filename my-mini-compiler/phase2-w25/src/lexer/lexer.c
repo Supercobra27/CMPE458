@@ -34,9 +34,9 @@ static int is_punctuator(const char *str)
 static int is_keyword(const char *str)
 {
     static const char *const keywords[] = {
-        "int", "float", "string", "print", "if", "then", "else", "while",
+        "int", "float", "string", "print", "read", "if", "then", "else", "while",
         "repeat", "until", "factorial"};
-    static const int num_keywords = sizeof(keywords) / sizeof(keywords[0]);
+    static const int num_keywords = 12;
 
     for (int i = 0; i < num_keywords; i++)
     {
