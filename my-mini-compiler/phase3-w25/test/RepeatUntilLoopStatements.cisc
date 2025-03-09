@@ -1,0 +1,17 @@
+?? single line comment
+?! block comment !?
+
+int x;
+x = 0;
+repeat {
+    print x = x + 1;
+} until x == 10;
+
+repeat {
+    if x % 2 then {
+        print "x is even";
+    } else {
+        print "x is odd";
+    }
+    x = x - 1;
+} until x == 0;
