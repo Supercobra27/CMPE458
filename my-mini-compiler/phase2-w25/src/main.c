@@ -21,7 +21,7 @@ void ParseTreeNode_print_head(ParseTreeNode* node) {
             print_token(*node->token);
         }
         else
-            printf(" -> %s", token_type_to_string(node->token->type));
+            printf(" -> %s \"%s\"", token_type_to_string(node->token->type), node->token->lexeme);
             
     }
     printf("\n");
@@ -851,11 +851,13 @@ int main(int argc, char *argv[])
         // Print usage for file input.
         printf("Usage: .\\my-mini-compiler.exe <Input File Name>.cisc\n");
         // Test with both valid and invalid inputs
-        input = "int x;\n"   // Valid declaration
-                "x = 42;\n"; // Valid assignment;
+        // input = "int x;\n"   // Valid declaration
+        //         "x = 42;\n"; // Valid assignment;
         // input = "int x;\n"
         //         "x = 42;\n"
         //         "int ;";
+
+        input = "1 + 2 + 3;\n";
     }
 
     // TODO: Add more test cases

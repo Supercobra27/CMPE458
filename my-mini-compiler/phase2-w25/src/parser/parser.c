@@ -281,7 +281,7 @@ ParseTreeNode *parse_cfg_recursive_descent_parse_tree(const CFG_GrammarRule *gra
         // TODO: replace this with function idea mentioned above.
         for (size_t i = 1; i < node->num_children; ++i)
         {
-            temp = parse_cfg_recursive_descent_parse_tree(grammar, grammar_size, token, tokens, index);
+            temp = parse_cfg_recursive_descent_parse_tree(grammar, grammar_size, left_recursive_rule->tokens[i], tokens, index);
             node->children[i] = *temp;
             free(temp);
             if (node->children[i].error != PARSE_ERROR_NONE)
