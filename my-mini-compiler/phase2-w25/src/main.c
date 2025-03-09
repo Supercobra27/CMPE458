@@ -81,6 +81,10 @@ int main(int argc, char *argv[])
                     .ast_types = (ASTNodeType[]){AST_PRINT, AST_NULL},
                     .promote_index =  0},
                 (ProductionRule){
+                    .tokens = (ParseToken[]){PT_READ_STATEMENT, PT_NULL},
+                    .ast_types = (ASTNodeType[]){AST_READ, AST_NULL},
+                    .promote_index =  0},
+                (ProductionRule){
                     .tokens = (ParseToken[]){PT_BLOCK, PT_NULL},
                     .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_NULL},
                     .promote_index =  0},
@@ -96,7 +100,7 @@ int main(int argc, char *argv[])
                     .tokens = (ParseToken[]){PT_REPEAT_UNTIL_LOOP, PT_NULL},
                     .ast_types = (ASTNodeType[]){AST_REPEAT_UNTIL_LOOP, AST_NULL},
                     .promote_index =  0}},
-            .num_rules = 8U},
+            .num_rules = 9U},
         (CFG_GrammarRule){
             .lhs = PT_EMPTY_STATEMENT,
             .rules = (ProductionRule[]){
@@ -135,6 +139,14 @@ int main(int argc, char *argv[])
             .rules = (ProductionRule[]){
                 (ProductionRule){
                     .tokens = (ParseToken[]){PT_PRINT_KEYWORD, PT_EXPRESSION_EVAL, PT_STATEMENT_END, PT_NULL},
+                    .ast_types = (ASTNodeType[]){AST_IGNORE, AST_EXPRESSION, AST_IGNORE, AST_NULL},
+                    .promote_index = -1}},
+            .num_rules = 1U},
+        (CFG_GrammarRule){
+            .lhs = PT_READ_STATEMENT,
+            .rules = (ProductionRule[]){
+                (ProductionRule){
+                    .tokens = (ParseToken[]){PT_READ_KEYWORD, PT_EXPRESSION_EVAL, PT_STATEMENT_END, PT_NULL},
                     .ast_types = (ASTNodeType[]){AST_IGNORE, AST_EXPRESSION, AST_IGNORE, AST_NULL},
                     .promote_index = -1}},
             .num_rules = 1U},
@@ -857,8 +869,26 @@ int main(int argc, char *argv[])
         //         "x = 42;\n"
         //         "int ;";
 
+        input = "{ float w; w = 3.14159; {{{{\"middle\";}}}} }\n"
+                "string s;\n"
+                "1 + 2 + 3;\n"
+                "x = y = z + 1;\n"
+                "print 5 * (2 + 3);\n"
+                "read x;\n"
+                "if 1 then { }\n"
+                "if 1 then { } else { }\n"
+                "while 0 { }\n"
+                "repeat { } until 1;\n";
+        // input = "{ float w; w = 3.14159; }\n";
+        // input = "string s;\n";
         // input = "1 + 2 + 3;\n";
-        input = "{}";
+        // input = "x = y = z + 1;\n";
+        // input = "print 5 * (2 + 3);\n"
+        // input = "read x;\n";
+        // input = "if 1 then { }\n";
+        // input = "if 1 then { } else { }\n";
+        // input = "while 0 { }\n";
+        // input = "repeat { } until 1;\n";
     }
 
     // TODO: Add more test cases

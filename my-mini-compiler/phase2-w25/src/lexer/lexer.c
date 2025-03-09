@@ -11,21 +11,6 @@
 #include "../../include/operators.h"
 
 
-/*
-// punctuators
-static int is_punctuator(const char *str)
-{
-    static const char *punctuators[] = {";", "{", "}", "(", ")", ","};
-    for (int i = 0; i < 6; i++)
-    {
-        if (strcmp(str, punctuators[i]) == 0)
-        {
-            return i+1; // 1 to say it found something
-        }
-    }
-    return 0;
-}
-*/
 
 // keywords
 // to check if a string is a keyword

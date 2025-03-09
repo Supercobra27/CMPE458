@@ -69,6 +69,7 @@ typedef enum _ParseToken {
     PT_EXPRESSION_STATEMENT,
     PT_EXPRESSION_EVAL,
     PT_PRINT_STATEMENT,
+    PT_READ_STATEMENT,
     PT_BLOCK,
     PT_CONDITIONAL,
     PT_WHILE_LOOP,
@@ -176,6 +177,8 @@ static const char *parse_token_to_string(ParseToken t)
         return "PT_RIGHT_BRACE";
     case PT_PRINT_KEYWORD:
         return "PT_PRINT_KEYWORD";
+    case PT_READ_KEYWORD:
+        return "PT_READ_KEYWORD";
     case PT_IF_KEYWORD:
         return "PT_IF_KEYWORD";
     case PT_THEN_KEYWORD:
@@ -197,7 +200,7 @@ static const char *parse_token_to_string(ParseToken t)
     case PT_EOF:
         return "PT_EOF";
     case PT_EQUAL:
-        return "PT_SINGLE_EQUALS";
+        return "PT_EQUAL";
     case PT_PIPE_PIPE:
         return "PT_PIPE_PIPE";
     case PT_AMPERSAND_AMPERSAND:
@@ -257,6 +260,8 @@ static const char *parse_token_to_string(ParseToken t)
         return "PT_EXPRESSION_EVAL";
     case PT_PRINT_STATEMENT:
         return "PT_PRINT_STATEMENT";
+    case PT_READ_STATEMENT:
+        return "PT_READ_STATEMENT";
     case PT_BLOCK:
         return "PT_BLOCK";
     case PT_CONDITIONAL:
