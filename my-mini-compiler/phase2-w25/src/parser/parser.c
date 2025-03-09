@@ -197,6 +197,7 @@ ParseTreeNode *parse_cfg_recursive_descent_parse_tree(const CFG_GrammarRule *gra
 
     // the grammar must be deterministic (no common prefixes in the production rules for a given non-terminal), this ensures that the first rule that matches is the only rule that can match and that there is at most one left-recursive rule.
 
+    // TODO: don't do this prefix check, just incorporate this as an outer loop to the for-loop below.
     const ProductionRule *p_rule = g_rule->rules, *left_recursive_rule = NULL;
     for (; p_rule < g_rule->rules + g_rule->num_rules; ++p_rule)
     {
