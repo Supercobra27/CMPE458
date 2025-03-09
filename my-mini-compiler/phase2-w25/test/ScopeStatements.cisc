@@ -1,5 +1,6 @@
 {
-
+    ?? single line comment
+    ?! block comment !?
 }
 {
     int x;
