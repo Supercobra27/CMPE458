@@ -1,0 +1,22 @@
+?? single line comment
+?! block comment !?
+
+factorial (x + 2 - y);
+
+!x == (9 < 10);
+
+y = "string literal";
+
+?!
+
+8 + 9;
+
+8 + 9 + 10;
+
+8 + (9 - 10);
+
+x = (y = z * 10000) + 333;
+
+y = 8 + 9 < 9 * 10 - 2;
+
+!?
