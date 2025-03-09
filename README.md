@@ -23,13 +23,13 @@ To Do:
     - [x] Conditional Statements
     - [x] WhileLoop Statements
     - [x] RepeatUntilLoop Statements
-- [ ] proper validation of parser would be done as follows:
-    - store a list of tokens, for one of each TokenType with correct lexemes.
-    - create a valid parse tree using the grammar rules
-    - convert the parse tree to a stream of tokens
-    - parse the stream of tokens to build a parse tree
-    - check that the two parse trees match.
-    - for each valid parse tree, create invalid parse trees. Do this by replacing a token in the corresponding valid token stream with an invalid token.
+- [ ] extensive validation of parser would be done as follows:
+    - store a list of tokens, for one of each TokenType with sample lexemes.
+    - create a valid parse tree using the grammar rules (can iterate over all possible syntatically valid parse trees or something)
+    - convert the valid parse tree to a stream of tokens
+    - test the parser by parsing the stream of tokens to build a parse tree
+    - check that the built parse tree from parsing matches the original parse tree
+    - for each valid parse tree, create invalid parse trees. Do this by arbitrarily picking a node of the parse tree to be in error, update the parse tree to reflect this error. Create modified token stream with this error parse tree. parse the token stream and see if you build the same parse tree with the same error.
 - [x] address all C compiler warnings/errors (they are all just -Wunused-function warnings for enum to const char* switch case functions)
 - [ ] Write up documentation
     - [ ] Grammar
@@ -63,12 +63,14 @@ Statement -> Scope^
            | Declaration^
            | Expression^
            | Print^
+           | Read^
            | Conditional^
            | WhileLoop^
            | RepeatUntilLoop^
 
 Declaration -> Declaration_Type Identifier
 Print -> Expression
+Read -> Expression
 Conditional -> Expression Scope Scope
 WhileLoop -> Expression Scope
 RepeatUntilLoop -> Scope Expression
@@ -130,7 +132,9 @@ Factorial           -> Expression
 
 ### Statement-Level Grammar
 ```
-Program -> StatementList TOKEN_EOF
+Program -> Scope TOKEN_EOF
+
+Scope -> StatementList
 
 StatementList -> Statement StatementList | epsilon
 
@@ -138,6 +142,7 @@ Statement -> EmptyStatement
         | Declaration
         | ExpressionStatement
         | PrintStatement
+        | ReadStatement
         | Block
         | IfThenElse
         | IfThen
@@ -148,6 +153,7 @@ EmptyStatement -> statement_end
 Declaration -> type_keyword identifier statement_end
 ExpressionStatement -> Expression statement_end
 PrintStatement -> print_keyword Expression statement_end
+ReadStatement -> read_keyword Expression statement_end
 Block -> block_begin StatementList block_end
 Conditional -> if_keyword Expression then_keyword Block OptionalElseBlock 
 WhileLoop -> while_keyword Expression Block
@@ -158,6 +164,7 @@ statement_end -> ";"
 type_keyword -> "int" | "float" | "string"
 identifier -> "[a-zA-Z_][a-zA-Z0-9_]*"
 print_keyword -> "print"
+read_keyword -> "read"
 block_begin -> "{"
 block_end -> "}"
 if_keyword -> "if"
@@ -223,7 +230,8 @@ FactorialCall ->  factorial_keyword "(" Expression ")"
 
 Full operator grammar including increment_decrement_operator and complex assignment operators.
 ```
-AssignmentExpression_r12 -> Mutable assignment_operator AssignmentExpression_r12 | OrExpression_l11
+AssignmentExpression_r12 -> OrExpression_l11 AssignmentExpression_rest
+AssignmentExpression_rest -> assignment_operator AssignmentExpression_r12 | epsilon
 OrExpression_l11 -> OrExpression_l11 or_operator AndExpression_l10 | AndExpression_l10
 AndExpression_l10 -> AndExpression_l10 and_operator BitOrExpression_l9 | BitOrExpression_l9
 BitOrExpression_l9 -> BitOrExpression_l9 bit_or_operator BitAndExpression_l8 | BitAndExpression_l8
@@ -274,7 +282,7 @@ Expression -> AssignmentExpression_r12
             | UnaryPrefixExpression_r2 
             | Factor
 
-AssignmentExpression_r12    -> Mutable assignment_operator Expression
+AssignmentExpression_r12    -> Expression assignment_operator Expression
 OrExpression_l11            -> Expresion or_operator Expresion 
 AndExpression_l10           -> Expresion and_operator Expresion 
 BitOrExpression_l9          -> Expresion bit_or_operator Expresion 
@@ -292,7 +300,8 @@ FactorialCall -> factorial_keyword "(" Expression ")"
 
 Simplified operator grammmar that only includes the simple assignment operator "=" and no increment_decrement_operator.
 ```
-AssignmentExpression_r12 -> identifier assignment_operator AssignmentExpression_r12 | OrExpression_l11
+AssignmentExpression_r12 -> OrExpression_l11 AssignmentExpression_rest
+AssignmentExpression_rest -> assignment_operator AssignmentExpression_r12 | epsilon
 OrExpression_l11 -> OrExpression_l11 or_operator AndExpression_l10 | AndExpression_l10
 AndExpression_l10 -> AndExpression_l10 and_operator BitOrExpression_l9 | BitOrExpression_l9
 BitOrExpression_l9 -> BitOrExpression_l9 bit_or_operator BitAndExpression_l8 | BitAndExpression_l8
