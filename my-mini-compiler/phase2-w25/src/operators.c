@@ -1,8 +1,8 @@
-#include <operators.h>
 #include <tokens.h>
 #include <ctype.h>
 #include <string.h>
 
+#include "../include/operators.h"
 
 int operator_index(const char *const s)
 {
