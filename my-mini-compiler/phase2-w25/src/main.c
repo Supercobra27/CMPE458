@@ -857,7 +857,8 @@ int main(int argc, char *argv[])
         //         "x = 42;\n"
         //         "int ;";
 
-        input = "1 + 2 + 3;\n";
+        // input = "1 + 2 + 3;\n";
+        input = "{}";
     }
 
     // TODO: Add more test cases

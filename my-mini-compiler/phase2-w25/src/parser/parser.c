@@ -127,7 +127,7 @@ bool ParseToken_can_start_with(const CFG_GrammarRule *grammar, const size_t gram
 {
     assert(grammar != NULL);
     assert(grammar_size >= ParseToken_COUNT_NONTERMINAL);
-    if (starts_with == PT_NULL || token_to_check == starts_with)
+    if (starts_with == PT_NULL || token_to_check == starts_with || token_to_check == PT_NULL)
     {
         return 1;
     }
