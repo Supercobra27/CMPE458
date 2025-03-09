@@ -225,6 +225,7 @@ ParseTreeNode *parse_cfg_recursive_descent_parse_tree(const CFG_GrammarRule *gra
     if (p_rule == g_rule->rules + g_rule->num_rules)
     {
         node->error = PARSE_ERROR_NO_RULE_MATCHES;
+        node->token = tokens + *index;
         return node;
     }
 
