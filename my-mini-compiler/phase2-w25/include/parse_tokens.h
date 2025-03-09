@@ -388,7 +388,7 @@ typedef enum _ParseErrorType {
     PARSE_ERROR_NO_RULE_MATCHES,
     PARSE_ERROR_CHILD_ERROR,
     PARSE_ERROR_PREVIOUS_TOKEN_FAILED_TO_PARSE,
-    PARSE_ERROR_MULTIPLE_LEFT_RECURSIVE_RULES,
+    PARSE_ERROR_MULTIPLE_LEFT_RECURSIVE_RULES, // not really a parsing error, more of an error about the structure of the grammar.
 } ParseErrorType;
 
 static const char *parse_error_type_to_string(ParseErrorType error)

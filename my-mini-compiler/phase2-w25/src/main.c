@@ -30,7 +30,7 @@ void ParseTreeNode_print_head(ParseTreeNode* node) {
 // Main function for testing
 int main(int argc, char *argv[])
 {
-    // setbuf(stdout, NULL);  // Disable buffering
+    // setbuf(stdout, NULL);  // Disable buffering 
     // not sure if there is any other way to statically initialize this so that it's not right in the middle of the main function.
     const CFG_GrammarRule grammar[ParseToken_COUNT_NONTERMINAL] = {
         (CFG_GrammarRule){

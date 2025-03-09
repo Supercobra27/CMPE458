@@ -4,7 +4,6 @@
 #include "tokens.h"
 
 // These operators are ordered in non-increasing length so that they can be checked in order of the longest operator first. Not all of these operators (namely the compound assignment operators) are actually used (see reduced_operators for all operators used in the programming language).
-#define STRLEN_MAX_OPERATOR 3
 static const char *const extended_operators[] = {
     "<<=",
     ">>=",

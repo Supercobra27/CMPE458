@@ -92,7 +92,6 @@ void print_token(Token token)
            token_type_to_string(token.type), token.type, token.lexeme, token.position.line, token.position.col_start, token.position.col_end, error_type_to_error_message(token.error));
 }
 
-// Do we want to distinguish between errors and warnings?
 void print_token_compiler_message(const char *input_file_path, Token token)
 {
     const int line_start_pos = *(int *)array_get(global_line_start, token.position.line - 1);

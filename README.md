@@ -1,10 +1,70 @@
 # CMPE458 Mini Compiler Project
 
+## Building and running
+The project is configured using cmake, see `my-mini-compiler/CMakeLists.txt` for the build configuration. 
+
+To build using CMAKE: build the project using the `CMakeLists.txt` file. From the `my-mini-compiler` directory, run the following commands in the terminal.
+```
+mkdir build
+cd build
+cmake ..
+cmake --build .
+```
+
+Two executables are generated, one for just the lexer from phase 1 `my-mini-compiler1` and the other combining the lexer and the parser `my-mini-compiler2`.
+
+Both executables are run the in the terminal in the same way, by running the executable along with your input file of choice. For example:  
+
+```
+build/Debug/my-mini-compiler1.exe phase1-w25/test/comments.cisc
+```
+
+You can run different tests by changing the input file from `comments.cisc` to perhaps `keywords&identifiers.cisc` or by creating your own file with file extension `.cisc`.
+
+There are multiple sample input files for the parser located in the directory `my-mini-compiler/phase2-w25/test` with file extension `.cisc`.
+here are two executables generated, one executes just the lexer from phase 1 named my-mini-compiler-phase1, the second executable runs the lexer to tokenize the input and then parses ikt to produce a syntax tree according to the grammar specification at the bottom of this file.
+
 ## Phase 1: Lexer/Scanner
+For more documentation on this phase of the project, see [CMPE 458 Phase 1 Report.docx](./CMPE%20458%20Phase%201%20Report.docx) ([in pdf format](./CMPE%20458%20Phase%201%20Report.pdf)).
+
+Completed:
+- [x] For each type of tokens and whitespace and comments.
+    - [x] regex pattern 
+    - [x] parsing in lexer.c
+    - [x] error cases
+    - [x] test cases
+- [x] Phase 1 Documentation
+    - [x] Changes overview
+    - [x] Change Log
+    - [x] Language Design
+        - [x] data types
+        - [x] control flow patterns (if, else, while, repeat_until) and tentative syntax
+        - [x] operators
+        - [x] keywords
+    - [x] Example Code (correct and incorrect errors)
+- [x] work division
+    - [x] column tracking for tokens (and global error reporting and recovery) - Hendrix
+    - [x] ability to pass input code from a file
+    - [x] comment handling - Monica
+    - [x] numbers: update to not allow leading zeros, length checking, ... - Ryan
+    - [x] keywords and identifier handling - Simon
+    - [x] string literal handling - Simon
+    - [x] operators - Ryan
+    - [x] punctuators - Monica
 
 ## Phase 2: Parser
+For more documentation on this phase of the project, see [CMPE 458 Phase 2 Report.docx](./CMPE458%20Phase%202%20Report.docx) ([in pdf format](./CMPE458%20Phase%202%20Report.pdf)).
 
 To Do:
+- [ ] extensive validation of parser could be done as follows:
+    - store a list of tokens, for one of each TokenType with sample lexemes.
+    - create a valid parse tree using the grammar rules (can iterate over all possible syntatically valid parse trees or something)
+    - convert the valid parse tree to a stream of tokens
+    - test the parser by parsing the stream of tokens to build a parse tree
+    - check that the built parse tree from parsing matches the original parse tree
+    - for each valid parse tree, create invalid parse trees. Do this by arbitrarily picking a node of the parse tree to be in error, update the parse tree to reflect this error. Create modified token stream with this error parse tree. parse the token stream and see if you build the same parse tree with the same error.
+
+Completed:
 - [x] implement ParseTreeNode_print function properly.
 - [x] make sure TokenType, ParseToken, and ASTNodeType all make coinside nicely
 - [x] write validation logic to ensure grammar is deterministic and that left-recursive rules are in the correct format
@@ -23,18 +83,11 @@ To Do:
     - [x] Conditional Statements
     - [x] WhileLoop Statements
     - [x] RepeatUntilLoop Statements
-- [ ] extensive validation of parser would be done as follows:
-    - store a list of tokens, for one of each TokenType with sample lexemes.
-    - create a valid parse tree using the grammar rules (can iterate over all possible syntatically valid parse trees or something)
-    - convert the valid parse tree to a stream of tokens
-    - test the parser by parsing the stream of tokens to build a parse tree
-    - check that the built parse tree from parsing matches the original parse tree
-    - for each valid parse tree, create invalid parse trees. Do this by arbitrarily picking a node of the parse tree to be in error, update the parse tree to reflect this error. Create modified token stream with this error parse tree. parse the token stream and see if you build the same parse tree with the same error.
 - [x] address all C compiler warnings/errors (they are all just -Wunused-function warnings for enum to const char* switch case functions)
-- [ ] Write up documentation
-    - [ ] Grammar
-    - [ ] file structure
-    - [ ] list of changes
+- [x] Write up documentation
+    - [x] Grammar
+    - [x] file structure
+    - [x] list of changes
 
 
 
