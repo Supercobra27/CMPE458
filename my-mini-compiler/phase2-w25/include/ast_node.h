@@ -31,6 +31,7 @@ typedef enum _ASTNodeType {
     // AST_STATEMENT_LIST, does not exist
     AST_DECLARATION,
     AST_PRINT,
+    AST_READ,
     AST_CODITIONAL,
     AST_WHILE_LOOP,
     AST_REPEAT_UNTIL_LOOP,
