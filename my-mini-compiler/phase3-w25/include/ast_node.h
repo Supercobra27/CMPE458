@@ -5,6 +5,8 @@
 
 // Basic node types for AST (Abstract Syntax Tree)
 typedef enum _ASTNodeType {
+    // used for null-terminated arrays of ASTNodeType
+    AST_NULL,
     // Terminal nodes that have tokens associated with them
     AST_IDENTIFIER,
     AST_INTEGER,
@@ -61,10 +63,6 @@ typedef enum _ASTNodeType {
     AST_LOGICAL_NOT,
     AST_NEGATE,
     AST_FACTORIAL,
-
-    AST_ERROR,
-    // used for null-terminated arrays of ASTNodeType
-    AST_NULL,
 } ASTNodeType;
 
 #define MAX_AST_CHILDREN 3U
@@ -80,7 +78,7 @@ typedef enum {
 typedef struct ASTNode {
     ASTNodeType type;           // Type of node
     Token token;               // Token associated with this node
-    struct ASTNode* children[MAX_AST_CHILDREN+1]; // NULL-terminated array of Pointers to child nodes
+    struct ASTNode* children[MAX_AST_CHILDREN]; 
 } ASTNode;
 
 #endif /* AST_NODE_H */

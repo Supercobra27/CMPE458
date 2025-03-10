@@ -9,6 +9,7 @@
 /* Token types that need to be recognized by the lexer */
 typedef enum _TokenType
 {
+    TOKEN_NULL, // Not a parsed token, but used to denote the end of a Null-terminated array of TokenType.
     TOKEN_ERROR,
     TOKEN_IDENTIFIER,
 
@@ -72,6 +73,8 @@ static const char *token_type_to_string(TokenType type)
     // need to change to work within ranges or its a huge case statement
     switch (type)
     {
+    case TOKEN_NULL:
+        return "TOKEN_NULL";
     case TOKEN_ERROR:
         return "TOKEN_ERROR";
     case TOKEN_IDENTIFIER:
@@ -211,9 +214,9 @@ typedef struct _LexemePosition
 typedef struct _Token
 {
     TokenType type;
-    char lexeme[100];        // Actual text of the token
-    LexemePosition position; // Position of this token's lexeme in the input
     ErrorType error;         // Error type if the token is an TOKEN_ERROR.
+    LexemePosition position; // Position of this token's lexeme in the input
+    char lexeme[100];        // Actual text of the token
 } Token;
 
 #endif /* TOKENS_H */
