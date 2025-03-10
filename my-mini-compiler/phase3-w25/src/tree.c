@@ -10,8 +10,8 @@
 #define DA_DEFINE(name, type)   \
 typedef struct {                \
     type *items;                \
-    size_t count;               \
     size_t capacity;            \
+    size_t count;               \
 } name
 
 // 
@@ -19,7 +19,7 @@ typedef struct {                \
  * 
  * @param da The pointer to dynamic array struct to initialize. (must have `items`, `count`, and `capacity` fields).
  */
-#define da_init(da) do { (da)->items = NULL; (da)->count = 0; (da)->capacity = 0; } while (0)
+#define da_init(da) do { (da)->items = NULL; (da)->capacity = 0; (da)->count = 0; } while (0)
 
 // 
 /**
@@ -75,7 +75,8 @@ DA_DEFINE(BoolStack, bool);
 // Function to print the tree using a stack of booleans for the prefix
 void print_tree_rec(print_tree_t *t, BoolStack* stack) {
     const void *const root = t->root;
-    if (root == NULL) return;
+    if (root == NULL) 
+        return;
     // Print the root
     t->print_head(root);
     putc('\n', stdout);

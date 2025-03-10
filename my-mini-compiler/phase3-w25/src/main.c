@@ -8,6 +8,10 @@
 #include "../include/parser.h"
 #include "../include/tree.h"
 
+// Debugging flag
+const bool DEBUG = true;
+// File extension for input files
+const char *const FILE_EXT = ".cisc";
 
 /**
  * WARNING: this function does not check if the pointer is NULL.
@@ -49,7 +53,7 @@ int main(int argc, char *argv[])
 {
     // setbuf(stdout, NULL);  // Disable buffering 
     printf("Validating grammar:\n");
-    CFG_GrammarCheckResult result = check_cfg_grammar(program_grammar);
+    CFG_GrammarCheckResult result = check_cfg_grammar(DEBUG ? stdout : NULL, program_grammar);
     if (result.missing_or_mismatched_rules
         || result.contains_improperly_terminated_production_rules
         || !result.is_prefix_free 
@@ -63,7 +67,6 @@ int main(int argc, char *argv[])
     printf("Grammar is valid.\n");
     
     // input
-    #define FILE_EXT ".cisc"
     char *input = NULL;
     bool must_free_input = false;
     if (argc == 2)
@@ -135,7 +138,7 @@ int main(int argc, char *argv[])
     }
 
     // TODO: Add more test cases
-    printf("\nProcessing input:\n```\n%s\n```", input);
+    printf("\nProcessing input:\n```\n%s\n```", DEBUG ? input : "Not showing input.");
 
     Array *tokens = array_new(8, sizeof(Token));
     // Tokenize the input
@@ -150,8 +153,10 @@ int main(int argc, char *argv[])
     {
         token = get_next_token();
         array_push(tokens, (Element *)&token);
-        print_token(token);
-        printf("\n");
+        if (DEBUG)
+        {
+            print_token(token); printf("\n");
+        }
     } while (token.type != TOKEN_EOF);
     
 
@@ -160,13 +165,14 @@ int main(int argc, char *argv[])
     size_t token_index = 0;
     ParseTreeNode *root = parse_cfg_recursive_descent_parse_tree(program_grammar, ParseToken_COUNT_NONTERMINAL, ParseToken_START_NONTERMINAL, (Token *)array_begin(tokens), &token_index);
 
-    print_tree(&(print_tree_t){
-        .root = &root,
-        .children = (const_voidp_to_const_voidp*)ParseTreeNode_children_begin,
-        .count = (const_voidp_to_size_t*)ParseTreeNode_num_children,
-        .size = sizeof(ParseTreeNode*),
-        .print_head = (const_voidp_to_void*)ParseTreeNode_print_head,
-    });
+    if (DEBUG)
+        print_tree(&(print_tree_t){
+            .root = &root,
+            .children = (const_voidp_to_const_voidp*)ParseTreeNode_children_begin,
+            .count = (const_voidp_to_size_t*)ParseTreeNode_num_children,
+            .size = sizeof(ParseTreeNode*),
+            .print_head = (const_voidp_to_void*)ParseTreeNode_print_head,
+        });
 
     ParseTreeNode_free(root, 1);
     array_free(tokens);

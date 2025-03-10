@@ -2,6 +2,7 @@
 #define GRAMMAR_H
 #include <stddef.h>
 #include <stdbool.h>
+#include <stdio.h>
 
 #include "parse_tokens.h"
 #include "ast_node.h"
@@ -67,8 +68,10 @@ size_t find_indirect_left_recursive(const CFG_GrammarRule grammar[ParseToken_COU
  * - Prefix-freeness: true when no two production rules for a given non-terminal have the same starting token.
  * - Direct left recursion: true when no production rule for a given non-terminal starts with the non-terminal itself.
  * - Multiple
+ * @param stream Stream to write error messages to. If NULL, no error messages are written.
+ * @param grammar Array of CFG_GrammarRule to check.
  */
-CFG_GrammarCheckResult check_cfg_grammar(const CFG_GrammarRule grammar[ParseToken_COUNT_NONTERMINAL]);
+CFG_GrammarCheckResult check_cfg_grammar(FILE *stream, const CFG_GrammarRule grammar[ParseToken_COUNT_NONTERMINAL]);
 
 static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
     {

@@ -73,8 +73,7 @@ size_t find_indirect_left_recursive(const CFG_GrammarRule grammar[ParseToken_COU
     return result;
 }
 
-#include <stdio.h>
-CFG_GrammarCheckResult check_cfg_grammar(const CFG_GrammarRule grammar[ParseToken_COUNT_NONTERMINAL])
+CFG_GrammarCheckResult check_cfg_grammar(FILE *stream, const CFG_GrammarRule grammar[ParseToken_COUNT_NONTERMINAL])
 {
     CFG_GrammarCheckResult result = {
         .is_prefix_free = true,
@@ -88,11 +87,11 @@ CFG_GrammarCheckResult check_cfg_grammar(const CFG_GrammarRule grammar[ParseToke
     {
         const ParseToken t_expected = t_index + ParseToken_FIRST_NONTERMINAL;
         const ParseToken t = grammar[t_index].lhs;
-        printf("Checking grammar rule for %s(%d) (grammar[%llu])\n", parse_token_to_string(t), t, t_index);
+        if (stream) fprintf(stream, "Checking grammar rule for %s(%d) (grammar[%llu])\n", parse_token_to_string(t), t, t_index);
         // ensure the grammar has a rule for each non-terminal in the correct index
         if (t != t_expected)
         {
-            printf("ERROR: Grammar rule is missing/mismatched: got %s(%d), expected %s(%d)\n", 
+            if (stream) fprintf(stream, "ERROR: Grammar rule is missing/mismatched: got %s(%d), expected %s(%d)\n", 
                 parse_token_to_string(t), t, parse_token_to_string(t_expected), t_expected);
             result.missing_or_mismatched_rules = true;
         }
@@ -104,7 +103,7 @@ CFG_GrammarCheckResult check_cfg_grammar(const CFG_GrammarRule grammar[ParseToke
             for (j = 0; rule->tokens[j] != PT_NULL && rule->ast_types[j] != AST_NULL; ++j);
             if (rule->tokens[j] != PT_NULL || rule->ast_types[j] != AST_NULL)
             {
-                printf("ERROR: Production rule %llu is improperly terminated\n", j);
+                if (stream) fprintf(stream, "ERROR: Production rule %llu is improperly terminated\n", j);
                 result.contains_improperly_terminated_production_rules = true;
             }
         }
@@ -119,7 +118,7 @@ CFG_GrammarCheckResult check_cfg_grammar(const CFG_GrammarRule grammar[ParseToke
                     const ProductionRule *rule2 = &grammar[t_index].rules[j];
                     if (rule1->tokens[0] == rule2->tokens[0])
                     {
-                        printf("ERROR: Not prefix-free: rule %llu overlaps with rule %llu\n", i, j);
+                        if (stream) fprintf(stream, "ERROR: Not prefix-free: rule %llu overlaps with rule %llu\n", i, j);
                         result.is_prefix_free = false;
                     }
                 }
@@ -130,27 +129,30 @@ CFG_GrammarCheckResult check_cfg_grammar(const CFG_GrammarRule grammar[ParseToke
         size_t left_recursive_rule_index = find_direct_left_recursive(grammar + t_index);
         if (left_recursive_rule_index != (size_t)-1)
         {
-            printf("NOTE: ProductionRule %llu is left recursive\n", left_recursive_rule_index);
+            if (stream) fprintf(stream, "NOTE: ProductionRule %llu is left recursive\n", left_recursive_rule_index);
             result.contains_direct_left_recursion = true;
             // check that the left recursive rule is not the last rule.
             if (left_recursive_rule_index == grammar[t_index].num_rules-1)
             {
-                printf("ERROR: direct left recursive rule as the last rule\n");
+                if (stream) fprintf(stream, "ERROR: direct left recursive rule as the last rule\n");
                 result.contains_direct_left_recursive_rule_as_last_rule = true;
             }
         }
         // check for indirect left recursion
         if (find_indirect_left_recursive(grammar, t) != (size_t)-1)
         {
-            printf("ERROR: indirect left recursion for %s(%d)\n", parse_token_to_string(t), t);
+            if (stream) fprintf(stream, "ERROR: indirect left recursion for %s(%d)\n", parse_token_to_string(t), t);
             result.contains_indirect_left_recursion = true;
         }
     }
-    printf("missing_or_mismatched_rules: %s\n" , result.missing_or_mismatched_rules ? "true" : "false");
-    printf("contains_improperly_terminated_production_rules: %s\n" , result.contains_improperly_terminated_production_rules ? "true" : "false");
-    printf("is_prefix_free: %s\n" , result.is_prefix_free ? "true" : "false");
-    printf("contains_direct_left_recursion: %s\n" , result.contains_direct_left_recursion ? "true" : "false");
-    printf("contains_direct_left_recursive_rule_as_last_rule: %s\n", result.contains_direct_left_recursive_rule_as_last_rule ? "true" : "false");
-    printf("contains_indirect_left_recursion: %s\n" , result.contains_indirect_left_recursion ? "true" : "false");
+    if (stream) 
+    {
+        fprintf(stream, "missing_or_mismatched_rules: %s\n" , result.missing_or_mismatched_rules ? "true" : "false");
+        fprintf(stream, "contains_improperly_terminated_production_rules: %s\n" , result.contains_improperly_terminated_production_rules ? "true" : "false");
+        fprintf(stream, "is_prefix_free: %s\n" , result.is_prefix_free ? "true" : "false");
+        fprintf(stream, "contains_direct_left_recursion: %s\n" , result.contains_direct_left_recursion ? "true" : "false");
+        fprintf(stream, "contains_direct_left_recursive_rule_as_last_rule: %s\n", result.contains_direct_left_recursive_rule_as_last_rule ? "true" : "false");
+        fprintf(stream, "contains_indirect_left_recursion: %s\n" , result.contains_indirect_left_recursion ? "true" : "false");
+    }
     return result;
 }
