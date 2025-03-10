@@ -101,6 +101,33 @@ Completed:
 
 
 ## Phase 3: Semantic Analyzer
+### Simple Checklist
+1. [ ] Convert Parse Tree to AST (Hendrix)
+    - [ ] Free Dynamic Memory Function
+    - [ ] Conversion Function
+    - Rules are defined in the grammar
+
+2. [ ] Define Semantic Rules
+    - [ ] Declaration/Variables (Simon)
+    - [ ] Assignment/Expressions (Ryan)
+    - [ ] Types allowed for Operations (Ryan/Simon)
+    - [ ] Define Error Rules (Hendrix)
+
+3. [ ] Connect & Create Symbol Table (Monica)
+    - [ ] Define Data Structure - Now
+    - [ ] Determine Operations - Now
+    - [ ] Define Properties Useful for Semantic Rules
+
+4. [ ] Check AST based on Rules
+    - [ ] ForEach AST node, define what is expected (typing, scope, variables)
+    - [ ] Conversion function for said defintions
+
+5. [ ] Runtime Error Detection (flags)
+    - [ ] Div/0
+    - [ ] % (Modulo)
+
+
+
 Todo (in increasing order of dependency):
 - [ ] implement function to convert ParseTreeNode into ASTNode (Abstract Syntax Tree) using grammar rules (see an example here: https://stackoverflow.com/questions/5026517/whats-the-difference-between-parse-trees-and-abstract-syntax-trees-asts)
     - [ ] implement function to free dynamic memory of an AST
@@ -115,7 +142,7 @@ Todo (in increasing order of dependency):
         - [ ] Comparison (CompareEqual, CompareNotEqual, CompareLessEqual, CompareLessThan, CompareGreaterEqual, CompareGreaterThan)
         - [ ] Arithmetic (Add, Subtract, Negate, Multiply, Divide, Modulo, Factorial)
     - [ ] type(s) allowed for the Expression in a Conditional, WhileLoop, and RepeatUntilLoop
-    - [ ] type(s) allowed for the Expression in Rrint.
+    - [ ] type(s) allowed for the Expression in Print.
     - [ ] type(s) allowed for the Expression in Read.
     - [ ] Which operations/constructs can accept different types (are polymorphic) and how do we represent this information to enable code generation?
         - This is mentioned because with these kinds of functions, technically the type is being passed as a parameter (see https://en.wikipedia.org/wiki/Typed_lambda_calculus). So, we either have to be somehow "pass the type as a parameter" to these functions, or recognize the type of the arguments and convert the function to one of a specific type.
