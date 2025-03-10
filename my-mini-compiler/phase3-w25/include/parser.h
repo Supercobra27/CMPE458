@@ -9,7 +9,6 @@
 
 void ParseTreeNode_free(ParseTreeNode *node, bool free_children);
 void ParseTreeNode_print_simple(ParseTreeNode *node, int level, void (*print_node)(ParseTreeNode*));
-void ParseTreeRoot_print(ParseTreeNode *root, void (*print_node)(ParseTreeNode*));
 
 /**
  * Parse a deterministic CFG_GrammarRule using the given tokens and return the resulting ParseTreeNode.
