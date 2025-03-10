@@ -1,5 +1,5 @@
-#include <operators.h>
-#include <tokens.h>
+#include "../include/operators.h"
+#include "../include/tokens.h"
 #include <ctype.h>
 #include <string.h>
 

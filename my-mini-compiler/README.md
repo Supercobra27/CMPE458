@@ -25,7 +25,6 @@ There are multiple sample input files for the parser located in the directory `m
 here are two executables generated, one executes just the lexer from phase 1 named my-mini-compiler-phase1, the second executable runs the lexer to tokenize the input and then parses ikt to produce a syntax tree according to the grammar specification at the bottom of this file.
 
 ## Phase 1: Lexer/Scanner
-For more documentation on this phase of the project, see [CMPE 458 Phase 1 Report.docx](./CMPE%20458%20Phase%201%20Report.docx) ([in pdf format](./CMPE%20458%20Phase%201%20Report.pdf)).
 
 Todo:
 - [ ] fix number parsing for ints and floats ("5.5.5" should not be accepted as FLOAT "5.5.5")
@@ -59,7 +58,6 @@ Completed:
     - [x] punctuators - Monica
 
 ## Phase 2: Parser
-For more documentation on this phase of the project, see [CMPE 458 Phase 2 Report.docx](./CMPE458%20Phase%202%20Report.docx) ([in pdf format](./CMPE458%20Phase%202%20Report.pdf)).
 
 To Do:
 - [ ] comprehensive validation of parser could be done as follows:

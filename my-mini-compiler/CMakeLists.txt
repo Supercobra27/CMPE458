@@ -6,10 +6,10 @@ project(my-mini-compiler C)
 set(CMAKE_C_STANDARD 11)
 
 
-include_directories(
-    ${PROJECT_SOURCE_DIR}/phase1-w25/include
-    ${PROJECT_SOURCE_DIR}/phase2-w25/include
-    ${PROJECT_SOURCE_DIR}/phase3-w25/include)
+# include_directories(
+#     ${PROJECT_SOURCE_DIR}/phase1-w25/include
+#     ${PROJECT_SOURCE_DIR}/phase2-w25/include
+#     ${PROJECT_SOURCE_DIR}/phase3-w25/include)
 
 
 add_compile_options(-Wall -Wextra -Wpedantic)
