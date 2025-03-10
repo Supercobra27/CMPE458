@@ -1,90 +1,109 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <assert.h>
 
 #include "../include/tree.h"
 
-// Stack structure for booleans
-typedef struct BoolStack {
-    bool* data;                     // Dynamic array of booleans
-    size_t size;                       // Current number of elements
-    size_t capacity;                   // Total allocated capacity
-} BoolStack;
+#define DA_INITIAL_CAPACITY 256
 
-// Initialize the stack
-BoolStack* create_stack(size_t initial_capacity) {
-    BoolStack* stack = (BoolStack*)malloc(sizeof(BoolStack));
-    stack->data = (bool*)malloc(initial_capacity * sizeof(bool));
-    stack->size = 0;
-    stack->capacity = initial_capacity;
-    return stack;
-}
+#define DA_DEFINE(name, type)   \
+typedef struct {                \
+    type *items;                \
+    size_t count;               \
+    size_t capacity;            \
+} name
 
-// Push a value onto the stack
-void push(BoolStack* stack, bool value) {
-    if (stack->size >= stack->capacity) {
-        stack->capacity *= 2;
-        stack->data = (bool*)realloc(stack->data, stack->capacity * sizeof(bool));
-        if (!stack->data) {
-            fprintf(stderr, "Stack realloc failed\n");
-            exit(1);
-        }
-    }
-    stack->data[stack->size++] = value;
-}
+// 
+/**
+ * 
+ * @param da The pointer to dynamic array struct to initialize. (must have `items`, `count`, and `capacity` fields).
+ */
+#define da_init(da) do { (da)->items = NULL; (da)->count = 0; (da)->capacity = 0; } while (0)
+
+// 
+/**
+ * Push (append) an item to the end of the dynamic array.
+ * 
+ * @param da The pointer to dynamic array struct to push to. (must have `items`, `count`, and `capacity` fields).
+ * @param item The item to push.
+ */
+#define da_push(da, item)                                                           \
+    do                                                                              \
+    {                                                                               \
+        if ((da)->count >= (da)->capacity) {                                        \
+            if ((da)->capacity == 0) (da)->capacity = DA_INITIAL_CAPACITY;          \
+            else (da)->capacity *= 2;                                               \
+            (da)->capacity *= 2;                                                    \
+            void *ptr = realloc((da)->items, (da)->capacity * sizeof(*(da)->items));\
+            if (ptr == NULL) {                                                      \
+                perror("realloc");                                                  \
+                free((da)->items);                                                  \
+                exit(EXIT_FAILURE);                                                 \
+            }                                                                       \
+            (da)->items = ptr;                                                      \
+        }                                                                           \
+        (da)->items[(da)->count++] = (item);                                        \
+    } while (0)
+
+// 
+/**
+ * Clear the dynamic array, freeing the items and setting the count and capacity to 0.
+ * 
+ * @param da The pointer to dynamic array struct to clear. (must have `items`, `count`, and `capacity` fields).
+ */
+#define da_clear(da)                            \
+    do {                                        \
+        free((da)->items);                      \
+        (da)->items = NULL;                     \
+        (da)->count = 0;                        \
+        (da)->capacity = 0;                     \
+    } while (0)
+
 
 // Pop a value from the stack
-void pop(BoolStack* stack) {
-    if (stack->size > 0) {
-        stack->size--;
-    }
-}
+/**
+ * Pop an item from the end of the dynamic array.
+ * 
+ * @param da The pointer to dynamic array struct to pop from. (must have `items`, `count`, and `capacity` fields).
+ */
+#define da_pop(da) if ((da)->count > 0) --(da)->count
 
-// Free the stack
-void free_stack(BoolStack* stack) {
-    free(stack->data);
-    free(stack);
-}
+// Stack structure for booleans
+DA_DEFINE(BoolStack, bool);
 
 // Function to print the tree using a stack of booleans for the prefix
-void print_tree_rec(print_tree_t *t, BoolStack* stack, bool is_last) {
+void print_tree_rec(print_tree_t *t, BoolStack* stack) {
     const void *const root = t->root;
     if (root == NULL) return;
-    
-    // Print the current node
+    // Print the root
     t->print_head(root);
-
-    // Only process children if there are any
-    size_t n = t->num_children(root);
-    if (n == 0) return;
-
-    // Push the current node's "is_last" status (inverted) onto the stack
-    // True means "not last" (pipe), False means "last" (spaces)
-    push(stack, !is_last);
-
+    putc('\n', stdout);
     // Recursively print all children
-    const void *cp = t->children_begin(root);
-    for (size_t i = 0; i < n; i++) {
+    const size_t n = t->count(root);
+    const void *cp = t->children(root);
+    for (size_t i = 0; i < n; ++i) {
         t->root = (char*)cp + i * t->size;
+        const bool is_last = (i == n - 1);
         // Print the prefix based on the stack and whether this node is the last child.
-        for (size_t i = 1; i < stack->size; ++i)
-            printf("%s", stack->data[i] ? "| " : "  ");
+        for (size_t i = 0; i < stack->count; ++i)
+            printf("%s", stack->items[i] ? "| " : "  ");
         printf("%s", is_last ? "\\-" : "|-");
-        print_tree_rec(t, stack, (i == n - 1));
+        // Push the current node's "is_last" status (inverted) onto the stack
+        // True means "not last" (pipe), False means "last" (spaces)
+        da_push(stack, !is_last);
+        print_tree_rec(t, stack);
+        da_pop(stack);
     }
     t->root = root; // Reset the root pointer since it was changed in the loop.
-
-    // Pop the current level off the stack
-    pop(stack);
 }
 
-void print_tree(const print_tree_t *t)
-{
-    if (t == NULL || t->root == NULL || t->children_begin == NULL || t->num_children == NULL || t->size == 0 || t->print_head == NULL) return;
+void print_tree(const print_tree_t *t) {
+    if (t == NULL || t->root == NULL || t->children == NULL || t->count == NULL || t->size == 0 || t->print_head == NULL) return;
     // Create a stack and print the tree
-    BoolStack* stack = create_stack(16);
+    BoolStack stack = {0};
     print_tree_t pt = *t; // Copy the struct to avoid modifying the original (the recursive function does modify the struct, however it reverts those modifications before returning, this is just for safety)
-    print_tree_rec(&pt, stack, true); // Root is treated as "last" for simplicity
-    free_stack(stack);
+    print_tree_rec(&pt, &stack); // Recursively print the tree
+    da_clear(&stack);
 }
 

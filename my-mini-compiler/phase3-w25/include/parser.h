@@ -22,6 +22,23 @@ void ParseTreeNode_print_simple(ParseTreeNode *node, int level, void (*print_nod
  * @param index The index of the current token to parse, upon termination, this index will point to the next token to parse (if parsing fails, it will point to the first token that could not be parsed).
  */
 ParseTreeNode *parse_cfg_recursive_descent_parse_tree(const CFG_GrammarRule *grammar, const size_t grammar_size, const ParseToken token, const Token *tokens, size_t *index);
+/* way this could be implemented to handle non-deterministic grammars (where multiple production rules for a given non-terminal possibly have common prefixes):
+// start a count of the number of children that were successfully parsed in previous rules (helpful for when there are multiple rules with the same starting tokens).
+// for each production rule,
+    // if the rule is left-recursive, then make sure that it isn't the second left-recursive rule. keep track of this rule and continue looking for a non-left-recursive rule.
+    // not left-recursive: try and parse it and build the node:
+        // keep a count of the number of children that need to be parsed and malloc/realloc space for them at node->children.
+        // start a count of the number of children that were successfully parsed in this rule.
+        // for each child token to be parsed:
+            // see if it was already parsed and stored in the node->children, if so, just increment the count of successfully parsed children.
+            // if it was not parsed already, recursively parse it and store the result in node->children, if parsing fails, break the loop over children.
+        // if not all the children were parsed, then this rule failed to parse. 
+        // update the cound of the number of children that were successfully parsed in previous rules.
+        // if all children were parsed, then this rule was successful, break the loop over rules.
+// if we didn't parse all the children, set the error and return the node.
+// if we didn't find a left-recursive production rule, then return the node.
+// if we found a left-recursive rule, then then try and parse the rest of the left-recursive rule repeatedly until it fails. When it fails, just stop and return what worked so far.
+*/
 
 
 #endif /* PARSER_H */

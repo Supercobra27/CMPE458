@@ -413,10 +413,11 @@ static const char *parse_error_type_to_string(ParseErrorType error)
 
 typedef struct _ParseTreeNode {
     ParseToken type;
-    size_t num_children;
-    struct _ParseTreeNode *children; // Array of `num_children` children.
     const Token *token; // Token in the case of a terminal node.
     ParseErrorType error;
+    struct _ParseTreeNode **children; // Array of `count` children pointers. capacity is the allocated size of the array.
+    size_t capacity;
+    size_t count;
 } ParseTreeNode;
     
 

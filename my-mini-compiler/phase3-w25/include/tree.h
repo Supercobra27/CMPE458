@@ -9,16 +9,16 @@ typedef void (const_voidp_to_void)(const void *);
  * Function pointers for printing a tree.
  * 
  * @param root The root of the tree to print.
- * @param children_begin A function that returns the beginning of the children of a node.
- * @param num_children A function that returns the number of children of a node.
+ * @param children A function that returns the beginning of the children of a node.
+ * @param count A function that returns the number of children of a node.
  * @param size The size of the node in bytes. 
  * @param print_head A function that prints the head of a node
  */
 typedef struct _print_tree_t
 {
     const void *root;
-    const_voidp_to_const_voidp *children_begin;
-    const_voidp_to_size_t *num_children;
+    const_voidp_to_const_voidp *children;
+    const_voidp_to_size_t *count;
     const size_t size;
     const_voidp_to_void *print_head;
 } print_tree_t;

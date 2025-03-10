@@ -13,15 +13,15 @@
  * WARNING: this function does not check if the pointer is NULL.
  * @return n->children.
  */
-const ParseTreeNode *ParseTreeNode_children_begin(const ParseTreeNode *n) {
-    return n->children;
+ParseTreeNode **ParseTreeNode_children_begin(const ParseTreeNode *const*n) {
+    return (*n)->children;
 }
 /**
  * WARNING: this function does not check if the pointer is NULL.
- * @return n->num_children.
+ * @return n->count.
  */
-size_t ParseTreeNode_num_children(const ParseTreeNode *n) {
-    return n->num_children;
+size_t ParseTreeNode_num_children(const ParseTreeNode *const*n) {
+    return (*n)->count;
 }
 /**
  * Print ParseTreeNode to stdout. Prints the type and error types of the node, then the same for the token (if the token is not null) followed by a newline.
@@ -30,19 +30,18 @@ size_t ParseTreeNode_num_children(const ParseTreeNode *n) {
  * 
  * @param node Pointer to node to print.
  */
-void ParseTreeNode_print_head(ParseTreeNode* node) {
-    printf("%s", parse_token_to_string(node->type));
-    if (node->error != PARSE_ERROR_NONE) 
-        printf(" (%s)", parse_error_type_to_string(node->error));
-    if (node->token != NULL)
+void ParseTreeNode_print_head(const ParseTreeNode *const*node) {
+    printf("%s", parse_token_to_string((*node)->type));
+    if ((*node)->error != PARSE_ERROR_NONE) 
+        printf(" (%s)", parse_error_type_to_string((*node)->error));
+    if ((*node)->token != NULL)
     {
         printf(" -> ");
-        if (node->token->type == TOKEN_ERROR || node->error != PARSE_ERROR_NONE)
-            print_token(*node->token);
+        if ((*node)->token->type == TOKEN_ERROR || (*node)->error != PARSE_ERROR_NONE)
+            print_token(*(*node)->token);
         else
-            printf("%s \"%s\"", token_type_to_string(node->token->type), node->token->lexeme);
+            printf("%s \"%s\"", token_type_to_string((*node)->token->type), (*node)->token->lexeme);
     }
-    printf("\n");
 }
 
 // Main function for testing
@@ -162,10 +161,10 @@ int main(int argc, char *argv[])
     ParseTreeNode *root = parse_cfg_recursive_descent_parse_tree(program_grammar, ParseToken_COUNT_NONTERMINAL, ParseToken_START_NONTERMINAL, (Token *)array_begin(tokens), &token_index);
 
     print_tree(&(print_tree_t){
-        .root = root,
-        .children_begin = (const_voidp_to_const_voidp*)ParseTreeNode_children_begin,
-        .num_children = (const_voidp_to_size_t*)ParseTreeNode_num_children,
-        .size = sizeof(ParseTreeNode),
+        .root = &root,
+        .children = (const_voidp_to_const_voidp*)ParseTreeNode_children_begin,
+        .count = (const_voidp_to_size_t*)ParseTreeNode_num_children,
+        .size = sizeof(ParseTreeNode*),
         .print_head = (const_voidp_to_void*)ParseTreeNode_print_head,
     });
 
