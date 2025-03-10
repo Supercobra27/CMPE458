@@ -173,14 +173,13 @@ int main(int argc, char *argv[])
     };
     parse_cfg_recursive_descent_parse_tree(&root, &token_index, (Token *)array_begin(tokens), program_grammar, ParseToken_COUNT_NONTERMINAL);
 
-    if (DEBUG)
-        print_tree(&(print_tree_t){
-            .root = &root,
-            .children = (const_voidp_to_const_voidp*)ParseTreeNode_children_begin,
-            .count = (const_voidp_to_size_t*)ParseTreeNode_num_children,
-            .size = sizeof(ParseTreeNode),
-            .print_head = (const_voidp_to_void*)ParseTreeNode_print_head,
-        });
+    if (DEBUG) print_tree(&(print_tree_t){
+        .root = &root,
+        .children = (const_voidp_to_const_voidp*)ParseTreeNode_children_begin,
+        .count = (const_voidp_to_size_t*)ParseTreeNode_num_children,
+        .size = sizeof(ParseTreeNode),
+        .print_head = (const_voidp_to_void*)ParseTreeNode_print_head,
+    });
 
     ParseTreeNode_free_children(&root);
     array_free(tokens);
