@@ -11,7 +11,10 @@ cmake ..
 cmake --build .
 ```
 
-Two executables are generated, one for just the lexer from phase 1 `my-mini-compiler1` and the other combining the lexer and the parser `my-mini-compiler2`.
+Three executables are generated, 
+- one for just the lexer from phase 1 `my-mini-compiler1`,
+- one for with the combination of the lexer and the parser `my-mini-compiler2`,
+- one for the combination of lexer, parser and semantic analyzer `my-mini-compiler3` (work in progress).
 
 Both executables are run the in the terminal in the same way, by running the executable along with your input file of choice. For example:  
 
