@@ -29,7 +29,7 @@ For more documentation on this phase of the project, see [CMPE 458 Phase 1 Repor
 
 Todo:
 - [ ] fix number parsing for ints and floats ("5.5.5" should not be accepted as FLOAT "5.5.5")
-- [ ] Clearly list and explain each regular expression for each token (perhaps test and make everything explicit using https://regexer.com) and explain what characters are allowed to follow immediately after a token (address the question of whether "10x" is tokenized into INTEGER "10" and IDENTIFIER "x" or alternatively ERROR "10x")
+- [ ] Clearly list and explain each regular expression for each token (perhaps test and make everything explicit using https://regexer.com) and explain what characters are allowed to follow immediately after a token (address the question of whether "10x" is tokenized into INTEGER "10" and IDENTIFIER "x" or alternatively ERROR "10x", also "2then" is tokenized as INTEGER "2" and KEYWORD "then" which I suspect was not intended)
 - [ ] Clearly distinguish whitespace and comment regular expressions from token lexeme regular expressions
 
 Completed:
@@ -102,6 +102,8 @@ Completed:
 ## Phase 3: Semantic Analyzer
 Todo (in increasing order of dependency):
 - [ ] implement function to convert ParseTreeNode into ASTNode (Abstract Syntax Tree) using grammar rules (see an example here: https://stackoverflow.com/questions/5026517/whats-the-difference-between-parse-trees-and-abstract-syntax-trees-asts)
+    - [ ] implement function to free dynamic memory of an AST
+    - [ ] implement conversion function to create ASTNode from ParseTreeNode
 - [ ] specify semantic/context-sensitive rules for the programming language 
     - [ ] Declaration and use of variables (identifier) in relation to Scope and Expression.
     - [ ] type of arguments allowed in each different Operation.

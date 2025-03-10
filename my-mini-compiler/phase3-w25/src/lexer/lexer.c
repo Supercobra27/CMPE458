@@ -143,7 +143,7 @@ Token get_next_token()
     if (global_input[global_position] == '\0')
     {
         token.type = TOKEN_EOF;
-        strcpy(token.lexeme, "EOF");
+        strcpy(token.lexeme, "\0");
         return token;
     }
 

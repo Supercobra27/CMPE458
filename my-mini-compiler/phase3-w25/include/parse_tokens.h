@@ -4,6 +4,8 @@
 #include <stddef.h>
 
 typedef enum _ParseToken {
+    // Used by to indicate the end of a Null-terminated array of ParseToken.
+    PT_NULL,
     // Terminal tokens (these enum values must directly correspond to the token values in tokens.h)
     PT_TOKEN_ERROR,
     PT_IDENTIFIER,
@@ -135,19 +137,16 @@ typedef enum _ParseToken {
     PT_BITWISE_NOT,
     PT_LOGICAL_NOT,
     PT_NEGATE,
-
-    // Used by to indicate the end of a Null-terminated array of ParseToken.
-    PT_NULL,
 } ParseToken;
 
-#define ParseToken_FIRST_TERMINAL PT_IDENTIFIER
+#define ParseToken_FIRST_TERMINAL PT_TOKEN_ERROR
 #define ParseToken_START_NONTERMINAL PT_PROGRAM
-#define ParseToken_MAX PT_NULL
-#define ParseToken_FIRST_NONTERMINAL ParseToken_START_NONTERMINAL
-#define ParseToken_COUNT_TERMINAL FIRST_NONTERMINAL_ParseToken
-#define ParseToken_COUNT_NONTERMINAL (ParseToken_MAX - ParseToken_FIRST_NONTERMINAL)
+#define ParseToken_FIRST_NONTERMINAL PT_PROGRAM
+#define ParseToken_MAX PT_NEGATE
+#define ParseToken_COUNT_TERMINAL (ParseToken_FIRST_NONTERMINAL - ParseToken_FIRST_TERMINAL)
+#define ParseToken_COUNT_NONTERMINAL (ParseToken_MAX - ParseToken_FIRST_NONTERMINAL + 1)
 #define ParseToken_IS_TERMINAL(token) ((token) < ParseToken_FIRST_NONTERMINAL)
-#define ParseToken_IS_NONTERMINAL(token) ((token) >= ParseToken_FIRST_NONTERMINAL && (token) < ParseToken_MAX)
+#define ParseToken_IS_NONTERMINAL(token) (ParseToken_FIRST_NONTERMINAL <= (token) && (token) <= ParseToken_MAX)
 
 static const char *parse_token_to_string(ParseToken t)
 {
@@ -413,11 +412,12 @@ static const char *parse_error_type_to_string(ParseErrorType error)
 
 typedef struct _ParseTreeNode {
     ParseToken type;
-    size_t num_children;
-    struct _ParseTreeNode *children; // Array of `num_children` children.
-    const Token *token; // Token in the case of a terminal node.
     ParseErrorType error;
+    const Token *token; // Token in the case of a terminal node.
+    struct _ParseTreeNode *children; // Array of `count` children. `capacity` is the allocated size of the array.
+    size_t capacity;
+    size_t count;
 } ParseTreeNode;
-    
+ 
 
 #endif /* PARSE_TOKENS_H */

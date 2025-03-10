@@ -27,43 +27,43 @@ void ParseTreeNode_free(ParseTreeNode *node, bool free_children)
 
 // Stack structure for booleans
 typedef struct BoolStack {
-    bool* data;                     // Dynamic array of booleans
-    size_t size;                       // Current number of elements
+    bool* items;                     // Dynamic array of booleans
+    size_t count;                       // Current number of elements
     size_t capacity;                   // Total allocated capacity
 } BoolStack;
 
 // Initialize the stack
 BoolStack* create_stack(size_t initial_capacity) {
     BoolStack* stack = (BoolStack*)malloc(sizeof(BoolStack));
-    stack->data = (bool*)malloc(initial_capacity * sizeof(bool));
-    stack->size = 0;
+    stack->items = (bool*)malloc(initial_capacity * sizeof(bool));
+    stack->count = 0;
     stack->capacity = initial_capacity;
     return stack;
 }
 
 // Push a value onto the stack
 void push(BoolStack* stack, bool value) {
-    if (stack->size >= stack->capacity) {
+    if (stack->count >= stack->capacity) {
         stack->capacity *= 2;
-        stack->data = (bool*)realloc(stack->data, stack->capacity * sizeof(bool));
-        if (!stack->data) {
+        stack->items = (bool*)realloc(stack->items, stack->capacity * sizeof(bool));
+        if (!stack->items) {
             fprintf(stderr, "Stack realloc failed\n");
             exit(1);
         }
     }
-    stack->data[stack->size++] = value;
+    stack->items[stack->count++] = value;
 }
 
 // Pop a value from the stack
 void pop(BoolStack* stack) {
-    if (stack->size > 0) {
-        stack->size--;
+    if (stack->count > 0) {
+        stack->count--;
     }
 }
 
 // Free the stack
 void free_stack(BoolStack* stack) {
-    free(stack->data);
+    free(stack->items);
     free(stack);
 }
 
@@ -72,10 +72,10 @@ void print_tree(ParseTreeNode* node, BoolStack* stack, bool is_last, void (*prin
     if (node == NULL) return;
 
     // Print the prefix based on the stack and whether this node is the last child.
-    for (size_t i = 1; i < stack->size; i++) {
-        printf("%s", stack->data[i] ? "| " : "  ");
+    for (size_t i = 1; i < stack->count; i++) {
+        printf("%s", stack->items[i] ? "| " : "  ");
     }
-    if (stack->size > 0) {
+    if (stack->count > 0) {
         printf("%s", is_last ? "\\-" : "|-");
     }
     
