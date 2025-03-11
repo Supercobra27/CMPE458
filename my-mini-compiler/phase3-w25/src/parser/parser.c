@@ -23,6 +23,7 @@ static inline void ParseTreeNode_init_zero(ParseTreeNode *node, size_t capacity)
     assert(node != NULL);
     node->type = PT_NULL;
     node->token = NULL;
+    node->rule = NULL;
     node->error = PARSE_ERROR_NONE;
     node->children = NULL;
     node->capacity = 0;
@@ -86,22 +87,21 @@ bool ParseToken_can_start_with(const ParseToken t, const ParseToken s, const CFG
     return 0;
 }
 
-
-
 bool parse_cfg_recursive_descent_parse_tree(ParseTreeNode *const node, size_t *const index, const Token *const input, const CFG_GrammarRule *const grammar, const size_t grammar_size)
 {
     assert(node != NULL);
     assert(index != NULL);
     assert(input != NULL);
     assert(grammar != NULL);
-    assert(grammar_size > 0);
+    assert(grammar_size >= ParseToken_COUNT_NONTERMINAL);
 
     // Initialize the node to default values, leaving node->type as is.
     node->error = PARSE_ERROR_NONE;
     node->token = NULL;
-    node->children = NULL;
+    node->rule = NULL;
     node->capacity = 0;
     node->count = 0;
+    node->children = NULL;
 
     // PT_NULL node does not consume any input and always succeeds.
     if (node->type == PT_NULL)
@@ -132,6 +132,7 @@ bool parse_cfg_recursive_descent_parse_tree(ParseTreeNode *const node, size_t *c
         if (p_rule->tokens[0] == node->type) {
             left_recursive_rule = p_rule;
         } else if (ParseToken_can_start_with(p_rule->tokens[0], (ParseToken)input[*index].type, grammar, grammar_size)){
+            node->rule = p_rule;
             break;
         }
     }
@@ -168,9 +169,10 @@ bool parse_cfg_recursive_descent_parse_tree(ParseTreeNode *const node, size_t *c
                 node->children[node->count].type = p_rule->tokens[node->count];
                 node->children[node->count].error = PARSE_ERROR_PREVIOUS_TOKEN_FAILED_TO_PARSE;
                 node->children[node->count].token = NULL;
-                node->children[node->count].children = NULL;
-                node->children[node->count].capacity = 0;
+                node->children[node->count].rule = NULL;
                 node->children[node->count].count = 0;
+                node->children[node->count].capacity = 0;
+                node->children[node->count].children = NULL;
             }
             // return false because the node failed to parse.
             return false;
@@ -196,6 +198,7 @@ bool parse_cfg_recursive_descent_parse_tree(ParseTreeNode *const node, size_t *c
             exit(EXIT_FAILURE);
         }
         node->token = NULL;
+        node->rule = left_recursive_rule;
         node->capacity = left_recursive_rule_num_children;
         node->children[0] = temp;
         node->count = 1;
@@ -209,6 +212,7 @@ bool parse_cfg_recursive_descent_parse_tree(ParseTreeNode *const node, size_t *c
                     node->children[node->count].type = left_recursive_rule->tokens[node->count];
                     node->children[node->count].error = PARSE_ERROR_PREVIOUS_TOKEN_FAILED_TO_PARSE;
                     node->children[node->count].token = NULL;
+                    node->children[node->count].rule = NULL;
                     node->children[node->count].children = NULL;
                     node->children[node->count].capacity = 0;
                     node->children[node->count].count = 0;
@@ -220,8 +224,34 @@ bool parse_cfg_recursive_descent_parse_tree(ParseTreeNode *const node, size_t *c
     return node;
 }
 
-bool ASTNode_from_ParseTreeNode_impl(ASTNode *const ast_node, const ParseTreeNode *const parse_node, const CFG_GrammarRule *const grammar, const size_t grammar_size) {
+void ASTNode_free_children(ASTNode *const node) {
+    if (node == NULL || node->items == NULL)
+        return;
+    for (size_t i = 0; i < node->count; ++i)
+        ASTNode_free_children(node->items + i);
+    free(node->items);
+    node->items = NULL;
+    node->count = 0;
+    node->capacity = 0;
+}
+
+bool ASTNode_from_ParseTreeNode_impl(ASTNode *const ast_node, const ParseTreeNode *const parse_node, const CFG_GrammarRule *const grammar) {
     // we can be sure that the pointers are not NULL because the caller of this function has already checked for that.
+
+    // if parse_node is PT_NULL
+    if (parse_node->type == PT_NULL)
+        return true;
+    // if parse_node is a terminal.
+    if (ParseToken_IS_TERMINAL(parse_node->type)) 
+    {
+        if (parse_node->token == NULL)
+            return false;
+        ast_node->token = *parse_node->token;
+        return true;
+    }
+    // parse_node is a non-terminal.
+    // take the rule used to parse the node and use it to construct the ASTNode.
+    
 
     return false;
 }
@@ -230,9 +260,10 @@ bool ASTNode_from_ParseTreeNode(ASTNode *const ast_node, const ParseTreeNode *co
     assert(ast_node != NULL);
     assert(parse_node != NULL);
     assert(grammar != NULL);
-    assert(grammar_size > ParseToken_COUNT_NONTERMINAL);
-    // initialize the ASTNode to default values.
-    memset(ast_node, 0, sizeof(ASTNode));
+    assert(grammar_size >= ParseToken_COUNT_NONTERMINAL);
+    // ast_node->type is already set to the desired type.
+    // initialize the rest of the ASTNode to default values.
+    memset(&(ast_node->error), 0, sizeof(ASTNode) - sizeof(ASTNodeType));
     // call the function given ast_node is initialized to default values.
-    return ASTNode_from_ParseTreeNode_impl(ast_node, parse_node, grammar, grammar_size);
+    return ASTNode_from_ParseTreeNode_impl(ast_node, parse_node, grammar);
 }

@@ -1,7 +1,8 @@
 #ifndef PARSE_TOKENS_H
 #define PARSE_TOKENS_H
-#include "tokens.h"
 #include <stddef.h>
+
+#include "tokens.h"
 
 typedef enum _ParseToken {
     // Used by to indicate the end of a Null-terminated array of ParseToken.
@@ -407,14 +408,5 @@ static const char *parse_error_type_to_string(ParseErrorType error)
     return "UNKNOWN";
 }
 
-typedef struct _ParseTreeNode {
-    ParseToken type;
-    ParseErrorType error;
-    const Token *token; // Token in the case of a terminal node.
-    size_t count;
-    size_t capacity;
-    struct _ParseTreeNode *children; // Array of `count` children. `capacity` is the allocated size of the array.
-} ParseTreeNode;
- 
 
 #endif /* PARSE_TOKENS_H */

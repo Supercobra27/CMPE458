@@ -10,6 +10,7 @@
 void ParseTreeNode_free_children(ParseTreeNode *node);
 void ParseTreeNode_print_simple(ParseTreeNode *node, int level, void (*print_node)(ParseTreeNode*));
 
+
 /**
  * Parse a deterministic CFG_GrammarRule using the given tokens and return the resulting ParseTreeNode.
  * 
@@ -40,13 +41,14 @@ bool parse_cfg_recursive_descent_parse_tree(ParseTreeNode *const node, size_t *c
 // if we found a left-recursive rule, then then try and parse the rest of the left-recursive rule repeatedly until it fails. When it fails, just stop and return what worked so far.
 */
 
+void ASTNode_free_children(ASTNode *const node);
 
 /**
  * Convert a ParseTreeNode to an ASTNode.
  * 
- * `parse_node` 
+ * WARNING: Ensure that the memory at address `ast_node->items` is deallocated prior to calling this function as otherwise there will be a memory leak.
  * 
- * @param ast_node The ASTNode to construct from the ParseTreeNode. Must be a valid pointer to an ASTNode struct.
+ * @param ast_node The ASTNode to construct from the ParseTreeNode. The `ast_node->type` field will be unchanged, other fields will be filled in by the contents of `parse_node`.
  * @param parse_node The ParseTreeNode to convert to an ASTNode. Assumed to be constructed according to `grammar`, if not, then `UNDEFINED BEHAVIOR`.
  * @param grammar The grammar rules to use to convert the ParseTreeNode to an ASTNode.
  * @param grammar_size The size of the grammar array.

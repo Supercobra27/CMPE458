@@ -44,6 +44,16 @@ typedef struct _CFG_GrammarCheckResult
     bool contains_indirect_left_recursion;
 } CFG_GrammarCheckResult;
 
+typedef struct _ParseTreeNode {
+    ParseToken type;
+    ParseErrorType error;
+    const Token *token; // Token in the case of a terminal node.
+    const ProductionRule *rule; // Rule used to parse this node. NULL if this is a terminal node.
+    size_t count;
+    size_t capacity;
+    struct _ParseTreeNode *children; // Array of `count` children. `capacity` is the allocated size of the array.
+} ParseTreeNode;
+ 
 /**
  * Check if the given grammar rule has indirect left recursion.
  * 
