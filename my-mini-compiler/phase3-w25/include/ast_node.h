@@ -2,6 +2,7 @@
 #define AST_NODE_H
 
 #include "tokens.h"
+#include <stddef.h> // size_t
 
 // Basic node types for AST (Abstract Syntax Tree)
 typedef enum _ASTNodeType {
@@ -12,7 +13,7 @@ typedef enum _ASTNodeType {
     AST_INTEGER,
     AST_FLOAT,
     AST_STRING,
-    // Terminal Nodes that don't have tokens associated with them. These Nodes will be selected for promotion.
+    // Terminal Nodes that don't have tokens associated with them.
     AST_INT_TYPE,
     AST_FLOAT_TYPE,
     AST_STRING_TYPE,
@@ -65,9 +66,8 @@ typedef enum _ASTNodeType {
     AST_FACTORIAL,
 } ASTNodeType;
 
-#define MAX_AST_CHILDREN 3U
 #define MAX_ASTNode_WITH_TOKEN AST_STRING
-#define ASTNodeType_HAS_TOKEN(type) ((type) <= MAX_ASTNode_WITH_TOKEN)
+#define ASTNodeType_HAS_TOKEN(type) (AST_NULL < (type) && (type) <= MAX_ASTNode_WITH_TOKEN)
 
 // These errors should be determined by semantic analysis.
 typedef enum {
@@ -77,8 +77,11 @@ typedef enum {
 // AST Node structure
 typedef struct ASTNode {
     ASTNodeType type;           // Type of node
-    Token token;               // Token associated with this node
-    struct ASTNode* children[MAX_AST_CHILDREN]; 
+    ASTErrorType error;         // Error type
+    Token token;               // Token associated with this node, TOKEN_NULL if none.
+    size_t count;
+    size_t capacity;
+    struct ASTNode *items; // Array of child nodes
 } ASTNode;
 
 #endif /* AST_NODE_H */

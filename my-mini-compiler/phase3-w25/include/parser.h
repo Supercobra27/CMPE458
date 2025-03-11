@@ -22,24 +22,37 @@ void ParseTreeNode_print_simple(ParseTreeNode *node, int level, void (*print_nod
  * @param grammar_size The size of the grammar array.
  * @return true if the node was successfully parsed and node->error is PARSE_ERROR_NONE, false otherwise.
  */
-bool parse_cfg_recursive_descent_parse_tree(ParseTreeNode *node, size_t *index, const Token *const input, const CFG_GrammarRule *grammar, const size_t grammar_size);
-/* way this could be implemented to handle non-deterministic grammars (where multiple production rules for a given non-terminal possibly have common prefixes):
-// start a count of the number of children that were successfully parsed in previous rules (helpful for when there are multiple rules with the same starting tokens).
+bool parse_cfg_recursive_descent_parse_tree(ParseTreeNode *const node, size_t *const index, const Token *const input, const CFG_GrammarRule *const grammar, const size_t grammar_size);
+/* 
 // for each production rule,
-    // if the rule is left-recursive, then make sure that it isn't the second left-recursive rule. keep track of this rule and continue looking for a non-left-recursive rule.
+    // if the rule is left-recursive. keep track of this rule and skip to the next iteration to find a non-left-recursive rule.
     // not left-recursive: try and parse it and build the node:
-        // keep a count of the number of children that need to be parsed and malloc/realloc space for them at node->children.
+        // get the minimum number of children expected to be parsed for this rule and allocate memory for them. If right recursive, then there could be any number of children, so they must be allocated dynamically.
         // start a count of the number of children that were successfully parsed in this rule.
         // for each child token to be parsed:
-            // see if it was already parsed and stored in the node->children, if so, just increment the count of successfully parsed children.
-            // if it was not parsed already, recursively parse it and store the result in node->children, if parsing fails, break the loop over children.
-        // if not all the children were parsed, then this rule failed to parse. 
-        // update the cound of the number of children that were successfully parsed in previous rules.
-        // if all children were parsed, then this rule was successful, break the loop over rules.
+            // parse it and store the result in node->children, 
+            // the child failed to parse,
+                // set the node->error to the proper error type. 
+                // 
+                // break the loop over children.
 // if we didn't parse all the children, set the error and return the node.
 // if we didn't find a left-recursive production rule, then return the node.
 // if we found a left-recursive rule, then then try and parse the rest of the left-recursive rule repeatedly until it fails. When it fails, just stop and return what worked so far.
 */
+
+
+/**
+ * Convert a ParseTreeNode to an ASTNode.
+ * 
+ * `parse_node` 
+ * 
+ * @param ast_node The ASTNode to construct from the ParseTreeNode. Must be a valid pointer to an ASTNode struct.
+ * @param parse_node The ParseTreeNode to convert to an ASTNode. Assumed to be constructed according to `grammar`, if not, then `UNDEFINED BEHAVIOR`.
+ * @param grammar The grammar rules to use to convert the ParseTreeNode to an ASTNode.
+ * @param grammar_size The size of the grammar array.
+ * @return true if the ASTNode and its children were successfully constructed, false otherwise.
+ */
+bool ASTNode_from_ParseTreeNode(ASTNode *const ast_node, const ParseTreeNode *const parse_node, const CFG_GrammarRule *const grammar, const size_t grammar_size);
 
 
 #endif /* PARSER_H */

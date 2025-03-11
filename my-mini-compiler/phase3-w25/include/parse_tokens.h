@@ -145,7 +145,7 @@ typedef enum _ParseToken {
 #define ParseToken_MAX PT_NEGATE
 #define ParseToken_COUNT_TERMINAL (ParseToken_FIRST_NONTERMINAL - ParseToken_FIRST_TERMINAL)
 #define ParseToken_COUNT_NONTERMINAL (ParseToken_MAX - ParseToken_FIRST_NONTERMINAL + 1)
-#define ParseToken_IS_TERMINAL(token) ((token) < ParseToken_FIRST_NONTERMINAL)
+#define ParseToken_IS_TERMINAL(token) (PT_NULL < (token) && (token) < ParseToken_FIRST_NONTERMINAL)
 #define ParseToken_IS_NONTERMINAL(token) (ParseToken_FIRST_NONTERMINAL <= (token) && (token) <= ParseToken_MAX)
 
 static const char *parse_token_to_string(ParseToken t)
@@ -387,7 +387,6 @@ typedef enum _ParseErrorType {
     PARSE_ERROR_NO_RULE_MATCHES,
     PARSE_ERROR_CHILD_ERROR,
     PARSE_ERROR_PREVIOUS_TOKEN_FAILED_TO_PARSE,
-    PARSE_ERROR_MULTIPLE_LEFT_RECURSIVE_RULES, // not really a parsing error, more of an error about the structure of the grammar.
 } ParseErrorType;
 
 static const char *parse_error_type_to_string(ParseErrorType error)
@@ -400,8 +399,6 @@ static const char *parse_error_type_to_string(ParseErrorType error)
         return "PARSE_ERROR_WRONG_TOKEN";
     case PARSE_ERROR_NO_RULE_MATCHES:
         return "PARSE_ERROR_NO_RULE_MATCHES";
-    case PARSE_ERROR_MULTIPLE_LEFT_RECURSIVE_RULES:
-        return "PARSE_ERROR_MULTIPLE_LEFT_RECURSIVE_RULES";
     case PARSE_ERROR_CHILD_ERROR:
         return "PARSE_ERROR_CHILD_ERROR";
     case PARSE_ERROR_PREVIOUS_TOKEN_FAILED_TO_PARSE:
@@ -414,9 +411,9 @@ typedef struct _ParseTreeNode {
     ParseToken type;
     ParseErrorType error;
     const Token *token; // Token in the case of a terminal node.
-    struct _ParseTreeNode *children; // Array of `count` children. `capacity` is the allocated size of the array.
-    size_t capacity;
     size_t count;
+    size_t capacity;
+    struct _ParseTreeNode *children; // Array of `count` children. `capacity` is the allocated size of the array.
 } ParseTreeNode;
  
 
