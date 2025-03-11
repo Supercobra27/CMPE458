@@ -4,19 +4,22 @@
 #include <stddef.h>
 
 // Array data structure
+// TODO: implement memory allocation failure checking
+// TODO: update this data structure with stuff that I learned from the implementation in tree.c
 /**
  * WARNING:
  * - The array capacity/size is not checked for overflow when increasing the capacity. (underflow is handled by setting the capacity to 0).
+ * 
  * TODO:
- * - Implement array_increase_capacity overflow checking.
+ * - Implement array_increase_capacity size_t overflow checking.
+ * - Fix the function signatures to properly clarify when the underlying array is const correctness.
+ * - Add the option to have the array struct itself to be allocated by the caller.
  * - Add ability to push multiple elements at once (by passing a pointer to an array of elements).
- * - Add a
  * - Add ability to create elements in place by passing a function pointer if needed.
  */
 typedef struct Array_t Array;
 typedef void *Element;
 
-// Array *array_new(size_t capacity, size_t element_size, void (*free_element)(Element *), void (*copy_element)(Element *, Element *));
 
 /**
  * Allocates a new array with the given capacity and element size.
