@@ -3,9 +3,35 @@
 #define PARSER_H
 
 #include <stdbool.h>
-#include "parse_tokens.h"
-#include "ast_node.h"
 #include "grammar.h"
+#include "tokens.h"
+
+/**
+ * @param token must remain a valid pointer for the lifetime of the ParseTreeNode.
+ * @param rule must remain a valid pointer for the lifetime of the ParseTreeNode.
+ * @param children must remain a valid pointer to an block of memory of size `capacity * sizeof(ParseTreeNode)` for the lifetime of the ParseTreeNode, or NULL if capacity is 0. The first `count` elements of the array must be valid ParseTreeNode.
+ * @param count must be less than or equal to `capacity`.
+ */
+typedef struct _ParseTreeNode {
+    ParseToken type;
+    ParseErrorType error;
+    const Token *token; // Token associated with this node. NULL iff ParseToken_IS_NONTERMINAL(type).
+    const ProductionRule *rule; // Rule used to parse this node. NULL iff ParseToken_IS_TERMINAL(type).
+    size_t count;
+    size_t capacity;
+    struct _ParseTreeNode *children; // Array of `count` children. `capacity` is the allocated size of the array.
+} ParseTreeNode;
+
+// Abstract Syntax Tree Node structure
+typedef struct ASTNode {
+    ASTNodeType type;           // Type of node
+    ASTErrorType error;         // Error type
+    Token token;               // Token associated with this node, TOKEN_NULL if none.
+    size_t count;
+    size_t capacity;
+    struct ASTNode *items; // Array of child nodes
+} ASTNode;
+ 
 
 void ParseTreeNode_free_children(ParseTreeNode *node);
 void ParseTreeNode_print_simple(ParseTreeNode *node, int level, void (*print_node)(ParseTreeNode*));
@@ -49,12 +75,12 @@ void ASTNode_free_children(ASTNode *const node);
  * WARNING: Ensure that the memory at address `ast_node->items` is deallocated prior to calling this function as otherwise there will be a memory leak.
  * 
  * @param ast_node The ASTNode to construct from the ParseTreeNode. The `ast_node->type` field will be unchanged, other fields will be filled in by the contents of `parse_node`.
- * @param parse_node The ParseTreeNode to convert to an ASTNode. Assumed to be constructed according to `grammar`, if not, then `UNDEFINED BEHAVIOR`.
+ * @param parse_node The ParseTreeNode to convert to an ASTNode. This node and its children must have a valid pointer to the ProductionRule used to parse it.
  * @param grammar The grammar rules to use to convert the ParseTreeNode to an ASTNode.
  * @param grammar_size The size of the grammar array.
  * @return true if the ASTNode and its children were successfully constructed, false otherwise.
  */
-bool ASTNode_from_ParseTreeNode(ASTNode *const ast_node, const ParseTreeNode *const parse_node, const CFG_GrammarRule *const grammar, const size_t grammar_size);
+bool ASTNode_from_ParseTreeNode(ASTNode *const ast_node, const ParseTreeNode *const parse_node);
 
 
 #endif /* PARSER_H */

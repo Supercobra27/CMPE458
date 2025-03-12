@@ -35,16 +35,16 @@ size_t ParseTreeNode_num_children(const ParseTreeNode *n) {
  * @param node Pointer to node to print.
  */
 void ParseTreeNode_print_head(const ParseTreeNode *const node) {
-    printf("%s", parse_token_to_string(node->type));
+    printf("%s", ParseToken_to_string(node->type));
     if (node->error) 
-        printf(" (%s)", parse_error_type_to_string(node->error));
+        printf(" (%s)", ParseErrorType_to_string(node->error));
     if (node->token)
     {
         printf(" -> ");
         if (node->error || node->token->error)
             print_token(*node->token);
         else
-            printf("%s \"%s\"", token_type_to_string(node->token->type), node->token->lexeme);
+            printf("%s \"%s\"", TokenType_to_string(node->token->type), node->token->lexeme);
     }
 }
 const ASTNode *ASTNode_children_begin(const ASTNode *n) {
@@ -70,7 +70,7 @@ void ASTNode_print_head(const ASTNode *const node) {
         if (node->error || node->token.error)
             print_token(node->token);
         else
-            printf("%s \"%s\"", token_type_to_string(node->token.type), node->token.lexeme);
+            printf("%s \"%s\"", TokenType_to_string(node->token.type), node->token.lexeme);
     }
 }
 
@@ -212,7 +212,7 @@ int main(int argc, char *argv[])
     // Convert to Abstract Syntax Tree
     printf("\nAbstract Syntax Tree:\n");
     ASTNode ast_root; ast_root.type = AST_PROGRAM;
-    ASTNode_from_ParseTreeNode(&ast_root, &root, program_grammar, ParseToken_COUNT_NONTERMINAL);
+    ASTNode_from_ParseTreeNode(&ast_root, &root);
 
     if (DEBUG) print_tree(&(print_tree_t){
         .root = &ast_root,

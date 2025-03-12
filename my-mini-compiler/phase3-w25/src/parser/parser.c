@@ -6,8 +6,6 @@
 #include <assert.h>
 
 #include "../../include/tokens.h"
-#include "../../include/parse_tokens.h"
-#include "../../include/grammar.h"
 #include "../../include/parser.h"
 
 /**
@@ -235,7 +233,7 @@ void ASTNode_free_children(ASTNode *const node) {
     node->capacity = 0;
 }
 
-bool ASTNode_from_ParseTreeNode_impl(ASTNode *const a, const ParseTreeNode *const p, const CFG_GrammarRule *const g) {
+bool ASTNode_from_ParseTreeNode_impl(ASTNode *const a, const ParseTreeNode *const p) {
     // we can be sure that the pointers are not NULL because the caller of this function has already checked for that.
 
     // if parse_node is PT_NULL
@@ -263,7 +261,7 @@ bool ASTNode_from_ParseTreeNode_impl(ASTNode *const a, const ParseTreeNode *cons
     // const ProductionRule *const rule = p->rule;
     for (a->count = 0; a->count < p->count; ++a->count) {
         // TODO: conditionally assign children based on rule.
-        if (!ASTNode_from_ParseTreeNode_impl(a->items + a->count, p->children + a->count, g)) {
+        if (!ASTNode_from_ParseTreeNode_impl(a->items + a->count, p->children + a->count)) {
             a->error = AST_ERROR_CHILD_ERROR;
         }
     }
@@ -272,14 +270,12 @@ bool ASTNode_from_ParseTreeNode_impl(ASTNode *const a, const ParseTreeNode *cons
     return a->error == AST_ERROR_NONE;
 }
 
-bool ASTNode_from_ParseTreeNode(ASTNode *const ast_node, const ParseTreeNode *const parse_node, const CFG_GrammarRule *const grammar, const size_t grammar_size) {
+bool ASTNode_from_ParseTreeNode(ASTNode *const ast_node, const ParseTreeNode *const parse_node) {
     assert(ast_node != NULL);
     assert(parse_node != NULL);
-    assert(grammar != NULL);
-    assert(grammar_size >= ParseToken_COUNT_NONTERMINAL);
     // ast_node->type is already set to the desired type.
     // initialize the rest of the ASTNode to default values.
     memset(&(ast_node->error), 0, sizeof(ASTNode) - sizeof(ASTNodeType));
     // call the function given ast_node is initialized to default values.
-    return ASTNode_from_ParseTreeNode_impl(ast_node, parse_node, grammar);
+    return ASTNode_from_ParseTreeNode_impl(ast_node, parse_node);
 }

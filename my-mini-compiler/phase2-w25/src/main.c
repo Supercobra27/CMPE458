@@ -10,9 +10,9 @@
 #define FILE_EXT ".cisc"
 
 void ParseTreeNode_print_head(ParseTreeNode* node) {
-    printf("%s", parse_token_to_string(node->type));
+    printf("%s", ParseToken_to_string(node->type));
     if (node->error != PARSE_ERROR_NONE) 
-        printf(" (%s)", parse_error_type_to_string(node->error));
+        printf(" (%s)", ParseErrorType_to_string(node->error));
     if (node->token != NULL)
     {
         if (node->token->type == TOKEN_ERROR || node->error != PARSE_ERROR_NONE)
@@ -21,7 +21,7 @@ void ParseTreeNode_print_head(ParseTreeNode* node) {
             print_token(*node->token);
         }
         else
-            printf(" -> %s \"%s\"", token_type_to_string(node->token->type), node->token->lexeme);
+            printf(" -> %s \"%s\"", TokenType_to_string(node->token->type), node->token->lexeme);
             
     }
     printf("\n");
