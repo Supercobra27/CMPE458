@@ -25,7 +25,6 @@ build/Debug/my-mini-compiler1.exe phase1-w25/test/comments.cisc
 You can run different tests by changing the input file from `comments.cisc` to perhaps `keywords&identifiers.cisc` or by creating your own file with file extension `.cisc`.
 
 There are multiple sample input files for the parser located in the directory `my-mini-compiler/phase2-w25/test` with file extension `.cisc`.
-here are two executables generated, one executes just the lexer from phase 1 named my-mini-compiler-phase1, the second executable runs the lexer to tokenize the input and then parses ikt to produce a syntax tree according to the grammar specification at the bottom of this file.
 
 ## Phase 1: Lexer/Scanner
 
@@ -103,7 +102,7 @@ Completed:
 ## Phase 3: Semantic Analyzer
 ### Simple Checklist
 1. [ ] Convert Parse Tree to AST (Hendrix)
-    - [ ] Free Dynamic Memory Function
+    - [x] Free Dynamic Memory Function
     - [ ] Conversion Function
     - Rules are defined in the grammar
 
