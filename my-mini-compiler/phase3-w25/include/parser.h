@@ -74,7 +74,7 @@ void ASTNode_free_children(ASTNode *const node);
  * 
  * WARNING: Ensure that the memory at address `ast_node->items` is deallocated prior to calling this function as otherwise there will be a memory leak.
  * 
- * @param ast_node The ASTNode to construct from the ParseTreeNode. The `ast_node->type` field will be unchanged, other fields will be filled in by the contents of `parse_node`.
+ * @param ast_node The ASTNode to construct from the ParseTreeNode. If `parse_node->rule->promote_index` is specified, then `ast_node->type` will be set by a promoted child, otherwise it will be left unchanged. Other fields will be filled in by the contents of `parse_node`.
  * @param parse_node The ParseTreeNode to convert to an ASTNode. This node and its children must have a valid pointer to the ProductionRule used to parse it.
  * @param grammar The grammar rules to use to convert the ParseTreeNode to an ASTNode.
  * @param grammar_size The size of the grammar array.

@@ -1,7 +1,7 @@
 #include "../../include/tokens.h"
 
 
-const char *TokenType_to_string(TokenType type)
+const char *TokenType_to_string(const TokenType type)
 {
     switch (type)
     {
@@ -103,7 +103,7 @@ const char *TokenType_to_string(TokenType type)
     return "UNKNOWN";
 }
 
-const char *ErrorType_to_error_message(ErrorType error)
+const char *ErrorType_to_error_message(const ErrorType error)
 {
     switch (error)
     {

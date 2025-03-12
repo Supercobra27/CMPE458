@@ -1,7 +1,7 @@
 #include "../../include/parse_tokens.h"
 
 
-const char *ParseToken_to_string(ParseToken t)
+const char *ParseToken_to_string(const ParseToken t)
 {
     switch (t)
     {
@@ -234,7 +234,7 @@ const char *ParseToken_to_string(ParseToken t)
     return "UNKNOWN";
 }
 
-const char *ParseErrorType_to_string(ParseErrorType error)
+const char *ParseErrorType_to_string(const ParseErrorType error)
 {
     switch (error)
     {

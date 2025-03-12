@@ -69,15 +69,16 @@ typedef enum _ASTNodeType {
 #define ASTNodeType_IS_BINARY(type) (AST_ASSIGN_EQUAL <= (type) && (type) <= AST_MODULO)
 #define ASTNodeType_IS_UNARY(type) (AST_BITWISE_NOT <= (type) && (type) <= AST_NEGATE)
 
-const char *ASTNodeType_to_string(const ASTNodeType t);
+const char *ASTNodeType_to_string(ASTNodeType t);
 
-// These errors should be determined by semantic analysis.
-typedef enum {
+// More errors should be determined and added by semantic analysis.
+typedef enum _ASTErrorType {
     AST_ERROR_NONE,
     AST_ERROR_MISSING_TOKEN,
     AST_ERROR_CHILD_ERROR,
+    AST_ERROR_MISSING_PRODUCTION_RULE,
 } ASTErrorType;
 
-const char *ASTErrorType_to_string(const ASTErrorType t);
+const char *ASTErrorType_to_string(ASTErrorType t);
 
 #endif /* AST_NODE_H */

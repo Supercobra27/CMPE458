@@ -145,7 +145,7 @@ typedef enum _ParseToken {
 #define ParseToken_COUNT_NONTERMINAL (ParseToken_MAX - ParseToken_FIRST_NONTERMINAL + 1)
 #define ParseToken_IS_TERMINAL(token) (PT_NULL < (token) && (token) < ParseToken_FIRST_NONTERMINAL)
 #define ParseToken_IS_NONTERMINAL(token) (ParseToken_FIRST_NONTERMINAL <= (token) && (token) <= ParseToken_MAX)
-const char *ParseToken_to_string(const ParseToken t);
+const char *ParseToken_to_string(ParseToken t);
 
 typedef enum _ParseErrorType {
     PARSE_ERROR_NONE,
@@ -155,6 +155,6 @@ typedef enum _ParseErrorType {
     PARSE_ERROR_PREVIOUS_TOKEN_FAILED_TO_PARSE,
 } ParseErrorType;
 
-const char *ParseErrorType_to_string(const ParseErrorType error);
+const char *ParseErrorType_to_string(ParseErrorType error);
 
 #endif /* PARSE_TOKENS_H */
