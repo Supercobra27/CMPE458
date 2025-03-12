@@ -174,6 +174,8 @@ static const char *ASTNodeType_to_string(const ASTNodeType t)
 // These errors should be determined by semantic analysis.
 typedef enum {
     AST_ERROR_NONE,
+    AST_ERROR_MISSING_TOKEN,
+    AST_ERROR_CHILD_ERROR,
 } ASTErrorType;
 
 static const char *ASTErrorType_to_string(const ASTErrorType t)
@@ -182,6 +184,10 @@ static const char *ASTErrorType_to_string(const ASTErrorType t)
     {
         case AST_ERROR_NONE:
             return "AST_ERROR_NONE";
+    case AST_ERROR_MISSING_TOKEN:
+        return "AST_ERROR_MISSING_TOKEN";
+    case AST_ERROR_CHILD_ERROR:
+        return "AST_ERROR_CHILD_ERROR";
     }
     return "UNKNOWN";
 }

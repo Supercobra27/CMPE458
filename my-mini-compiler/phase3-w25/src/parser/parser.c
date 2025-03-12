@@ -235,25 +235,41 @@ void ASTNode_free_children(ASTNode *const node) {
     node->capacity = 0;
 }
 
-bool ASTNode_from_ParseTreeNode_impl(ASTNode *const ast_node, const ParseTreeNode *const parse_node, const CFG_GrammarRule *const grammar) {
+bool ASTNode_from_ParseTreeNode_impl(ASTNode *const a, const ParseTreeNode *const p, const CFG_GrammarRule *const g) {
     // we can be sure that the pointers are not NULL because the caller of this function has already checked for that.
 
     // if parse_node is PT_NULL
-    if (parse_node->type == PT_NULL)
+    if (p->type == PT_NULL)
         return true;
     // if parse_node is a terminal.
-    if (ParseToken_IS_TERMINAL(parse_node->type)) 
+    if (ParseToken_IS_TERMINAL(p->type)) 
     {
-        if (parse_node->token == NULL)
+        if (p->token == NULL) {
+            a->error = AST_ERROR_MISSING_TOKEN;
             return false;
-        ast_node->token = *parse_node->token;
+        }
+        a->token = *p->token;
         return true;
     }
     // parse_node is a non-terminal.
     // take the rule used to parse the node and use it to construct the ASTNode.
+    // TODO: dynamically allocate memory for the children
+    a->items = calloc(p->capacity, sizeof(ASTNode));
+    if (a->items == NULL) {
+        perror("calloc");
+        exit(EXIT_FAILURE);
+    }
+    a->capacity = p->capacity;
+    // const ProductionRule *const rule = p->rule;
+    for (a->count = 0; a->count < p->count; ++a->count) {
+        // TODO: conditionally assign children based on rule.
+        if (!ASTNode_from_ParseTreeNode_impl(a->items + a->count, p->children + a->count, g)) {
+            a->error = AST_ERROR_CHILD_ERROR;
+        }
+    }
     
 
-    return false;
+    return a->error == AST_ERROR_NONE;
 }
 
 bool ASTNode_from_ParseTreeNode(ASTNode *const ast_node, const ParseTreeNode *const parse_node, const CFG_GrammarRule *const grammar, const size_t grammar_size) {
