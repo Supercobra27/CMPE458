@@ -253,7 +253,7 @@ bool ASTNode_from_ParseTreeNode_impl(ASTNode *const a, const ParseTreeNode *cons
     }
     // parse_node is a non-terminal.
     // take the rule used to parse the node and use it to construct the ASTNode.
-    // TODO: dynamically allocate memory for the children
+    // TODO: dynamically allocate memory for the children using simple_dynamic_array.h
     a->items = calloc(p->capacity, sizeof(ASTNode));
     if (a->items == NULL) {
         perror("calloc");
