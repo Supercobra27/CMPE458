@@ -7,6 +7,7 @@
 
 #include "../../include/tokens.h"
 #include "../../include/parser.h"
+#include "../../include/simple_dynamic_array.h"
 
 /**
  * Sets the fields of the ParseTreeNode to their default values (all zero). 
@@ -233,6 +234,7 @@ void ASTNode_free_children(ASTNode *const node) {
     node->capacity = 0;
 }
 
+
 bool ASTNode_from_ParseTreeNode_impl(ASTNode *const a, const ParseTreeNode *const p) {
     // we can be sure that the pointers are not NULL because the caller of this function has already checked for that.
 
@@ -251,19 +253,37 @@ bool ASTNode_from_ParseTreeNode_impl(ASTNode *const a, const ParseTreeNode *cons
     }
     // parse_node is a non-terminal.
     // take the rule used to parse the node and use it to construct the ASTNode.
-    // TODO: dynamically allocate memory for the children using simple_dynamic_array.h
-    a->items = calloc(p->capacity, sizeof(ASTNode));
-    if (a->items == NULL) {
-        perror("calloc");
-        exit(EXIT_FAILURE);
+
+    const ProductionRule *const rule = p->rule;
+    // if we are expecting a promotion, but the promotion index is out of bounds
+    if (rule->promote_index >= p->count && a->type == AST_FROM_PROMOTION) {
+        if (rule->promote_index == p->count) {
+            // this is promoting the type to be AST_NULL, in this event, treat this as a skip and don't add any children.
+            a->type = AST_SKIP;
+            return true;
+        }
+        return false;
     }
-    a->capacity = p->capacity;
-    // const ProductionRule *const rule = p->rule;
-    for (a->count = 0; a->count < p->count; ++a->count) {
+    if (rule == NULL) {
+        a->error = AST_ERROR_MISSING_PRODUCTION_RULE;
+        return false;
+    }
+    a->count = a->capacity = 0;
+    for (size_t i = 0; i < p->count; ++i) {
+        // IMPOSSIBLE: promote_index == i and AST_SKIP
+        // IMPOSSIBLE: promote_index == i and AST_FROM_CHILDREN
+        // if promote_index == i and AST_FROM_PROMOTION, 
+        da_pre_push(a);
         // TODO: conditionally assign children based on rule.
         if (!ASTNode_from_ParseTreeNode_impl(a->items + a->count, p->children + a->count)) {
             a->error = AST_ERROR_CHILD_ERROR;
         }
+        // set the type of the ASTNode in the case of rule->promote_index < p->count.
+        if (rule->promote_index < p->count && i == rule->promote_index) {
+            a->type = rule->ast_types[i];
+            // TODO: handle 
+        } 
+        // handle ASK_SKIP.
     }
     
 

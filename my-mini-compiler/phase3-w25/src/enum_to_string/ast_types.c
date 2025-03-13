@@ -23,9 +23,7 @@ const char *ASTNodeType_to_string(const ASTNodeType t)
         case AST_STRING_TYPE:
             return "AST_STRING_TYPE";
         // Special Node Types
-        case AST_IGNORE_CHILDREN:
-            return "AST_IGNORE_CHILDREN";
-        case AST_IGNORE:
+        case AST_SKIP:
             return "AST_IGNORE";
         case AST_FROM_CHILDREN:
             return "AST_FROM_CHILDREN";

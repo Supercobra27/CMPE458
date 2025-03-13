@@ -79,7 +79,7 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_SCOPE, PT_EOF, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_SCOPE, AST_IGNORE, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_SCOPE, AST_SKIP, AST_NULL},
                 .promote_index = -1}},
         .num_rules = 1U},
     {
@@ -107,7 +107,7 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_EMPTY_STATEMENT, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_IGNORE, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
                 .promote_index = 0},
             {
                 .tokens = (ParseToken[]){PT_DECLARATION, PT_NULL},
@@ -127,7 +127,7 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
                 .promote_index =  0},
             {
                 .tokens = (ParseToken[]){PT_BLOCK, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_SCOPE, AST_NULL},
                 .promote_index =  0},
             {
                 .tokens = (ParseToken[]){PT_CONDITIONAL, PT_NULL},
@@ -147,7 +147,7 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_STATEMENT_END, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_IGNORE, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
                 .promote_index =  -1}},
         .num_rules = 1U},
     {
@@ -155,7 +155,7 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_TYPE_KEYWORD, PT_IDENTIFIER, PT_STATEMENT_END, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_IDENTIFIER, AST_IGNORE, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_IDENTIFIER, AST_SKIP, AST_NULL},
                 .promote_index =  -1}},
         .num_rules = 1U},
     {
@@ -163,7 +163,7 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_EXPRESSION_EVAL, PT_STATEMENT_END, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_EXPRESSION, AST_IGNORE, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_EXPRESSION, AST_SKIP, AST_NULL},
                 .promote_index = -1}},
         .num_rules = 1U},
     // This is just used to wrap the expression in type AST_EXPRESSION.
@@ -180,7 +180,7 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_PRINT_KEYWORD, PT_EXPRESSION_EVAL, PT_STATEMENT_END, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_IGNORE, AST_EXPRESSION, AST_IGNORE, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_SKIP, AST_EXPRESSION, AST_SKIP, AST_NULL},
                 .promote_index = -1}},
         .num_rules = 1U},
     {
@@ -188,7 +188,7 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_READ_KEYWORD, PT_EXPRESSION_EVAL, PT_STATEMENT_END, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_IGNORE, AST_EXPRESSION, AST_IGNORE, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_SKIP, AST_EXPRESSION, AST_SKIP, AST_NULL},
                 .promote_index = -1}},
         .num_rules = 1U},
     {
@@ -196,15 +196,15 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_BLOCK_BEGIN, PT_SCOPE, PT_BLOCK_END, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_IGNORE, AST_FROM_CHILDREN, AST_IGNORE, AST_NULL},
-                .promote_index = 1}},
+                .ast_types = (ASTNodeType[]){AST_SKIP, AST_FROM_CHILDREN, AST_SKIP, AST_NULL},
+                .promote_index = -1}},
         .num_rules = 1U},
     {
         .lhs = PT_CONDITIONAL,
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_IF_KEYWORD, PT_EXPRESSION_EVAL, PT_THEN_KEYWORD, PT_BLOCK, PT_OPTIONAL_ELSE_BLOCK, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_IGNORE, AST_EXPRESSION, AST_IGNORE, AST_SCOPE, AST_SCOPE, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_SKIP, AST_EXPRESSION, AST_SKIP, AST_SCOPE, AST_SCOPE, AST_NULL},
                 .promote_index = -1}},
         .num_rules = 1U},
     {
@@ -212,7 +212,7 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_WHILE_KEYWORD, PT_EXPRESSION_EVAL, PT_BLOCK, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_IGNORE, AST_EXPRESSION, AST_SCOPE, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_SKIP, AST_EXPRESSION, AST_SCOPE, AST_NULL},
                 .promote_index = -1}},
         .num_rules = 1U},
     {
@@ -220,7 +220,7 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_REPEAT_KEYWORD, PT_BLOCK, PT_UNTIL_KEYWORD, PT_EXPRESSION_EVAL, PT_STATEMENT_END, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_IGNORE, AST_SCOPE, AST_IGNORE, AST_EXPRESSION, AST_IGNORE, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_SKIP, AST_SCOPE, AST_SKIP, AST_EXPRESSION, AST_SKIP, AST_NULL},
                 .promote_index = -1}},
         .num_rules = 1U},
     {
@@ -228,7 +228,7 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_ELSE_KEYWORD, PT_BLOCK, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_IGNORE, AST_SCOPE, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_SKIP, AST_SCOPE, AST_NULL},
                 .promote_index = 1},
             {
                 .tokens = (ParseToken[]){PT_NULL},
@@ -241,7 +241,7 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_SEMICOLON, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_IGNORE, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
                 .promote_index = -1}},
         .num_rules = 1U},
     {
@@ -273,7 +273,7 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_LEFT_BRACE, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_IGNORE, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
                 .promote_index = -1}},
         .num_rules = 1U},
     {
@@ -281,7 +281,7 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_RIGHT_BRACE, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_IGNORE, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
                 .promote_index = -1}},
         .num_rules = 1U},
             
@@ -304,7 +304,7 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_ASSIGNMENT_OPERATOR, PT_ASSIGNMENTEX_R12, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_IGNORE, AST_FROM_PROMOTION, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_FROM_PROMOTION, AST_NULL},
                 .promote_index = 0},
             {
                 .tokens = (ParseToken[]){PT_NULL},
@@ -316,7 +316,7 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_OREX_L11, PT_OR_OPERATOR, PT_ANDEX_L10, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_IGNORE, AST_FROM_PROMOTION, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_FROM_PROMOTION, AST_FROM_PROMOTION, AST_NULL},
                 .promote_index = 1},
             {
                 .tokens = (ParseToken[]){PT_ANDEX_L10, PT_NULL},
@@ -328,7 +328,7 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_ANDEX_L10, PT_AND_OPERATOR, PT_BITOREX_L9, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_IGNORE, AST_FROM_PROMOTION, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_FROM_PROMOTION, AST_FROM_PROMOTION, AST_NULL},
                 .promote_index = 1},
             {
                 .tokens = (ParseToken[]){PT_BITOREX_L9, PT_NULL},
@@ -340,7 +340,7 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_BITOREX_L9, PT_BITOR_OPERATOR, PT_BITXOREX_L8, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_IGNORE, AST_FROM_PROMOTION, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_FROM_PROMOTION, AST_FROM_PROMOTION, AST_NULL},
                 .promote_index = 1},
             {
                 .tokens = (ParseToken[]){PT_BITXOREX_L8, PT_NULL},
@@ -352,7 +352,7 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_BITXOREX_L8, PT_BITXOR_OPERATOR, PT_BITANDEX_L7, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_IGNORE, AST_FROM_PROMOTION, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_FROM_PROMOTION, AST_FROM_PROMOTION, AST_NULL},
                 .promote_index = 1},
             {
                 .tokens = (ParseToken[]){PT_BITANDEX_L7, PT_NULL},
@@ -364,7 +364,7 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_BITANDEX_L7, PT_BITAND_OPERATOR, PT_RELATIONEX_L6, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_IGNORE, AST_FROM_PROMOTION, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_FROM_PROMOTION, AST_FROM_PROMOTION, AST_NULL},
                 .promote_index = 1},
             {
                 .tokens = (ParseToken[]){PT_RELATIONEX_L6, PT_NULL},
@@ -376,7 +376,7 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_RELATIONEX_L6, PT_RELATIONAL_OPERATOR, PT_SHIFTEX_L5, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_IGNORE, AST_FROM_PROMOTION, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_FROM_PROMOTION, AST_FROM_PROMOTION, AST_NULL},
                 .promote_index = 1},
             {
                 .tokens = (ParseToken[]){PT_SHIFTEX_L5, PT_NULL},
@@ -388,7 +388,7 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_SHIFTEX_L5, PT_SHIFT_OPERATOR, PT_SUMEX_L4, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_IGNORE, AST_FROM_PROMOTION, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_FROM_PROMOTION, AST_FROM_PROMOTION, AST_NULL},
                 .promote_index = 1},
             {
                 .tokens = (ParseToken[]){PT_SUMEX_L4, PT_NULL},
@@ -400,7 +400,7 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_SUMEX_L4, PT_SUM_OPERATOR, PT_PRODUCTEX_L3, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_IGNORE, AST_FROM_PROMOTION, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_FROM_PROMOTION, AST_FROM_PROMOTION, AST_NULL},
                 .promote_index = 1},
             {
                 .tokens = (ParseToken[]){PT_PRODUCTEX_L3, PT_NULL},
@@ -412,7 +412,7 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_PRODUCTEX_L3, PT_PRODUCT_OPERATOR, PT_UNARYPREFIXEX_R2, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_IGNORE, AST_FROM_PROMOTION, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_FROM_PROMOTION, AST_FROM_PROMOTION, AST_NULL},
                 .promote_index = 1},
             {
                 .tokens = (ParseToken[]){PT_UNARYPREFIXEX_R2, PT_NULL},
@@ -424,7 +424,7 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_UNARY_PREFIX_OPERATOR, PT_UNARYPREFIXEX_R2, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_IGNORE, AST_FROM_PROMOTION, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_FROM_PROMOTION, AST_NULL},
                 .promote_index = 0},
             {
                 .tokens = (ParseToken[]){PT_FACTOR, PT_NULL},
@@ -456,7 +456,7 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
                 .promote_index = 0},
             {
                 .tokens = (ParseToken[]){PT_LEFT_PAREN, PT_EXPRESSION, PT_RIGHT_PAREN, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_IGNORE, AST_FROM_PROMOTION, AST_IGNORE, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_SKIP, AST_FROM_PROMOTION, AST_SKIP, AST_NULL},
                 .promote_index = 1}},
         .num_rules = 6U},
     {
@@ -464,7 +464,7 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_FACTORIAL_KEYWORD, PT_LEFT_PAREN, PT_EXPRESSION, PT_RIGHT_PAREN, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_IGNORE, AST_IGNORE, AST_FROM_PROMOTION, AST_IGNORE, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_SKIP, AST_SKIP, AST_FROM_PROMOTION, AST_SKIP, AST_NULL},
                 .promote_index = 2}},
         .num_rules = 1U},
 
@@ -605,7 +605,7 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_EQUAL, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_IGNORE, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
                 .promote_index = -1}},
         .num_rules = 1U},
     {
@@ -613,7 +613,7 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_PIPE_PIPE, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_IGNORE, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
                 .promote_index = -1}},
         .num_rules = 1U},
     {
@@ -621,7 +621,7 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_AMPERSAND_AMPERSAND, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_IGNORE, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
                 .promote_index = -1}},
         .num_rules = 1U},
     {
@@ -629,7 +629,7 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_PIPE, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_IGNORE, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
                 .promote_index = -1}},
         .num_rules = 1U},
     {
@@ -637,7 +637,7 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_CARET, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_IGNORE, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
                 .promote_index = -1}},
         .num_rules = 1U},
     {
@@ -645,7 +645,7 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_AMPERSAND, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_IGNORE, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
                 .promote_index = -1}},
         .num_rules = 1U},
     {
@@ -653,7 +653,7 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_EQUAL_EQUAL, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_IGNORE, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
                 .promote_index = -1}},
         .num_rules = 1U},
     {
@@ -661,7 +661,7 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_BANG_EQUAL, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_IGNORE, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
                 .promote_index = -1}},
         .num_rules = 1U},
     {
@@ -669,7 +669,7 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_LESS_THAN_EQUAL, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_IGNORE, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
                 .promote_index = -1}},
         .num_rules = 1U},
     {
@@ -677,7 +677,7 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_LESS_THAN, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_IGNORE, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
                 .promote_index = -1}},
         .num_rules = 1U},
     {
@@ -685,7 +685,7 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_GREATER_THAN_EQUAL, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_IGNORE, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
                 .promote_index = -1}},
         .num_rules = 1U},
     {
@@ -693,7 +693,7 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_GREATER_THAN, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_IGNORE, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
                 .promote_index = -1}},
         .num_rules = 1U},
     {
@@ -701,7 +701,7 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_LESS_THAN_LESS_THAN, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_IGNORE, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
                 .promote_index = -1}},
         .num_rules = 1U},
     {
@@ -709,7 +709,7 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_GREATER_THAN_GREATER_THAN, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_IGNORE, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
                 .promote_index = -1}},
         .num_rules = 1U},
     {
@@ -717,7 +717,7 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_PLUS, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_IGNORE, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
                 .promote_index = -1}},
         .num_rules = 1U},
     {
@@ -725,7 +725,7 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_MINUS, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_IGNORE, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
                 .promote_index = -1}},
         .num_rules = 1U},
     {
@@ -733,7 +733,7 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_STAR, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_IGNORE, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
                 .promote_index = -1}},
         .num_rules = 1U},
     {
@@ -741,7 +741,7 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_FORWARD_SLASH, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_IGNORE, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
                 .promote_index = -1}},
         .num_rules = 1U},
     {
@@ -749,7 +749,7 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_PERCENT, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_IGNORE, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
                 .promote_index = -1}},
         .num_rules = 1U},
     {
@@ -757,7 +757,7 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_TILDE, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_IGNORE, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
                 .promote_index = -1}},
         .num_rules = 1U},
     {
@@ -765,7 +765,7 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_BANG, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_IGNORE, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
                 .promote_index = -1}},
         .num_rules = 1U},
     {
@@ -773,7 +773,7 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_MINUS, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_IGNORE, AST_NULL},
+                .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
                 .promote_index = -1}},
         .num_rules = 1U},
 };

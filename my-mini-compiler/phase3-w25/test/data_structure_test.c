@@ -6,7 +6,7 @@
 const ProductionRule program_rules[] = {
     {
         .tokens = (const ParseToken[]){PT_SCOPE, PT_EOF, PT_NULL},
-        .ast_types = (const ASTNodeType[]){AST_SCOPE, AST_IGNORE, AST_NULL},
+        .ast_types = (const ASTNodeType[]){AST_SCOPE, AST_SKIP, AST_NULL},
         .promote_index = -1
     }
 };
