@@ -255,9 +255,9 @@ ASTPromo ASTNode_get_promo_type(const ParseTreeNode *const p, bool *const visite
         }
         // promo.idx < p->count
         promo.type = p->rule->ast_types[promo.idx];
-        if (promo.type != AST_FROM_PROMOTION)
+        if (promo.type != AST_FROM_PROMOTION) {
             return promo;
-        else {
+        } else {
             bool child_visited[p->children[promo.idx].count];
             memset(child_visited, 0, sizeof(child_visited));
             ASTPromo child_promo = ASTNode_get_promo_type(p->children + promo.idx, child_visited);
@@ -270,6 +270,11 @@ ASTPromo ASTNode_get_promo_type(const ParseTreeNode *const p, bool *const visite
             } else if (child_promo.type == AST_NULL) {
                 // try the alternate promotion index.
                 visited[promo.idx] = true;
+                // no alternates, then return AST_NULL.
+                if (p->rule->promotion_alternate_if_AST_NULL == NULL) {
+                    promo.error = AST_ERROR_EXPECTED_PROMOTION;
+                    return promo;
+                }
                 promo.idx = p->rule->promotion_alternate_if_AST_NULL[promo.idx];
             } else {
                 promo.type = child_promo.type;
@@ -306,7 +311,8 @@ bool ASTNode_from_ParseTreeNode_impl(ASTNode *const a, const ParseTreeNode *cons
     }
     
     // evaluate the type of the ASTNode if it is expecting a promotion.
-    ASTPromo promo;
+    // a->type will be set to promo.type at the end of this function.
+    ASTPromo promo = {-1, a->type, AST_ERROR_NONE};
     bool visited[p->count];
     memset(visited, 0, sizeof(visited));
     if (a->type == AST_FROM_PROMOTION) {
@@ -332,6 +338,12 @@ bool ASTNode_from_ParseTreeNode_impl(ASTNode *const a, const ParseTreeNode *cons
                 a->error = AST_ERROR_CHILD_ERROR;
                 return false;
             }
+        } else if (i == promo.idx) {
+            a->type = rule->ast_types[i];
+            if (!ASTNode_from_ParseTreeNode_impl(a, p->children + i)) {
+                a->error = AST_ERROR_CHILD_ERROR;
+                return false;
+            }
         } else {
             da_push(a, ((ASTNode){.type = rule->ast_types[i], .error = AST_ERROR_NONE, .token = (Token){0}, .items = NULL, .count = 0, .capacity = 0}));
             if (!ASTNode_from_ParseTreeNode_impl(a->items + a->count - 1, p->children + i)) {
@@ -344,6 +356,7 @@ bool ASTNode_from_ParseTreeNode_impl(ASTNode *const a, const ParseTreeNode *cons
             }
         }
     }
+    a->type = promo.type;
 
     return a->error == AST_ERROR_NONE;
 }

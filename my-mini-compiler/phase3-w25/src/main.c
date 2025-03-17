@@ -143,26 +143,17 @@ int main(int argc, char *argv[])
         //         "int ;";
 
         input = 
-            // "{ \n    float w;\n    w = 3.14159;\n    {{{{\"middle\";}}}}\n}\n"
-            "string s;\n";
-            // "1 + 2 + 3;\n";
-            // "x = y = z + 1;\n";
-            // "print 5 * (2 + 3);\n"
-            // "read x;\n"
-            // "if 1 then { }\n"
-            // "if 1 then { } else { }\n"
-            // "while 0 { }\n"
-            // "repeat { } until 1;\n";
-        // input = "{\n   float w;\n    w = 3.14159;\n}\n";
-        // input = "string s;\n";
-        // input = "1 + 2 + 3;\n";
-        // input = "x = y = z + 1;\n";
-        // input = "print 5 * (2 + 3);\n"
-        // input = "read x;\n";
-        // input = "if 1 then { }\n";
-        // input = "if 1 then { } else { }\n";
-        // input = "while 0 { }\n";
-        // input = "repeat { } until 1;\n";
+            "{ \n    float w;\n    w = 3.14159;\n    {{{{\"middle\";}}}}\n}\n"
+            "; ?? skip the empty statement\n"
+            "string s;\n"
+            "1 + 2 + 3;\n"
+            "x = y = z + 1 - 1;\n"
+            "print 5 * (2 + 3);\n"
+            "read x;\n"
+            "if 1 then { }\n"
+            "if 1 then { } else { x = 1; }\n"
+            "while 0 { }\n"
+            "repeat { } until 1;\n";
     }
 
     // TODO: Add more test cases

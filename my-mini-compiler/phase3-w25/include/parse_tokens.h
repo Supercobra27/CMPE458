@@ -67,7 +67,7 @@ typedef enum _ParseToken {
     PT_EMPTY_STATEMENT,
     PT_DECLARATION,
     PT_EXPRESSION_STATEMENT,
-    PT_EXPRESSION_EVAL,
+    // PT_EXPRESSION_EVAL, // I don't think we need this, but perhaps we can re-introduce it for code generation (Hendrix).
     PT_PRINT_STATEMENT,
     PT_READ_STATEMENT,
     PT_BLOCK,

@@ -108,8 +108,6 @@ const char *ParseToken_to_string(const ParseToken t)
         return "PT_DECLARATION";
     case PT_EXPRESSION_STATEMENT:
         return "PT_EXPRESSION_STATEMENT";
-    case PT_EXPRESSION_EVAL:
-        return "PT_EXPRESSION_EVAL";
     case PT_PRINT_STATEMENT:
         return "PT_PRINT_STATEMENT";
     case PT_READ_STATEMENT:

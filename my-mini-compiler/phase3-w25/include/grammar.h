@@ -21,7 +21,7 @@ typedef struct _ProductionRule
     // TODO: what should be done if ast_types[promote_index] is AST_NULL and `promote_index < len(tokens)` (either promote the AST_NULL, or pick a different promote index)?
     // solution to be implemented for semantic analysis: add another field to indicate what to do if `ast_types[promote_index] == AST_NULL`.
     // if `ast_types[promote_index] == AST_NULL`, then if `promotion_alternate_if_AST_NULL[promote_index] == promote_index`, then promote `AST_NULL`, otherwise promote the ASTNodeType at `promotion_alternate_if_AST_NULL[promote_index]`. If there is a cycle (e.g. `promotion_alternate_if_AST_NULL[0] == 1` and `promotion_alternate_if_AST_NULL[1] == 0`), then promote `AST_NULL`.
-    size_t *promotion_alternate_if_AST_NULL;
+    const size_t *promotion_alternate_if_AST_NULL;
 } ProductionRule;
 
 typedef struct _CFG_GrammarRule
@@ -89,7 +89,8 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_STATEMENT_LIST, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_FROM_CHILDREN, AST_NULL},
-                .promote_index = -1}},
+                .promote_index = -1,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 1U},
     {
         .lhs = PT_STATEMENT_LIST,
@@ -97,11 +98,13 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_STATEMENT, PT_STATEMENT_LIST, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_FROM_CHILDREN, AST_NULL},
-                .promote_index = -1},
+                .promote_index = -1,
+                .promotion_alternate_if_AST_NULL = NULL},
             {
                 .tokens = (ParseToken[]){PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_NULL},
-                .promote_index = -1}},
+                .promote_index = -1,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 2U},
     {
         .lhs = PT_STATEMENT,
@@ -109,39 +112,48 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_EMPTY_STATEMENT, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
-                .promote_index = 0},
+                .promote_index = 0,
+                .promotion_alternate_if_AST_NULL = NULL},
             {
                 .tokens = (ParseToken[]){PT_DECLARATION, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_DECLARATION, AST_NULL},
-                .promote_index =  0},
+                .promote_index =  0,
+                .promotion_alternate_if_AST_NULL = NULL},
             {
                 .tokens = (ParseToken[]){PT_EXPRESSION_STATEMENT, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_EXPRESSION, AST_NULL},
-                .promote_index =  0},
+                .promote_index =  0,
+                .promotion_alternate_if_AST_NULL = NULL},
             {
                 .tokens = (ParseToken[]){PT_PRINT_STATEMENT, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_PRINT, AST_NULL},
-                .promote_index =  0},
+                .promote_index =  0,
+                .promotion_alternate_if_AST_NULL = NULL},
             {
                 .tokens = (ParseToken[]){PT_READ_STATEMENT, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_READ, AST_NULL},
-                .promote_index =  0},
+                .promote_index =  0,
+                .promotion_alternate_if_AST_NULL = NULL},
             {
                 .tokens = (ParseToken[]){PT_BLOCK, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_SCOPE, AST_NULL},
-                .promote_index =  0},
+                .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_NULL},
+                .promote_index =  0,
+                .promotion_alternate_if_AST_NULL = NULL},
             {
                 .tokens = (ParseToken[]){PT_CONDITIONAL, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_CODITIONAL, AST_NULL},
-                .promote_index =  0},
+                .promote_index =  0,
+                .promotion_alternate_if_AST_NULL = NULL},
             {
                 .tokens = (ParseToken[]){PT_WHILE_LOOP, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_WHILE_LOOP, AST_NULL},
-                .promote_index =  0},
+                .promote_index =  0,
+                .promotion_alternate_if_AST_NULL = NULL},
             {
                 .tokens = (ParseToken[]){PT_REPEAT_UNTIL_LOOP, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_REPEAT_UNTIL_LOOP, AST_NULL},
-                .promote_index =  0}},
+                .promote_index =  0,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 9U},
     {
         .lhs = PT_EMPTY_STATEMENT,
@@ -149,7 +161,8 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_STATEMENT_END, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
-                .promote_index =  -1}},
+                .promote_index =  -1,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 1U},
     {
         .lhs = PT_DECLARATION,
@@ -157,84 +170,85 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_TYPE_KEYWORD, PT_IDENTIFIER, PT_STATEMENT_END, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_IDENTIFIER, AST_SKIP, AST_NULL},
-                .promote_index =  -1}},
+                .promote_index =  -1,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 1U},
     {
         .lhs = PT_EXPRESSION_STATEMENT,
         .rules = (ProductionRule[]){
             {
-                .tokens = (ParseToken[]){PT_EXPRESSION_EVAL, PT_STATEMENT_END, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_EXPRESSION, AST_SKIP, AST_NULL},
-                .promote_index = -1}},
-        .num_rules = 1U},
-    // This is just used to wrap the expression in type AST_EXPRESSION.
-    {
-        .lhs = PT_EXPRESSION_EVAL,
-        .rules = (ProductionRule[]){
-            {
-                .tokens = (ParseToken[]){PT_EXPRESSION, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_NULL},
-                .promote_index = -1}},
+                .tokens = (ParseToken[]){PT_EXPRESSION, PT_STATEMENT_END, PT_NULL},
+                .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_SKIP, AST_NULL},
+                .promote_index = 0,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 1U},
     {
         .lhs = PT_PRINT_STATEMENT,
         .rules = (ProductionRule[]){
             {
-                .tokens = (ParseToken[]){PT_PRINT_KEYWORD, PT_EXPRESSION_EVAL, PT_STATEMENT_END, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_SKIP, AST_EXPRESSION, AST_SKIP, AST_NULL},
-                .promote_index = -1}},
+                .tokens = (ParseToken[]){PT_PRINT_KEYWORD, PT_EXPRESSION, PT_STATEMENT_END, PT_NULL},
+                .ast_types = (ASTNodeType[]){AST_SKIP, AST_FROM_PROMOTION, AST_SKIP, AST_NULL},
+                .promote_index = -1,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 1U},
     {
         .lhs = PT_READ_STATEMENT,
         .rules = (ProductionRule[]){
             {
-                .tokens = (ParseToken[]){PT_READ_KEYWORD, PT_EXPRESSION_EVAL, PT_STATEMENT_END, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_SKIP, AST_EXPRESSION, AST_SKIP, AST_NULL},
-                .promote_index = -1}},
+                .tokens = (ParseToken[]){PT_READ_KEYWORD, PT_EXPRESSION, PT_STATEMENT_END, PT_NULL},
+                .ast_types = (ASTNodeType[]){AST_SKIP, AST_FROM_PROMOTION, AST_SKIP, AST_NULL},
+                .promote_index = -1,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 1U},
     {
         .lhs = PT_BLOCK,
         .rules = (ProductionRule[]){
             {
                 .tokens = (ParseToken[]){PT_BLOCK_BEGIN, PT_SCOPE, PT_BLOCK_END, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_SKIP, AST_FROM_CHILDREN, AST_SKIP, AST_NULL},
-                .promote_index = -1}},
+                .ast_types = (ASTNodeType[]){AST_SKIP, AST_SCOPE, AST_SKIP, AST_NULL},
+                .promote_index = 1,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 1U},
     {
         .lhs = PT_CONDITIONAL,
         .rules = (ProductionRule[]){
             {
-                .tokens = (ParseToken[]){PT_IF_KEYWORD, PT_EXPRESSION_EVAL, PT_THEN_KEYWORD, PT_BLOCK, PT_OPTIONAL_ELSE_BLOCK, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_SKIP, AST_EXPRESSION, AST_SKIP, AST_SCOPE, AST_SCOPE, AST_NULL},
-                .promote_index = -1}},
+                .tokens = (ParseToken[]){PT_IF_KEYWORD, PT_EXPRESSION, PT_THEN_KEYWORD, PT_BLOCK, PT_OPTIONAL_ELSE_BLOCK, PT_NULL},
+                .ast_types = (ASTNodeType[]){AST_SKIP, AST_FROM_PROMOTION, AST_SKIP, AST_FROM_PROMOTION, AST_SCOPE, AST_NULL},
+                .promote_index = -1,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 1U},
     {
         .lhs = PT_WHILE_LOOP,
         .rules = (ProductionRule[]){
             {
-                .tokens = (ParseToken[]){PT_WHILE_KEYWORD, PT_EXPRESSION_EVAL, PT_BLOCK, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_SKIP, AST_EXPRESSION, AST_SCOPE, AST_NULL},
-                .promote_index = -1}},
+                .tokens = (ParseToken[]){PT_WHILE_KEYWORD, PT_EXPRESSION, PT_BLOCK, PT_NULL},
+                .ast_types = (ASTNodeType[]){AST_SKIP, AST_FROM_PROMOTION, AST_FROM_PROMOTION, AST_NULL},
+                .promote_index = -1,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 1U},
     {
         .lhs = PT_REPEAT_UNTIL_LOOP,
         .rules = (ProductionRule[]){
             {
-                .tokens = (ParseToken[]){PT_REPEAT_KEYWORD, PT_BLOCK, PT_UNTIL_KEYWORD, PT_EXPRESSION_EVAL, PT_STATEMENT_END, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_SKIP, AST_SCOPE, AST_SKIP, AST_EXPRESSION, AST_SKIP, AST_NULL},
-                .promote_index = -1}},
+                .tokens = (ParseToken[]){PT_REPEAT_KEYWORD, PT_BLOCK, PT_UNTIL_KEYWORD, PT_EXPRESSION, PT_STATEMENT_END, PT_NULL},
+                .ast_types = (ASTNodeType[]){AST_SKIP, AST_FROM_PROMOTION, AST_SKIP, AST_FROM_PROMOTION, AST_SKIP, AST_NULL},
+                .promote_index = -1,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 1U},
     {
         .lhs = PT_OPTIONAL_ELSE_BLOCK,
         .rules = (ProductionRule[]){
             {
-                .tokens = (ParseToken[]){PT_ELSE_KEYWORD, PT_BLOCK, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_SKIP, AST_SCOPE, AST_NULL},
-                .promote_index = 1},
+                .tokens = (ParseToken[]){PT_ELSE_KEYWORD, PT_LEFT_BRACE, PT_STATEMENT_LIST, PT_RIGHT_BRACE, PT_NULL},
+                .ast_types = (ASTNodeType[]){AST_SKIP, AST_SKIP, AST_FROM_CHILDREN, AST_SKIP, AST_NULL},
+                .promote_index = -1,
+                .promotion_alternate_if_AST_NULL = NULL},
             {
                 .tokens = (ParseToken[]){PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_NULL},
-                .promote_index = -1}},
+                .promote_index = -1,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 2U},
 
     {
@@ -243,7 +257,8 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_SEMICOLON, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
-                .promote_index = -1}},
+                .promote_index = -1,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 1U},
     {
         .lhs = PT_TYPE_KEYWORD,
@@ -251,15 +266,18 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_INT_KEYWORD, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_INT_TYPE, AST_NULL},
-                .promote_index = 0},
+                .promote_index = 0,
+                .promotion_alternate_if_AST_NULL = NULL},
             {
                 .tokens = (ParseToken[]){PT_FLOAT_KEYWORD, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_FLOAT_TYPE, AST_NULL},
-                .promote_index = 0},
+                .promote_index = 0,
+                .promotion_alternate_if_AST_NULL = NULL},
             {
                 .tokens = (ParseToken[]){PT_STRING_KEYWORD, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_STRING_TYPE, AST_NULL},
-                .promote_index = 0}},
+                .promote_index = 0,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 3U},
     {
         .lhs = PT_EXPRESSION,
@@ -267,7 +285,8 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_ASSIGNMENTEX_R12, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_NULL},
-                .promote_index = 0}},
+                .promote_index = 0,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 1U},
     {
         .lhs = PT_BLOCK_BEGIN,
@@ -275,7 +294,8 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_LEFT_BRACE, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
-                .promote_index = -1}},
+                .promote_index = -1,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 1U},
     {
         .lhs = PT_BLOCK_END,
@@ -283,7 +303,8 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_RIGHT_BRACE, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
-                .promote_index = -1}},
+                .promote_index = -1,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 1U},
             
     // TODO: PT_ASSIGNMENTEX_R12 was not deterministic (prefix-free), this fixes it. However, this fix does not work with the single promote_index, because the promote index would need to be different for each case as can be seen below.
@@ -293,12 +314,8 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_OREX_L11, PT_ASSIGNMENT_REST, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_FROM_PROMOTION, AST_NULL},
-                .promote_index = 1/* want promote_index = 0 if PT_ASSIGNMENT_REST turns out to be AST_NULL*/,
-                /*.promotion_alternate_if_AST_NULL = {0, 0}*/},
-            /*{
-                .tokens = (ParseToken[]){PT_OREX_L11, PT_NULL},
-                .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_NULL},
-                .promote_index = 0}*/},
+                .promote_index = 1,/* want promote_index = 0 if PT_ASSIGNMENT_REST turns out to be AST_NULL*/
+                .promotion_alternate_if_AST_NULL = (size_t[]){0, 0}}},
         .num_rules = 1U},
     {
         .lhs = PT_ASSIGNMENT_REST,
@@ -306,11 +323,13 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_ASSIGNMENT_OPERATOR, PT_ASSIGNMENTEX_R12, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_FROM_PROMOTION, AST_NULL},
-                .promote_index = 0},
+                .promote_index = 0,
+                .promotion_alternate_if_AST_NULL = NULL},
             {
                 .tokens = (ParseToken[]){PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_NULL},
-                .promote_index = 0}},
+                .promote_index = 0,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 2U},
     {
         .lhs = PT_OREX_L11,
@@ -318,7 +337,8 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_OREX_L11, PT_OR_OPERATOR, PT_ANDEX_L10, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_FROM_PROMOTION, AST_FROM_PROMOTION, AST_NULL},
-                .promote_index = 1},
+                .promote_index = 1,
+                .promotion_alternate_if_AST_NULL = NULL},
             {
                 .tokens = (ParseToken[]){PT_ANDEX_L10, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_NULL},
@@ -330,11 +350,13 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_ANDEX_L10, PT_AND_OPERATOR, PT_BITOREX_L9, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_FROM_PROMOTION, AST_FROM_PROMOTION, AST_NULL},
-                .promote_index = 1},
+                .promote_index = 1,
+                .promotion_alternate_if_AST_NULL = NULL},
             {
                 .tokens = (ParseToken[]){PT_BITOREX_L9, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_NULL},
-                .promote_index = 0}},
+                .promote_index = 0,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 2U},
     {
         .lhs = PT_BITOREX_L9,
@@ -342,11 +364,13 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_BITOREX_L9, PT_BITOR_OPERATOR, PT_BITXOREX_L8, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_FROM_PROMOTION, AST_FROM_PROMOTION, AST_NULL},
-                .promote_index = 1},
+                .promote_index = 1,
+                .promotion_alternate_if_AST_NULL = NULL},
             {
                 .tokens = (ParseToken[]){PT_BITXOREX_L8, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_NULL},
-                .promote_index = 0}},
+                .promote_index = 0,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 2U},
     {
         .lhs = PT_BITXOREX_L8,
@@ -354,11 +378,13 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_BITXOREX_L8, PT_BITXOR_OPERATOR, PT_BITANDEX_L7, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_FROM_PROMOTION, AST_FROM_PROMOTION, AST_NULL},
-                .promote_index = 1},
+                .promote_index = 1,
+                .promotion_alternate_if_AST_NULL = NULL},
             {
                 .tokens = (ParseToken[]){PT_BITANDEX_L7, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_NULL},
-                .promote_index = 0}},
+                .promote_index = 0,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 2U},
     {
         .lhs = PT_BITANDEX_L7,
@@ -366,11 +392,13 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_BITANDEX_L7, PT_BITAND_OPERATOR, PT_RELATIONEX_L6, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_FROM_PROMOTION, AST_FROM_PROMOTION, AST_NULL},
-                .promote_index = 1},
+                .promote_index = 1,
+                .promotion_alternate_if_AST_NULL = NULL},
             {
                 .tokens = (ParseToken[]){PT_RELATIONEX_L6, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_NULL},
-                .promote_index = 0}},
+                .promote_index = 0,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 2U},
     {
         .lhs = PT_RELATIONEX_L6,
@@ -378,11 +406,13 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_RELATIONEX_L6, PT_RELATIONAL_OPERATOR, PT_SHIFTEX_L5, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_FROM_PROMOTION, AST_FROM_PROMOTION, AST_NULL},
-                .promote_index = 1},
+                .promote_index = 1,
+                .promotion_alternate_if_AST_NULL = NULL},
             {
                 .tokens = (ParseToken[]){PT_SHIFTEX_L5, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_NULL},
-                .promote_index = 0}},
+                .promote_index = 0,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 2U},
     {
         .lhs = PT_SHIFTEX_L5,
@@ -390,11 +420,13 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_SHIFTEX_L5, PT_SHIFT_OPERATOR, PT_SUMEX_L4, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_FROM_PROMOTION, AST_FROM_PROMOTION, AST_NULL},
-                .promote_index = 1},
+                .promote_index = 1,
+                .promotion_alternate_if_AST_NULL = NULL},
             {
                 .tokens = (ParseToken[]){PT_SUMEX_L4, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_NULL},
-                .promote_index = 0}},
+                .promote_index = 0,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 2U},
     {
         .lhs = PT_SUMEX_L4,
@@ -402,11 +434,13 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_SUMEX_L4, PT_SUM_OPERATOR, PT_PRODUCTEX_L3, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_FROM_PROMOTION, AST_FROM_PROMOTION, AST_NULL},
-                .promote_index = 1},
+                .promote_index = 1,
+                .promotion_alternate_if_AST_NULL = NULL},
             {
                 .tokens = (ParseToken[]){PT_PRODUCTEX_L3, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_NULL},
-                .promote_index = 0}},
+                .promote_index = 0,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 2U},
     {
         .lhs = PT_PRODUCTEX_L3,
@@ -414,11 +448,13 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_PRODUCTEX_L3, PT_PRODUCT_OPERATOR, PT_UNARYPREFIXEX_R2, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_FROM_PROMOTION, AST_FROM_PROMOTION, AST_NULL},
-                .promote_index = 1},
+                .promote_index = 1,
+                .promotion_alternate_if_AST_NULL = NULL},
             {
                 .tokens = (ParseToken[]){PT_UNARYPREFIXEX_R2, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_NULL},
-                .promote_index = 0}},
+                .promote_index = 0,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 2U},
     {
         .lhs = PT_UNARYPREFIXEX_R2,
@@ -426,11 +462,13 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_UNARY_PREFIX_OPERATOR, PT_UNARYPREFIXEX_R2, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_FROM_PROMOTION, AST_NULL},
-                .promote_index = 0},
+                .promote_index = 0,
+                .promotion_alternate_if_AST_NULL = NULL},
             {
                 .tokens = (ParseToken[]){PT_FACTOR, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_FROM_PROMOTION, AST_NULL},
-                .promote_index = 0}},
+                .promote_index = 0,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 2U},
     {
         .lhs = PT_FACTOR,
@@ -438,27 +476,33 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_INTEGER_CONST, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_INTEGER, AST_NULL},
-                .promote_index = 0},
+                .promote_index = 0,
+                .promotion_alternate_if_AST_NULL = NULL},
             {
                 .tokens = (ParseToken[]){PT_FLOAT_CONST, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_FLOAT, AST_NULL},
-                .promote_index = 0},
+                .promote_index = 0,
+                .promotion_alternate_if_AST_NULL = NULL},
             {
                 .tokens = (ParseToken[]){PT_STRING_CONST, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_STRING, AST_NULL},
-                .promote_index = 0},
+                .promote_index = 0,
+                .promotion_alternate_if_AST_NULL = NULL},
             {
                 .tokens = (ParseToken[]){PT_IDENTIFIER, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_IDENTIFIER, AST_NULL},
-                .promote_index = 0},
+                .promote_index = 0,
+                .promotion_alternate_if_AST_NULL = NULL},
             {
                 .tokens = (ParseToken[]){PT_FACTORIAL_CALL, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_FACTORIAL, AST_NULL},
-                .promote_index = 0},
+                .promote_index = 0,
+                .promotion_alternate_if_AST_NULL = NULL},
             {
                 .tokens = (ParseToken[]){PT_LEFT_PAREN, PT_EXPRESSION, PT_RIGHT_PAREN, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_SKIP, AST_FROM_PROMOTION, AST_SKIP, AST_NULL},
-                .promote_index = 1}},
+                .promote_index = 1,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 6U},
     {
         .lhs = PT_FACTORIAL_CALL,
@@ -466,7 +510,8 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_FACTORIAL_KEYWORD, PT_LEFT_PAREN, PT_EXPRESSION, PT_RIGHT_PAREN, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_SKIP, AST_SKIP, AST_FROM_PROMOTION, AST_SKIP, AST_NULL},
-                .promote_index = 2}},
+                .promote_index = 2,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 1U},
 
     {
@@ -475,7 +520,8 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_ASSIGN_EQUAL, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_ASSIGN_EQUAL, AST_NULL},
-                .promote_index = 0}},
+                .promote_index = 0,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 1U},
     {
         .lhs = PT_OR_OPERATOR,
@@ -483,7 +529,8 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_LOGICAL_OR, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_LOGICAL_OR, AST_NULL},
-                .promote_index = 0}},
+                .promote_index = 0,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 1U},
     {
         .lhs = PT_AND_OPERATOR,
@@ -491,7 +538,8 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_LOGICAL_AND, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_LOGICAL_AND, AST_NULL},
-                .promote_index = 0}},
+                .promote_index = 0,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 1U},
     {
         .lhs = PT_BITOR_OPERATOR,
@@ -499,7 +547,8 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_BITWISE_OR, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_BITWISE_OR, AST_NULL},
-                .promote_index = 0}},
+                .promote_index = 0,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 1U},
     {
         .lhs = PT_BITXOR_OPERATOR,
@@ -507,7 +556,8 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_BITWISE_XOR, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_BITWISE_XOR, AST_NULL},
-                .promote_index = 0}},
+                .promote_index = 0,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 1U},
     {
         .lhs = PT_BITAND_OPERATOR,
@@ -515,7 +565,8 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_BITWISE_AND, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_BITWISE_AND, AST_NULL},
-                .promote_index = 0}},
+                .promote_index = 0,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 1U},
     {
         .lhs = PT_RELATIONAL_OPERATOR,
@@ -523,27 +574,33 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_COMPARE_LESS_EQUAL, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_COMPARE_LESS_EQUAL, AST_NULL},
-                .promote_index = 0},
+                .promote_index = 0,
+                .promotion_alternate_if_AST_NULL = NULL},
             {
                 .tokens = (ParseToken[]){PT_COMPARE_LESS, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_COMPARE_LESS_THAN, AST_NULL},
-                .promote_index = 0},
+                .promote_index = 0,
+                .promotion_alternate_if_AST_NULL = NULL},
             {
                 .tokens = (ParseToken[]){PT_COMPARE_GREATER_EQUAL, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_COMPARE_GREATER_EQUAL, AST_NULL},
-                .promote_index = 0},
+                .promote_index = 0,
+                .promotion_alternate_if_AST_NULL = NULL},
             {
                 .tokens = (ParseToken[]){PT_COMPARE_GREATER, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_COMPARE_GREATER_THAN, AST_NULL},
-                .promote_index = 0},
+                .promote_index = 0,
+                .promotion_alternate_if_AST_NULL = NULL},
             {
                 .tokens = (ParseToken[]){PT_COMPARE_EQUAL, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_COMPARE_EQUAL, AST_NULL},
-                .promote_index = 0},
+                .promote_index = 0,
+                .promotion_alternate_if_AST_NULL = NULL},
             {
                 .tokens = (ParseToken[]){PT_COMPARE_NOT_EQUAL, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_COMPARE_NOT_EQUAL, AST_NULL},
-                .promote_index = 0}},
+                .promote_index = 0,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 6U},
     {
         .lhs = PT_SHIFT_OPERATOR,
@@ -551,11 +608,13 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_SHIFT_LEFT, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_SHIFT_LEFT, AST_NULL},
-                .promote_index = 0},
+                .promote_index = 0,
+                .promotion_alternate_if_AST_NULL = NULL},
             {
                 .tokens = (ParseToken[]){PT_SHIFT_RIGHT, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_SHIFT_RIGHT, AST_NULL},
-                .promote_index = 0}},
+                .promote_index = 0,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 2U},
     {
         .lhs = PT_SUM_OPERATOR,
@@ -563,11 +622,13 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_ADD, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_ADD, AST_NULL},
-                .promote_index = 0},
+                .promote_index = 0,
+                .promotion_alternate_if_AST_NULL = NULL},
             {
                 .tokens = (ParseToken[]){PT_SUBTRACT, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_SUBTRACT, AST_NULL},
-                .promote_index = 0}},
+                .promote_index = 0,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 2U},
     {
         .lhs = PT_PRODUCT_OPERATOR,
@@ -575,15 +636,18 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_MULTIPLY, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_MULTIPLY, AST_NULL},
-                .promote_index = 0},
+                .promote_index = 0,
+                .promotion_alternate_if_AST_NULL = NULL},
             {
                 .tokens = (ParseToken[]){PT_DIVIDE, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_DIVIDE, AST_NULL},
-                .promote_index = 0},
+                .promote_index = 0,
+                .promotion_alternate_if_AST_NULL = NULL},
             {
                 .tokens = (ParseToken[]){PT_MODULO, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_MODULO, AST_NULL},
-                .promote_index = 0}},
+                .promote_index = 0,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 3U},
     {
         .lhs = PT_UNARY_PREFIX_OPERATOR,
@@ -591,15 +655,18 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_BITWISE_NOT, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_BITWISE_NOT, AST_NULL},
-                .promote_index = 0},
+                .promote_index = 0,
+                .promotion_alternate_if_AST_NULL = NULL},
             {
                 .tokens = (ParseToken[]){PT_LOGICAL_NOT, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_LOGICAL_NOT, AST_NULL},
-                .promote_index = 0},
+                .promote_index = 0,
+                .promotion_alternate_if_AST_NULL = NULL},
             {
                 .tokens = (ParseToken[]){PT_NEGATE, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_NEGATE, AST_NULL},
-                .promote_index = 0}},
+                .promote_index = 0,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 3U},
     {
         .lhs = PT_ASSIGN_EQUAL,
@@ -607,7 +674,8 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_EQUAL, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
-                .promote_index = -1}},
+                .promote_index = -1,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 1U},
     {
         .lhs = PT_LOGICAL_OR,
@@ -615,7 +683,8 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_PIPE_PIPE, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
-                .promote_index = -1}},
+                .promote_index = -1,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 1U},
     {
         .lhs = PT_LOGICAL_AND,
@@ -623,7 +692,8 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_AMPERSAND_AMPERSAND, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
-                .promote_index = -1}},
+                .promote_index = -1,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 1U},
     {
         .lhs = PT_BITWISE_OR,
@@ -631,7 +701,8 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_PIPE, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
-                .promote_index = -1}},
+                .promote_index = -1,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 1U},
     {
         .lhs = PT_BITWISE_XOR,
@@ -639,7 +710,8 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_CARET, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
-                .promote_index = -1}},
+                .promote_index = -1,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 1U},
     {
         .lhs = PT_BITWISE_AND,
@@ -647,7 +719,8 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_AMPERSAND, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
-                .promote_index = -1}},
+                .promote_index = -1,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 1U},
     {
         .lhs = PT_COMPARE_EQUAL,
@@ -655,7 +728,8 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_EQUAL_EQUAL, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
-                .promote_index = -1}},
+                .promote_index = -1,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 1U},
     {
         .lhs = PT_COMPARE_NOT_EQUAL,
@@ -663,7 +737,8 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_BANG_EQUAL, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
-                .promote_index = -1}},
+                .promote_index = -1,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 1U},
     {
         .lhs = PT_COMPARE_LESS_EQUAL,
@@ -671,7 +746,8 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_LESS_THAN_EQUAL, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
-                .promote_index = -1}},
+                .promote_index = -1,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 1U},
     {
         .lhs = PT_COMPARE_LESS,
@@ -679,7 +755,8 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_LESS_THAN, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
-                .promote_index = -1}},
+                .promote_index = -1,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 1U},
     {
         .lhs = PT_COMPARE_GREATER_EQUAL,
@@ -687,7 +764,8 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_GREATER_THAN_EQUAL, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
-                .promote_index = -1}},
+                .promote_index = -1,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 1U},
     {
         .lhs = PT_COMPARE_GREATER,
@@ -695,7 +773,8 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_GREATER_THAN, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
-                .promote_index = -1}},
+                .promote_index = -1,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 1U},
     {
         .lhs = PT_SHIFT_LEFT,
@@ -703,7 +782,8 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_LESS_THAN_LESS_THAN, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
-                .promote_index = -1}},
+                .promote_index = -1,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 1U},
     {
         .lhs = PT_SHIFT_RIGHT,
@@ -711,7 +791,8 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_GREATER_THAN_GREATER_THAN, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
-                .promote_index = -1}},
+                .promote_index = -1,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 1U},
     {
         .lhs = PT_ADD,
@@ -719,7 +800,8 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_PLUS, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
-                .promote_index = -1}},
+                .promote_index = -1,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 1U},
     {
         .lhs = PT_SUBTRACT,
@@ -727,7 +809,8 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_MINUS, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
-                .promote_index = -1}},
+                .promote_index = -1,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 1U},
     {
         .lhs = PT_MULTIPLY,
@@ -735,7 +818,8 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_STAR, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
-                .promote_index = -1}},
+                .promote_index = -1,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 1U},
     {
         .lhs = PT_DIVIDE,
@@ -743,7 +827,8 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_FORWARD_SLASH, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
-                .promote_index = -1}},
+                .promote_index = -1,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 1U},
     {
         .lhs = PT_MODULO,
@@ -751,7 +836,8 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_PERCENT, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
-                .promote_index = -1}},
+                .promote_index = -1,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 1U},
     {
         .lhs = PT_BITWISE_NOT,
@@ -759,7 +845,8 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_TILDE, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
-                .promote_index = -1}},
+                .promote_index = -1,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 1U},
     {
         .lhs = PT_LOGICAL_NOT,
@@ -767,7 +854,8 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_BANG, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
-                .promote_index = -1}},
+                .promote_index = -1,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 1U},
     {
         .lhs = PT_NEGATE,
@@ -775,7 +863,8 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_MINUS, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_SKIP, AST_NULL},
-                .promote_index = -1}},
+                .promote_index = -1,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 1U},
 };
 
