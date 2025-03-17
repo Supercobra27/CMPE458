@@ -21,7 +21,7 @@ typedef struct _ProductionRule
     // TODO: what should be done if ast_types[promote_index] is AST_NULL and `promote_index < len(tokens)` (either promote the AST_NULL, or pick a different promote index)?
     // solution to be implemented for semantic analysis: add another field to indicate what to do if `ast_types[promote_index] == AST_NULL`.
     // if `ast_types[promote_index] == AST_NULL`, then if `promotion_alternate_if_AST_NULL[promote_index] == promote_index`, then promote `AST_NULL`, otherwise promote the ASTNodeType at `promotion_alternate_if_AST_NULL[promote_index]`. If there is a cycle (e.g. `promotion_alternate_if_AST_NULL[0] == 1` and `promotion_alternate_if_AST_NULL[1] == 0`), then promote `AST_NULL`.
-    // size_t *promotion_alternate_if_AST_NULL;
+    size_t *promotion_alternate_if_AST_NULL;
 } ProductionRule;
 
 typedef struct _CFG_GrammarRule
@@ -80,7 +80,8 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
             {
                 .tokens = (ParseToken[]){PT_SCOPE, PT_EOF, PT_NULL},
                 .ast_types = (ASTNodeType[]){AST_SCOPE, AST_SKIP, AST_NULL},
-                .promote_index = -1}},
+                .promote_index = -1,
+                .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 1U},
     {
         .lhs = PT_SCOPE,

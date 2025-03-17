@@ -234,58 +234,116 @@ void ASTNode_free_children(ASTNode *const node) {
     node->capacity = 0;
 }
 
+typedef struct _ASTPromo {
+    size_t idx;
+    ASTNodeType type;
+    ASTErrorType error;
+} ASTPromo;
 
+ASTPromo ASTNode_get_promo_type(const ParseTreeNode *const p, bool *const visited) {
+    ASTPromo promo = {p->rule->promote_index, AST_NULL, AST_ERROR_NONE};
+    while (true) {
+        // this promo_idx is valid, it just means that the result is AST_NULL.
+        if (promo.idx == p->count) {
+            promo.type = AST_NULL;
+            return promo;
+        }
+        // promo index is invalid, or we have already tried to promote this child.
+        if (promo.idx > p->count || visited[promo.idx]) {
+            promo.error = AST_ERROR_EXPECTED_PROMOTION;
+            return promo;
+        }
+        // promo.idx < p->count
+        promo.type = p->rule->ast_types[promo.idx];
+        if (promo.type != AST_FROM_PROMOTION)
+            return promo;
+        else {
+            bool child_visited[p->children[promo.idx].count];
+            memset(child_visited, 0, sizeof(child_visited));
+            ASTPromo child_promo = ASTNode_get_promo_type(p->children + promo.idx, child_visited);
+            if (child_promo.error) {
+                promo.error = child_promo.error;
+                return promo;
+            } else if (child_promo.type == AST_FROM_PROMOTION) {
+                promo.error = AST_ERROR_EXPECTED_PROMOTION;
+                return promo;
+            } else if (child_promo.type == AST_NULL) {
+                // try the alternate promotion index.
+                visited[promo.idx] = true;
+                promo.idx = p->rule->promotion_alternate_if_AST_NULL[promo.idx];
+            } else {
+                promo.type = child_promo.type;
+                return promo;
+            }
+        } 
+    }
+
+}
+
+// TODO: make promotion actually work.
+// TODO: fix grammar to include the promotion_alternate_if_AST_NULL field.
 bool ASTNode_from_ParseTreeNode_impl(ASTNode *const a, const ParseTreeNode *const p) {
     // we can be sure that the pointers are not NULL because the caller of this function has already checked for that.
 
-    // if parse_node is PT_NULL
     if (p->type == PT_NULL)
         return true;
-    // if parse_node is a terminal.
     if (ParseToken_IS_TERMINAL(p->type)) 
     {
         if (p->token == NULL) {
             a->error = AST_ERROR_MISSING_TOKEN;
             return false;
         }
-        a->token = *p->token;
+        if (ASTNodeType_HAS_TOKEN(a->type))
+            a->token = *p->token;
         return true;
     }
     // parse_node is a non-terminal.
-    // take the rule used to parse the node and use it to construct the ASTNode.
-
+    // take the rule used to parse the node and use it to construct the children.
     const ProductionRule *const rule = p->rule;
-    // if we are expecting a promotion, but the promotion index is out of bounds
-    if (rule->promote_index >= p->count && a->type == AST_FROM_PROMOTION) {
-        if (rule->promote_index == p->count) {
-            // this is promoting the type to be AST_NULL, in this event, treat this as a skip and don't add any children.
-            a->type = AST_SKIP;
-            return true;
-        }
-        return false;
-    }
     if (rule == NULL) {
-        a->error = AST_ERROR_MISSING_PRODUCTION_RULE;
+        a->error = AST_ERROR_UNSPECIFIED_PRODUCTION_RULE;
         return false;
-    }
-    a->count = a->capacity = 0;
-    for (size_t i = 0; i < p->count; ++i) {
-        // IMPOSSIBLE: promote_index == i and AST_SKIP
-        // IMPOSSIBLE: promote_index == i and AST_FROM_CHILDREN
-        // if promote_index == i and AST_FROM_PROMOTION, 
-        da_pre_push(a);
-        // TODO: conditionally assign children based on rule.
-        if (!ASTNode_from_ParseTreeNode_impl(a->items + a->count, p->children + a->count)) {
-            a->error = AST_ERROR_CHILD_ERROR;
-        }
-        // set the type of the ASTNode in the case of rule->promote_index < p->count.
-        if (rule->promote_index < p->count && i == rule->promote_index) {
-            a->type = rule->ast_types[i];
-            // TODO: handle 
-        } 
-        // handle ASK_SKIP.
     }
     
+    // evaluate the type of the ASTNode if it is expecting a promotion.
+    ASTPromo promo;
+    bool visited[p->count];
+    memset(visited, 0, sizeof(visited));
+    if (a->type == AST_FROM_PROMOTION) {
+        promo = ASTNode_get_promo_type(p, visited);
+        a->type = promo.type;
+        if (promo.error) {
+            a->error = promo.error;
+            return false;
+        }
+    }
+    if (promo.type == AST_NULL || promo.type == AST_SKIP) {
+        a->type = AST_SKIP;
+        return true;
+    }
+    // now add the children, appending to the dynamic array.
+    for (size_t i = 0; i < p->count; ++i) {
+        // if the type is explicitly AST_SKIP, or if the child would have been promoted but wasn't because it wasn't here, then skip it.
+        if (rule->ast_types[i] == AST_SKIP || visited[i])
+            continue;
+        // need to add the children directly to the array.
+        if (rule->ast_types[i] == AST_FROM_CHILDREN) {
+            if (!ASTNode_from_ParseTreeNode_impl(a, p->children + i)) {
+                a->error = AST_ERROR_CHILD_ERROR;
+                return false;
+            }
+        } else {
+            da_push(a, ((ASTNode){.type = rule->ast_types[i], .error = AST_ERROR_NONE, .token = (Token){0}, .items = NULL, .count = 0, .capacity = 0}));
+            if (!ASTNode_from_ParseTreeNode_impl(a->items + a->count - 1, p->children + i)) {
+                a->error = AST_ERROR_CHILD_ERROR;
+                return false;
+            }
+            // if it turned out that the child was a skip (determined by promotion), then remove it.
+            if (a->items[a->count - 1].type == AST_SKIP || a->type == AST_NULL) {
+                --(a->count);
+            }
+        }
+    }
 
     return a->error == AST_ERROR_NONE;
 }
@@ -296,6 +354,7 @@ bool ASTNode_from_ParseTreeNode(ASTNode *const ast_node, const ParseTreeNode *co
     // ast_node->type is already set to the desired type.
     // initialize the rest of the ASTNode to default values.
     memset(&(ast_node->error), 0, sizeof(ASTNode) - sizeof(ASTNodeType));
+    // TODO: convert the use of ASTNode_get_promo_type to a pre-processing step (such as ParseTreeNode_resolve_promotions) so that there is less repeated work being done.
     // call the function given ast_node is initialized to default values.
     return ASTNode_from_ParseTreeNode_impl(ast_node, parse_node);
 }

@@ -108,8 +108,10 @@ const char *ASTErrorType_to_string(const ASTErrorType t)
             return "AST_ERROR_MISSING_TOKEN";
         case AST_ERROR_CHILD_ERROR:
             return "AST_ERROR_CHILD_ERROR";
-        case AST_ERROR_MISSING_PRODUCTION_RULE:
+        case AST_ERROR_UNSPECIFIED_PRODUCTION_RULE:
             return "AST_ERROR_MISSING_PRODUCTION_RULE";
+        case AST_ERROR_EXPECTED_PROMOTION:
+            return "AST_ERROR_EXPECTED_PROMOTION";
     }
     return "UNKNOWN";
 }

@@ -144,9 +144,9 @@ int main(int argc, char *argv[])
 
         input = 
             // "{ \n    float w;\n    w = 3.14159;\n    {{{{\"middle\";}}}}\n}\n"
-            "string s;\n"
-            "1 + 2 + 3;\n"
-            "x = y = z + 1;\n";
+            "string s;\n";
+            // "1 + 2 + 3;\n";
+            // "x = y = z + 1;\n";
             // "print 5 * (2 + 3);\n"
             // "read x;\n"
             // "if 1 then { }\n"
