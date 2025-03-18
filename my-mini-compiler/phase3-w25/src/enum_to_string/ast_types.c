@@ -41,7 +41,7 @@ const char *ASTNodeType_to_string(const ASTNodeType t)
         case AST_READ:
             return "AST_READ";
         case AST_CODITIONAL:
-            return "AST_CODITIONAL";
+            return "AST_CONDITIONAL";
         case AST_WHILE_LOOP:
             return "AST_WHILE_LOOP";
         case AST_REPEAT_UNTIL_LOOP:
