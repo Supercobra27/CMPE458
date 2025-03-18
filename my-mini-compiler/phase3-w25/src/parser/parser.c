@@ -315,6 +315,10 @@ bool ASTNode_from_ParseTreeNode_impl(ASTNode *const a, ParseTreeNodeWithPromo *c
         }
         if (ASTNodeType_HAS_TOKEN(a->type))
             a->token = *p->token;
+        if (p->error || a->token.error) {
+            a->error = AST_ERROR_TOKEN_ERROR;
+            return false;
+        }
         return true;
     }
     // parse_node is a non-terminal.
@@ -369,6 +373,23 @@ bool ASTNode_from_ParseTreeNode_impl(ASTNode *const a, ParseTreeNodeWithPromo *c
             if (a->items[a->count - 1].type == AST_SKIP || a->type == AST_NULL) {
                 --(a->count);
             }
+        }
+    }
+
+    if (p->error) {
+        switch (p->error) {
+            case PARSE_ERROR_WRONG_TOKEN:
+                a->error = AST_ERROR_TOKEN_ERROR;
+                break;
+            case PARSE_ERROR_CHILD_ERROR:
+                a->error = AST_ERROR_CHILD_ERROR;
+                break;
+            case PARSE_ERROR_NO_RULE_MATCHES:
+                a->error = AST_ERROR_UNSPECIFIED_PRODUCTION_RULE;
+                break;
+            default:
+                a->error = AST_ERROR_UNSPECIFIED_PRODUCTION_RULE;
+                break;
         }
     }
 

@@ -106,6 +106,8 @@ const char *ASTErrorType_to_string(const ASTErrorType t)
             return "AST_ERROR_NONE";
         case AST_ERROR_MISSING_TOKEN:
             return "AST_ERROR_MISSING_TOKEN";
+        case AST_ERROR_TOKEN_ERROR:
+            return "AST_ERROR_TOKEN_ERROR";
         case AST_ERROR_CHILD_ERROR:
             return "AST_ERROR_CHILD_ERROR";
         case AST_ERROR_UNSPECIFIED_PRODUCTION_RULE:

@@ -202,10 +202,13 @@ int main(int argc, char *argv[])
         .print_head = (const_voidp_to_void*)ParseTreeNode_print_head,
     });
 
+    // TODO: print syntax compiler error message if any.
+
     // Convert to Abstract Syntax Tree
     printf("\nAbstract Syntax Tree:\n");
     ASTNode ast_root; ast_root.type = AST_PROGRAM;
     ASTNode_from_ParseTreeNode(&ast_root, (ParseTreeNodeWithPromo *)&root);
+
 
     if (DEBUG) print_tree(&(print_tree_t){
         .root = &ast_root,
@@ -215,6 +218,9 @@ int main(int argc, char *argv[])
         .print_head = (const_voidp_to_void*)ASTNode_print_head,
     });
 
+    // TODO: Semantic Analysis
+
+    // TODO: print Semantic compiler error if any.
 
     ParseTreeNode_free_children(&root);
     array_free(tokens);
