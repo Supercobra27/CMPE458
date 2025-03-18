@@ -6,14 +6,12 @@
 #include <assert.h>
 
 #include "../../include/tokens.h"
-#include "../../include/parse_tokens.h"
-#include "../../include/grammar.h"
 #include "../../include/parser.h"
+#include "../../include/simple_dynamic_array.h"
 
 /**
- * Sets the fields of the ParseTreeNode to their default values (all zero). 
+* Sets the fields of the ParseTreeNode to their default values (all zero, finalized_promo_index = SIZE_MAX). 
  *
- * ParseTreeNode_init_zero(node, 0) is equivalent to memset(node, 0, sizeof(ParseTreeNode)).
  * 
  * Then allocate memory for the children array if capacity is non-zero.
  * @param node The node to initialize. (must not be NULL).
@@ -24,6 +22,7 @@ static inline void ParseTreeNode_init_zero(ParseTreeNode *node, size_t capacity)
     node->type = PT_NULL;
     node->token = NULL;
     node->rule = NULL;
+    node->finalized_promo_index = SIZE_MAX;
     node->error = PARSE_ERROR_NONE;
     node->children = NULL;
     node->capacity = 0;
@@ -99,6 +98,7 @@ bool parse_cfg_recursive_descent_parse_tree(ParseTreeNode *const node, size_t *c
     node->error = PARSE_ERROR_NONE;
     node->token = NULL;
     node->rule = NULL;
+    node->finalized_promo_index = SIZE_MAX;
     node->capacity = 0;
     node->count = 0;
     node->children = NULL;
@@ -170,6 +170,7 @@ bool parse_cfg_recursive_descent_parse_tree(ParseTreeNode *const node, size_t *c
                 node->children[node->count].error = PARSE_ERROR_PREVIOUS_TOKEN_FAILED_TO_PARSE;
                 node->children[node->count].token = NULL;
                 node->children[node->count].rule = NULL;
+                node->children[node->count].finalized_promo_index = SIZE_MAX;
                 node->children[node->count].count = 0;
                 node->children[node->count].capacity = 0;
                 node->children[node->count].children = NULL;
@@ -213,6 +214,7 @@ bool parse_cfg_recursive_descent_parse_tree(ParseTreeNode *const node, size_t *c
                     node->children[node->count].error = PARSE_ERROR_PREVIOUS_TOKEN_FAILED_TO_PARSE;
                     node->children[node->count].token = NULL;
                     node->children[node->count].rule = NULL;
+                    node->children[node->count].finalized_promo_index = SIZE_MAX;
                     node->children[node->count].children = NULL;
                     node->children[node->count].capacity = 0;
                     node->children[node->count].count = 0;
@@ -235,51 +237,171 @@ void ASTNode_free_children(ASTNode *const node) {
     node->capacity = 0;
 }
 
-bool ASTNode_from_ParseTreeNode_impl(ASTNode *const a, const ParseTreeNode *const p, const CFG_GrammarRule *const g) {
+typedef struct _ASTPromo {
+    size_t idx;
+    ASTNodeType type;
+    ASTErrorType error;
+} ASTPromo;
+
+/**
+ * Warning: `absent` must not be NULL, otherwise this function will not work correctly.
+ * 
+ * @param p Pointer to the ParseTreeNodeWithPromo to determine its promotion type. This function will set p->finalized_promo_index to the index of the promotion that was used. If p->finalize_promo_index is already set (other than SIZE_MAX), then the function will return the corresponding promotion without recursing through children.
+ * @param absent Array of p->count bools to keep track of child nodes which resolved to AST_NULL which could not be promoted.
+ */
+ASTPromo ASTNode_get_promo(ParseTreeNodeWithPromo *const p, bool *const absent) {
+    ASTPromo promo = {p->rule->promote_index, AST_NULL, AST_ERROR_NONE};
+    if (p->finalized_promo_index != SIZE_MAX) {
+        promo.type = p->rule->ast_types[p->finalized_promo_index];
+        promo.idx = p->finalized_promo_index;
+        return promo;
+    }
+    while (true) {
+        // this promo_idx is valid, it just means that the result is AST_NULL.
+        if (promo.idx == p->count) {
+            p->finalized_promo_index = promo.idx;
+            promo.type = AST_NULL;
+            return promo;
+        }
+        // promo index is invalid, or we have already tried to promote this child.
+        if (promo.idx > p->count || absent[promo.idx]) {
+            promo.error = AST_ERROR_EXPECTED_PROMOTION;
+            return promo;
+        }
+        // promo.idx < p->count
+        promo.type = p->rule->ast_types[promo.idx];
+        if (promo.type != AST_FROM_PROMOTION) {
+            p->finalized_promo_index = promo.idx;
+            return promo;
+        } else {
+            bool child_absent[p->children[promo.idx].count];
+            memset(child_absent, 0, sizeof(child_absent));
+            ASTPromo child_promo = ASTNode_get_promo(p->children + promo.idx, child_absent);
+            if (child_promo.error) {
+                promo.error = child_promo.error;
+                return promo;
+            } else if (child_promo.type == AST_FROM_PROMOTION) {
+                promo.error = AST_ERROR_EXPECTED_PROMOTION;
+                return promo;
+            } else if (child_promo.type == AST_NULL) {
+                // try the alternate promotion index.
+                absent[promo.idx] = true;
+                // no alternates, then return AST_NULL.
+                if (p->rule->promotion_alternate_if_AST_NULL == NULL) {
+                    promo.error = AST_ERROR_EXPECTED_PROMOTION;
+                    return promo;
+                }
+                promo.idx = p->rule->promotion_alternate_if_AST_NULL[promo.idx];
+            } else {
+                promo.type = child_promo.type;
+                p->finalized_promo_index = promo.idx;
+                return promo;
+            }
+        } 
+    }
+
+}
+
+bool ASTNode_from_ParseTreeNode_impl(ASTNode *const a, ParseTreeNodeWithPromo *const p) {
     // we can be sure that the pointers are not NULL because the caller of this function has already checked for that.
 
-    // if parse_node is PT_NULL
     if (p->type == PT_NULL)
         return true;
-    // if parse_node is a terminal.
     if (ParseToken_IS_TERMINAL(p->type)) 
     {
         if (p->token == NULL) {
             a->error = AST_ERROR_MISSING_TOKEN;
             return false;
         }
-        a->token = *p->token;
+        if (ASTNodeType_HAS_TOKEN(a->type))
+            a->token = *p->token;
+        if (p->error || a->token.error) {
+            a->error = AST_ERROR_TOKEN_ERROR;
+            return false;
+        }
         return true;
     }
     // parse_node is a non-terminal.
-    // take the rule used to parse the node and use it to construct the ASTNode.
-    // TODO: dynamically allocate memory for the children using simple_dynamic_array.h
-    a->items = calloc(p->capacity, sizeof(ASTNode));
-    if (a->items == NULL) {
-        perror("calloc");
-        exit(EXIT_FAILURE);
-    }
-    a->capacity = p->capacity;
-    // const ProductionRule *const rule = p->rule;
-    for (a->count = 0; a->count < p->count; ++a->count) {
-        // TODO: conditionally assign children based on rule.
-        if (!ASTNode_from_ParseTreeNode_impl(a->items + a->count, p->children + a->count, g)) {
-            a->error = AST_ERROR_CHILD_ERROR;
-        }
+    // take the rule used to parse the node and use it to construct the children.
+    const ProductionRule *const rule = p->rule;
+    if (rule == NULL) {
+        a->error = AST_ERROR_UNSPECIFIED_PRODUCTION_RULE;
+        return false;
     }
     
+    // evaluate the type of the ASTNode if it is expecting a promotion.
+    // a->type will be set to promo.type at the end of this function.
+    ASTPromo promo = {SIZE_MAX, a->type, AST_ERROR_NONE};
+    bool absent[p->count];
+    memset(absent, 0, sizeof(absent));
+    if (a->type == AST_FROM_PROMOTION ) {
+        promo = ASTNode_get_promo(p, absent);
+        if (promo.error) {
+            a->error = promo.error;
+            return false;
+        }
+    }
+    if (promo.type == AST_NULL || promo.type == AST_SKIP) {
+        a->type = AST_SKIP;
+        return true;
+    }
+    // now add the children, appending to the dynamic array.
+    for (size_t i = 0; i < p->count; ++i) {
+        // if the type is explicitly AST_SKIP, or if the child would have been promoted but wasn't because it was absent, then skip it.
+        if (rule->ast_types[i] == AST_SKIP || absent[i])
+            continue;
+        // need to add the children directly to the array.
+        if (rule->ast_types[i] == AST_FROM_CHILDREN) {
+            if (!ASTNode_from_ParseTreeNode_impl(a, p->children + i)) {
+                a->error = AST_ERROR_CHILD_ERROR;
+                return false;
+            }
+        } else if (i == promo.idx) {
+            a->type = rule->ast_types[i];
+            // a->type is set according to the promoted child here.
+            if (!ASTNode_from_ParseTreeNode_impl(a, p->children + i)) {
+                a->error = AST_ERROR_CHILD_ERROR;
+                return false;
+            }
+        } else {
+            da_push(a, ((ASTNode){.type = rule->ast_types[i], .error = AST_ERROR_NONE, .token = (Token){0}, .items = NULL, .count = 0, .capacity = 0}));
+            if (!ASTNode_from_ParseTreeNode_impl(a->items + a->count - 1, p->children + i)) {
+                a->error = AST_ERROR_CHILD_ERROR;
+                return false;
+            }
+            // if it turned out that the child was a skip (determined by promotion), then remove it.
+            if (a->items[a->count - 1].type == AST_SKIP || a->type == AST_NULL) {
+                --(a->count);
+            }
+        }
+    }
+
+    if (p->error) {
+        switch (p->error) {
+            case PARSE_ERROR_WRONG_TOKEN:
+                a->error = AST_ERROR_TOKEN_ERROR;
+                break;
+            case PARSE_ERROR_CHILD_ERROR:
+                a->error = AST_ERROR_CHILD_ERROR;
+                break;
+            case PARSE_ERROR_NO_RULE_MATCHES:
+                a->error = AST_ERROR_UNSPECIFIED_PRODUCTION_RULE;
+                break;
+            default:
+                a->error = AST_ERROR_UNSPECIFIED_PRODUCTION_RULE;
+                break;
+        }
+    }
 
     return a->error == AST_ERROR_NONE;
 }
 
-bool ASTNode_from_ParseTreeNode(ASTNode *const ast_node, const ParseTreeNode *const parse_node, const CFG_GrammarRule *const grammar, const size_t grammar_size) {
+bool ASTNode_from_ParseTreeNode(ASTNode *const ast_node, ParseTreeNodeWithPromo *const parse_node) {
     assert(ast_node != NULL);
     assert(parse_node != NULL);
-    assert(grammar != NULL);
-    assert(grammar_size >= ParseToken_COUNT_NONTERMINAL);
     // ast_node->type is already set to the desired type.
     // initialize the rest of the ASTNode to default values.
     memset(&(ast_node->error), 0, sizeof(ASTNode) - sizeof(ASTNodeType));
     // call the function given ast_node is initialized to default values.
-    return ASTNode_from_ParseTreeNode_impl(ast_node, parse_node, grammar);
+    return ASTNode_from_ParseTreeNode_impl(ast_node, parse_node);
 }

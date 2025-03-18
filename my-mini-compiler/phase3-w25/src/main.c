@@ -35,16 +35,16 @@ size_t ParseTreeNode_num_children(const ParseTreeNode *n) {
  * @param node Pointer to node to print.
  */
 void ParseTreeNode_print_head(const ParseTreeNode *const node) {
-    printf("%s", parse_token_to_string(node->type));
+    printf("%s", ParseToken_to_string(node->type));
     if (node->error) 
-        printf(" (%s)", parse_error_type_to_string(node->error));
+        printf(" (%s)", ParseErrorType_to_string(node->error));
     if (node->token)
     {
         printf(" -> ");
         if (node->error || node->token->error)
             print_token(*node->token);
         else
-            printf("%s \"%s\"", token_type_to_string(node->token->type), node->token->lexeme);
+            printf("%s \"%s\"", TokenType_to_string(node->token->type), node->token->lexeme);
     }
 }
 const ASTNode *ASTNode_children_begin(const ASTNode *n) {
@@ -70,7 +70,7 @@ void ASTNode_print_head(const ASTNode *const node) {
         if (node->error || node->token.error)
             print_token(node->token);
         else
-            printf("%s \"%s\"", token_type_to_string(node->token.type), node->token.lexeme);
+            printf("%s \"%s\"", TokenType_to_string(node->token.type), node->token.lexeme);
     }
 }
 
@@ -143,26 +143,17 @@ int main(int argc, char *argv[])
         //         "int ;";
 
         input = 
-            // "{ \n    float w;\n    w = 3.14159;\n    {{{{\"middle\";}}}}\n}\n"
+            "{ \n    float w;\n    w = 3.14159;\n    {{{{\"middle\";}}}}\n}\n"
+            "; ?? skip the empty statement\n"
             "string s;\n"
             "1 + 2 + 3;\n"
-            "x = y = z + 1;\n";
-            // "print 5 * (2 + 3);\n"
-            // "read x;\n"
-            // "if 1 then { }\n"
-            // "if 1 then { } else { }\n"
-            // "while 0 { }\n"
-            // "repeat { } until 1;\n";
-        // input = "{\n   float w;\n    w = 3.14159;\n}\n";
-        // input = "string s;\n";
-        // input = "1 + 2 + 3;\n";
-        // input = "x = y = z + 1;\n";
-        // input = "print 5 * (2 + 3);\n"
-        // input = "read x;\n";
-        // input = "if 1 then { }\n";
-        // input = "if 1 then { } else { }\n";
-        // input = "while 0 { }\n";
-        // input = "repeat { } until 1;\n";
+            "x = y = z + 1 - 1;\n"
+            "print 5 * (2 + 3);\n"
+            "read x;\n"
+            "if 1 then { }\n"
+            "if 1 then { } else { x = 1; }\n"
+            "while 0 { }\n"
+            "repeat { } until 1;\n";
     }
 
     // TODO: Add more test cases
@@ -194,6 +185,8 @@ int main(int argc, char *argv[])
     ParseTreeNode root = (ParseTreeNode){
         .type = ParseToken_START_NONTERMINAL,
         .token = NULL,
+        .rule = NULL,
+        .finalized_promo_index = SIZE_MAX,
         .error = PARSE_ERROR_NONE,
         .children = NULL,
         .capacity = 0,
@@ -209,10 +202,13 @@ int main(int argc, char *argv[])
         .print_head = (const_voidp_to_void*)ParseTreeNode_print_head,
     });
 
+    // TODO: print syntax compiler error message if any.
+
     // Convert to Abstract Syntax Tree
     printf("\nAbstract Syntax Tree:\n");
     ASTNode ast_root; ast_root.type = AST_PROGRAM;
-    ASTNode_from_ParseTreeNode(&ast_root, &root, program_grammar, ParseToken_COUNT_NONTERMINAL);
+    ASTNode_from_ParseTreeNode(&ast_root, (ParseTreeNodeWithPromo *)&root);
+
 
     if (DEBUG) print_tree(&(print_tree_t){
         .root = &ast_root,
@@ -222,6 +218,9 @@ int main(int argc, char *argv[])
         .print_head = (const_voidp_to_void*)ASTNode_print_head,
     });
 
+    // TODO: Semantic Analysis
+
+    // TODO: print Semantic compiler error if any.
 
     ParseTreeNode_free_children(&root);
     array_free(tokens);

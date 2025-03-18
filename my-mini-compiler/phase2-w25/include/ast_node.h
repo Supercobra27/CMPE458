@@ -19,7 +19,7 @@ typedef enum _ASTNodeType {
     // used by grammar rules to indicate that the children of this node should not be added to the AST, but the node itself should be. The type of this node must be determined by one of its promoted children. (just take the promotion and ignore the children) (do we want to have a way to specify the node type even if there is no promotion?)
     AST_IGNORE_CHILDREN,
     // used by grammar rules to indicate that the ParseToken and its subtree should be ignored in this particular position in the AST. (node type can still be promoted, if not promoted, then it is ignored entirely, in either case the children are not added to the AST)
-    AST_IGNORE,
+    AST_SKIP,
     // used by grammar rules to indicate that the ParseToken's children should be passed directly to the parent node. Useful when the parsetoken has multiple children and you want them all on the level of the parent node in the AST. Also useful when the children may be empty and in which case nothing is added to the AST.
     AST_FROM_CHILDREN,
     // used when the ParseToken does not have a corresponding ASTNodeType, it's type must be derived from a promoted child, and its children are brought up to the parent as in AST_FROM_CHILDREN. If it's possible to not have promoted children, then this node does not make sense but it will retain the type AST_FROM_PROMOTION (TODO: implement check for this being used incorrectly).

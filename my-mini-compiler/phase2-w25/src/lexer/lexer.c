@@ -89,7 +89,7 @@ void record_if_newline()
 void print_token(Token token)
 {
     printf("Token type=%-10s(%d), lexeme=\"%s\", line=%-2d, column:%d-%d, error_message=\"%s\"",
-           token_type_to_string(token.type), token.type, token.lexeme, token.position.line, token.position.col_start, token.position.col_end, error_type_to_error_message(token.error));
+           TokenType_to_string(token.type), token.type, token.lexeme, token.position.line, token.position.col_start, token.position.col_end, ErrorType_to_error_message(token.error));
 }
 
 void print_token_compiler_message(const char *input_file_path, Token token)
@@ -103,7 +103,7 @@ void print_token_compiler_message(const char *input_file_path, Token token)
         "%s:%d:%d: %s\n"
         "%.*s\n"
         "%*s%.*s\n",
-        input_file_path, token.position.line, token.position.col_start, error_type_to_error_message(token.error),
+        input_file_path, token.position.line, token.position.col_start, ErrorType_to_error_message(token.error),
         line_length, global_input + line_start_pos,
         token.position.col_start, "^", token.position.col_end - token.position.col_start, tildes);
 }

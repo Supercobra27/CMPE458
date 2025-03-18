@@ -29,6 +29,9 @@ add_executable(my-mini-compiler-phase2
 
 add_compile_options(-Wall -Wextra -Wpedantic)
 add_executable(my-mini-compiler-phase3
+        phase3-w25/src/enum_to_string/tokens.c
+        phase3-w25/src/enum_to_string/parse_tokens.c
+        phase3-w25/src/enum_to_string/ast_types.c
         phase3-w25/src/lexer/lexer.c
         phase3-w25/src/dynamic_array.c
         phase3-w25/src/operators.c

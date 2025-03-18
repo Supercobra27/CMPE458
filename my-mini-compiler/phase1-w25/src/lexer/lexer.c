@@ -75,7 +75,7 @@ const char *const error_type_to_error_message(ErrorType error)
     }
 }
 
-const char *token_type_to_string(TokenType type)
+const char *TokenType_to_string(TokenType type)
 {
     switch (type)
     {
@@ -106,7 +106,7 @@ const char *token_type_to_string(TokenType type)
 void print_token(Token token)
 {
     printf("Token type=%-10s, lexeme='%s', line=%-2d, column:%d-%d, error_message=\"%s\"\n",
-           token_type_to_string(token.type), token.lexeme, token.position.line, token.position.col_start, token.position.col_end, error_type_to_error_message(token.error));
+           TokenType_to_string(token.type), token.lexeme, token.position.line, token.position.col_start, token.position.col_end, error_type_to_error_message(token.error));
 }
 
 // Do we want to distinguish between errors and warnings?

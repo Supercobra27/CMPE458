@@ -11,7 +11,7 @@ int main()
             .rules = (ProductionRule[]){
                 (ProductionRule){
                     .tokens = (ParseToken[]){PT_SCOPE, PT_EOF, PT_NULL},
-                    .ast_types = (ASTNodeType[]){AST_SCOPE, AST_IGNORE, AST_NULL},
+                    .ast_types = (ASTNodeType[]){AST_SCOPE, AST_SKIP, AST_NULL},
                     .promote_index = -1}},
             .num_rules = 1U},
         (CFG_GrammarRule){
