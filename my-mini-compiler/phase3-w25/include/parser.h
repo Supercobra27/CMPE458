@@ -3,12 +3,52 @@
 #define PARSER_H
 
 #include <stdbool.h>
-#include "parse_tokens.h"
-#include "ast_node.h"
 #include "grammar.h"
+#include "tokens.h"
+
+/**
+ * @param token must remain a valid pointer for the lifetime of the ParseTreeNode.
+ * @param rule must remain a valid pointer for the lifetime of the ParseTreeNode.
+ * @param children must remain a valid pointer to an block of memory of size `capacity * sizeof(ParseTreeNode)` for the lifetime of the ParseTreeNode, or NULL if capacity is 0. The first `count` elements of the array must be valid ParseTreeNode.
+ * @param count must be less than or equal to `capacity`.
+ */
+typedef struct _ParseTreeNode {
+    ParseToken type;
+    ParseErrorType error;
+    const Token *token; // Token associated with this node. NULL iff ParseToken_IS_NONTERMINAL(type).
+    const ProductionRule *rule; // Rule used to parse this node. NULL iff ParseToken_IS_TERMINAL(type).
+    size_t finalized_promo_index;
+    size_t count;
+    size_t capacity;
+    struct _ParseTreeNode *children; // Array of `count` children. `capacity` is the allocated size of the array.
+} ParseTreeNode;
+
+// same as ParseTreeNode but the only difference is that everything is const except for finalized_promo_index, count, and children.
+typedef struct _ParseTreeNodeWithPromo {
+    ParseToken const type;
+    ParseErrorType const error;
+    const Token *const token; // Token associated with this node. NULL iff ParseToken_IS_NONTERMINAL(type).
+    const ProductionRule *const rule; // Rule used to parse this node. NULL iff ParseToken_IS_TERMINAL(type).
+    size_t finalized_promo_index;
+    size_t const count;
+    size_t const capacity;
+    struct _ParseTreeNodeWithPromo *const children; // Array of `count` children. `capacity` is the allocated size of the array.
+} ParseTreeNodeWithPromo;
+
+// Abstract Syntax Tree Node structure
+typedef struct ASTNode {
+    ASTNodeType type;           // Type of node
+    ASTErrorType error;         // Error type
+    Token token;               // Token associated with this node, TOKEN_NULL if none.
+    size_t count;
+    size_t capacity;
+    struct ASTNode *items; // Array of child nodes
+} ASTNode;
+ 
 
 void ParseTreeNode_free_children(ParseTreeNode *node);
 void ParseTreeNode_print_simple(ParseTreeNode *node, int level, void (*print_node)(ParseTreeNode*));
+
 
 /**
  * Parse a deterministic CFG_GrammarRule using the given tokens and return the resulting ParseTreeNode.
@@ -22,24 +62,38 @@ void ParseTreeNode_print_simple(ParseTreeNode *node, int level, void (*print_nod
  * @param grammar_size The size of the grammar array.
  * @return true if the node was successfully parsed and node->error is PARSE_ERROR_NONE, false otherwise.
  */
-bool parse_cfg_recursive_descent_parse_tree(ParseTreeNode *node, size_t *index, const Token *const input, const CFG_GrammarRule *grammar, const size_t grammar_size);
-/* way this could be implemented to handle non-deterministic grammars (where multiple production rules for a given non-terminal possibly have common prefixes):
-// start a count of the number of children that were successfully parsed in previous rules (helpful for when there are multiple rules with the same starting tokens).
+bool parse_cfg_recursive_descent_parse_tree(ParseTreeNode *const node, size_t *const index, const Token *const input, const CFG_GrammarRule *const grammar, const size_t grammar_size);
+/* 
 // for each production rule,
-    // if the rule is left-recursive, then make sure that it isn't the second left-recursive rule. keep track of this rule and continue looking for a non-left-recursive rule.
+    // if the rule is left-recursive. keep track of this rule and skip to the next iteration to find a non-left-recursive rule.
     // not left-recursive: try and parse it and build the node:
-        // keep a count of the number of children that need to be parsed and malloc/realloc space for them at node->children.
+        // get the minimum number of children expected to be parsed for this rule and allocate memory for them. If right recursive, then there could be any number of children, so they must be allocated dynamically.
         // start a count of the number of children that were successfully parsed in this rule.
         // for each child token to be parsed:
-            // see if it was already parsed and stored in the node->children, if so, just increment the count of successfully parsed children.
-            // if it was not parsed already, recursively parse it and store the result in node->children, if parsing fails, break the loop over children.
-        // if not all the children were parsed, then this rule failed to parse. 
-        // update the cound of the number of children that were successfully parsed in previous rules.
-        // if all children were parsed, then this rule was successful, break the loop over rules.
+            // parse it and store the result in node->children, 
+            // the child failed to parse,
+                // set the node->error to the proper error type. 
+                // 
+                // break the loop over children.
 // if we didn't parse all the children, set the error and return the node.
 // if we didn't find a left-recursive production rule, then return the node.
 // if we found a left-recursive rule, then then try and parse the rest of the left-recursive rule repeatedly until it fails. When it fails, just stop and return what worked so far.
 */
+
+void ASTNode_free_children(ASTNode *const node);
+
+/**
+ * Convert a ParseTreeNode to an ASTNode.
+ * 
+ * WARNING: Ensure that the memory at address `ast_node->items` is deallocated prior to calling this function as otherwise there will be a memory leak.
+ * 
+ * @param ast_node The ASTNode to construct from the ParseTreeNode. If `parse_node->rule->promote_index` is specified, then `ast_node->type` will be set by a promoted child, otherwise it will be left unchanged. Other fields will be filled in by the contents of `parse_node`.
+ * @param parse_node The ParseTreeNode to convert to an ASTNode. This node and its children must have a valid pointer to the ProductionRule used to parse it.
+ * @param grammar The grammar rules to use to convert the ParseTreeNode to an ASTNode.
+ * @param grammar_size The size of the grammar array.
+ * @return true if the ASTNode and its children were successfully constructed, false otherwise.
+ */
+bool ASTNode_from_ParseTreeNode(ASTNode *const ast_node, ParseTreeNodeWithPromo *const parse_node);
 
 
 #endif /* PARSER_H */

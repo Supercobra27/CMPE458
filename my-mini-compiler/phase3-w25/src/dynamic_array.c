@@ -3,14 +3,13 @@
 #include <assert.h>
 #include <string.h>
 
+
 typedef struct Array_t
 {
-    size_t capacity;
-    size_t element_size;
     size_t size;
-    // void (*free_element)(Element *);
-    // void (*copy_element)(Element *, Element *);
+    size_t element_size;
     void *elements;
+    size_t capacity;
 } Array;
 
 Array *array_new(const size_t capacity, const size_t element_size)
@@ -24,6 +23,7 @@ Array *array_new(const size_t capacity, const size_t element_size)
     return a;
 }
 
+// TODO: implement null pointer checking before freeing.
 void array_free(Array *a)
 {
     free(a->elements);

@@ -87,12 +87,12 @@ CFG_GrammarCheckResult check_cfg_grammar(FILE *stream, const CFG_GrammarRule gra
     {
         const ParseToken t_expected = t_index + ParseToken_FIRST_NONTERMINAL;
         const ParseToken t = grammar[t_index].lhs;
-        if (stream) fprintf(stream, "Checking grammar rule for %s(%d) (grammar[%llu])\n", parse_token_to_string(t), t, t_index);
+        if (stream) fprintf(stream, "Checking grammar rule for %s(%d) (grammar[%llu])\n", ParseToken_to_string(t), t, t_index);
         // ensure the grammar has a rule for each non-terminal in the correct index
         if (t != t_expected)
         {
             if (stream) fprintf(stream, "ERROR: Grammar rule is missing/mismatched: got %s(%d), expected %s(%d)\n", 
-                parse_token_to_string(t), t, parse_token_to_string(t_expected), t_expected);
+                ParseToken_to_string(t), t, ParseToken_to_string(t_expected), t_expected);
             result.missing_or_mismatched_rules = true;
         }
         // iterate through all production rules to ensure there are no segmenation faults and all rule ParseToken strings are terminated with PT_NULL and all ASTNodeType strings are terminated with AST_NULL
@@ -141,7 +141,7 @@ CFG_GrammarCheckResult check_cfg_grammar(FILE *stream, const CFG_GrammarRule gra
         // check for indirect left recursion
         if (find_indirect_left_recursive(grammar, t) != (size_t)-1)
         {
-            if (stream) fprintf(stream, "ERROR: indirect left recursion for %s(%d)\n", parse_token_to_string(t), t);
+            if (stream) fprintf(stream, "ERROR: indirect left recursion for %s(%d)\n", ParseToken_to_string(t), t);
             result.contains_indirect_left_recursion = true;
         }
     }
