@@ -12,14 +12,14 @@ typedef struct _SemanticRule {
 
 #define SEMANTIC_RULE_COUNT 1
 
-void ProcessOperator(ASTNode *ctx);
-void ProcessAssignment(ASTNode *ctx);
-void ProcessScope(ASTNode *ctx);
-void ProcessDeclaration(ASTNode *ctx);
-void ProcessExpression(ASTNode *ctx);
-void ProcessConditional(ASTNode *ctx); // keyword expression
-void ProcessFunction(ASTNode *ctx);
-void ProcessString(ASTNode *ctx);
+void ProcessOperator(ASTNode *ctx); // Ryan
+void ProcessAssignment(ASTNode *ctx); // Ryan
+void ProcessDeclaration(ASTNode *ctx); // Simon
+void ProcessExpression(ASTNode *ctx); // Ryan
+void ProcessConditional(ASTNode *ctx); // Ryan keyword expression
+void ProcessFunction(ASTNode *ctx); // Simon
+void ProcessScope(ASTNode *ctx); // Simon
+void ProcessString(ASTNode *ctx); // Simon
 
 /*
 Need to figure out where to put scope stuff (most likely in symbol table)
