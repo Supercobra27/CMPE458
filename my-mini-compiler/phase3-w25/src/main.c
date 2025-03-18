@@ -185,6 +185,8 @@ int main(int argc, char *argv[])
     ParseTreeNode root = (ParseTreeNode){
         .type = ParseToken_START_NONTERMINAL,
         .token = NULL,
+        .rule = NULL,
+        .finalized_promo_index = SIZE_MAX,
         .error = PARSE_ERROR_NONE,
         .children = NULL,
         .capacity = 0,
@@ -203,7 +205,7 @@ int main(int argc, char *argv[])
     // Convert to Abstract Syntax Tree
     printf("\nAbstract Syntax Tree:\n");
     ASTNode ast_root; ast_root.type = AST_PROGRAM;
-    ASTNode_from_ParseTreeNode(&ast_root, &root);
+    ASTNode_from_ParseTreeNode(&ast_root, (ParseTreeNodeWithPromo *)&root);
 
     if (DEBUG) print_tree(&(print_tree_t){
         .root = &ast_root,

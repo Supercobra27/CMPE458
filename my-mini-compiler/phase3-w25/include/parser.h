@@ -17,10 +17,23 @@ typedef struct _ParseTreeNode {
     ParseErrorType error;
     const Token *token; // Token associated with this node. NULL iff ParseToken_IS_NONTERMINAL(type).
     const ProductionRule *rule; // Rule used to parse this node. NULL iff ParseToken_IS_TERMINAL(type).
+    size_t finalized_promo_index;
     size_t count;
     size_t capacity;
     struct _ParseTreeNode *children; // Array of `count` children. `capacity` is the allocated size of the array.
 } ParseTreeNode;
+
+// same as ParseTreeNode but the only difference is that everything is const except for finalized_promo_index, count, and children.
+typedef struct _ParseTreeNodeWithPromo {
+    ParseToken const type;
+    ParseErrorType const error;
+    const Token *const token; // Token associated with this node. NULL iff ParseToken_IS_NONTERMINAL(type).
+    const ProductionRule *const rule; // Rule used to parse this node. NULL iff ParseToken_IS_TERMINAL(type).
+    size_t finalized_promo_index;
+    size_t const count;
+    size_t const capacity;
+    struct _ParseTreeNodeWithPromo *const children; // Array of `count` children. `capacity` is the allocated size of the array.
+} ParseTreeNodeWithPromo;
 
 // Abstract Syntax Tree Node structure
 typedef struct ASTNode {
@@ -80,7 +93,7 @@ void ASTNode_free_children(ASTNode *const node);
  * @param grammar_size The size of the grammar array.
  * @return true if the ASTNode and its children were successfully constructed, false otherwise.
  */
-bool ASTNode_from_ParseTreeNode(ASTNode *const ast_node, const ParseTreeNode *const parse_node);
+bool ASTNode_from_ParseTreeNode(ASTNode *const ast_node, ParseTreeNodeWithPromo *const parse_node);
 
 
 #endif /* PARSER_H */
