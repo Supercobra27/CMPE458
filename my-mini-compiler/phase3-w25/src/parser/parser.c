@@ -244,7 +244,9 @@ typedef struct _ASTPromo {
 } ASTPromo;
 
 /**
- * @param p Pointer to the ParseTreeNode to determine its promotion type.
+ * Warning: `absent` must not be NULL, otherwise this function will not work correctly.
+ * 
+ * @param p Pointer to the ParseTreeNodeWithPromo to determine its promotion type. This function will set p->finalized_promo_index to the index of the promotion that was used. If p->finalize_promo_index is already set (other than SIZE_MAX), then the function will return the corresponding promotion without recursing through children.
  * @param absent Array of p->count bools to keep track of child nodes which resolved to AST_NULL which could not be promoted.
  */
 ASTPromo ASTNode_get_promo(ParseTreeNodeWithPromo *const p, bool *const absent) {
@@ -379,9 +381,6 @@ bool ASTNode_from_ParseTreeNode(ASTNode *const ast_node, ParseTreeNodeWithPromo 
     // ast_node->type is already set to the desired type.
     // initialize the rest of the ASTNode to default values.
     memset(&(ast_node->error), 0, sizeof(ASTNode) - sizeof(ASTNodeType));
-    // TODO: convert the use of ASTNode_get_promo to a pre-processing step (such as ParseTreeNode_resolve_promotions) so that there is less repeated work being done.
-    // Alternatively, this could be done during ASTNode_get_promo, by setting an extra field in the ParseTreeNode to indicate the promotion type. This promotion type can be initialized to AST_FROM_PROMOTION right here, and then it can be modified and set to an actual promotion type when the function is called. This way, the promotion type is only calculated once.
-    // 2nd Alternatively, this could be stored as a second tree that is constructed as ASTNode_get_promo is called. This tree would be a tree containing the finalized promotion_index for each node of the parse tree. This finalized inde would be initialized to SIZE_MAX, and once determined, it would be set to the actual promotion index. This way, the promotion index is only calculated once.
     // call the function given ast_node is initialized to default values.
     return ASTNode_from_ParseTreeNode_impl(ast_node, parse_node);
 }
