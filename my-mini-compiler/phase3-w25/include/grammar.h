@@ -307,7 +307,6 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
                 .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 1U},
             
-    // TODO: PT_ASSIGNMENTEX_R12 was not deterministic (prefix-free), this fixes it. However, this fix does not work with the single promote_index, because the promote index would need to be different for each case as can be seen below.
     {
         .lhs = PT_ASSIGNMENTEX_R12,
         .rules = (ProductionRule[]){
