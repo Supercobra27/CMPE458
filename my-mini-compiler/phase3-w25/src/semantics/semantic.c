@@ -1,13 +1,16 @@
 #include "semantic.h"
 #include <assert.h>
 
+bool isNumeric(ASTNodeType type) {
+    return type == AST_INTEGER || type == AST_FLOAT;
+}
+
 void ProcessOperator(ASTNode *ctx){
     assert(ctx->count == 2); // Binary operator
     ASTNodeType leftType = CHILD_TYPE(0);
     ASTNodeType rightType = CHILD_TYPE(1);
 
-    assert(leftType == rightType); // Ensure type consistency
-    assert(leftType == AST_INTEGER || leftType == AST_FLOAT); // Only numerical types
+    // need to fix numerical type checking for right/left associativity
 
     ProcessExpression(&CHILD_ITEM(0));
     ProcessExpression(&CHILD_ITEM(1));
@@ -19,7 +22,7 @@ void ProcessExpression(ASTNode *ctx) {
             assert(ctx->count == 2);
             assert(CHILD_TYPE(0) == AST_IDENTIFIER); // LHS must be an identifier
             assert(CHILD_TYPE(1) != AST_ASSIGN_EQUAL); // prevent chained assignment
-            ProcessExpression(&CHILD_ITEM(1)); //recurse because RHS expression
+            ProcessExpression(&CHILD_ITEM(1)); // recurse because RHS expression
             break;
         case AST_ADD:
             ProcessOperator(ctx);
@@ -34,6 +37,7 @@ void ProcessExpression(ASTNode *ctx) {
             ProcessOperator(ctx);
             break;
         case AST_IDENTIFIER:
+        // Scope checking occurs here
         case AST_INTEGER:
         case AST_FLOAT:
         case AST_STRING:
@@ -48,8 +52,13 @@ void ProcessScope(ASTNode *ctx) {
     assert(ctx->type == AST_SCOPE);
     for (int child = 0; child < ctx->count; child++) {
         ASTNode *childNode = &ctx->items[child];
-        switch (childNode->type) {
-            // Insert Functions here
+        switch (childNode->type) { // Insert Functions here
+        case AST_SCOPE:
+            ProcessScope(childNode);
+            break;
+        case AST_EXPRESSION:
+            ProcessExpression(childNode);
+            break;
         }
     }
 }
