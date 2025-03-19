@@ -48,32 +48,3 @@ void ProcessFunction(ASTNode *ctx) // Simon
 
 
 }
-
-void ProcessScope(ASTNode *ctx) // Simon
-{
-    //rename this to block? makes more sense to me to have coinsistent naming
-
-    //check that node exists and has children
-    if(ctx == NULL || ctx->count < 1)
-    {
-        return; // return error by declaration
-    }
-
-    //is there anything to process or is it just step the block in the right direction?
-
-    //maybe step scope forwards, process the internals, step the scope back
-
-}
-void ProcessString(ASTNode *ctx) // Simon
-{
-    //check that node exists and has children
-    if(ctx == NULL || ctx->count != 1)
-    {
-        return; // return error by declaration
-    }
-
-    //do we need ot check if the string is valid? is that already done at the lexer?
-
-    //add string to symbol table
-    
-}
