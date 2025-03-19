@@ -101,9 +101,9 @@ Completed:
 
 ## Phase 3: Semantic Analyzer
 ### Simple Checklist
-1. [ ] Convert Parse Tree to AST (Hendrix)
+1. [x] Convert Parse Tree to AST (Hendrix)
     - [x] Free Dynamic Memory Function
-    - [ ] Conversion Function
+    - [x] Conversion Function
     - Rules are defined in the grammar
 
 2. [ ] Define Semantic Rules
@@ -117,9 +117,16 @@ Completed:
     - [ ] Determine Operations - Now
     - [ ] Define Properties Useful for Semantic Rules
 
-4. [ ] Check AST based on Rules
-    - [ ] ForEach AST node, define what is expected (typing, scope, variables)
-    - [ ] Conversion function for said defintions
+4. [ ] Produce proper compiler error messages
+    - [ ] tokenization error messages
+    - [ ] parsing error messages
+    - [ ] semantic error messages
+
+
+4. [ ] Check AST based on Rules 
+    - [ ] For each AST node, check correct # of childrn and types of children
+    - [ ] Be able to discern the type of Identifiers
+    - [ ] Be able to keep track of identifier scope
 
 5. [ ] Runtime Error Detection (flags)
     - [ ] Div/0
@@ -127,10 +134,8 @@ Completed:
 
 
 
+### Detailed Checklist
 Todo (in increasing order of dependency):
-- [ ] implement function to convert ParseTreeNode into ASTNode (Abstract Syntax Tree) using grammar rules (see an example here: https://stackoverflow.com/questions/5026517/whats-the-difference-between-parse-trees-and-abstract-syntax-trees-asts)
-    - [ ] implement function to free dynamic memory of an AST
-    - [ ] implement conversion function to create ASTNode from ParseTreeNode
 - [ ] specify semantic/context-sensitive rules for the programming language 
     - [ ] Declaration and use of variables (identifier) in relation to Scope and Expression.
     - [ ] type of arguments allowed in each different Operation.
@@ -166,6 +171,9 @@ Todo (in increasing order of dependency):
 
 Completed:
 - [x] decide whether PT_PROGRAM is present in the AST, or if it is removed and only Scope exists (PT_PROGRAM will exist as the start symbol)
+- [x] implement function to convert ParseTreeNode into ASTNode (Abstract Syntax Tree) using grammar rules (see an example here: https://stackoverflow.com/questions/5026517/whats-the-difference-between-parse-trees-and-abstract-syntax-trees-asts)
+    - [x] implement function to free dynamic memory of an AST
+    - [x] implement conversion function to create ASTNode from ParseTreeNode
 
 ## Phase 4: Code Generation
 
