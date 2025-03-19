@@ -149,11 +149,11 @@ int main(int argc, char *argv[])
             "1 + 2 + 3;\n"
             "x = y = z + 1 - 1;\n"
             "print 5 * (2 + 3);\n"
-            "read x;\n"
-            "if 1 then { }\n"
-            "if 1 then { } else { x = 1; }\n"
+            "{read x;\n"
+            "if 1 > 2 then { }\n"
+            "if 1 && 1 then { } else { x = 1; }\n"
             "while 0 { }\n"
-            "repeat { } until 1;\n";
+            "repeat { } until 1;}\n";
     }
 
     // TODO: Add more test cases

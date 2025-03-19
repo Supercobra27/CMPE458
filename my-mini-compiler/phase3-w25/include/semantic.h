@@ -11,6 +11,9 @@ typedef struct _SemanticRule {
 }SemanticRule;
 
 #define SEMANTIC_RULE_COUNT 1
+#define MAX_ARGS_OPERATOR (size_t)2
+#define CHILD_TYPE(n) (*ctx).items[n].type
+#define CHILD_ITEM(n) (*ctx).items[n]
 
 void ProcessOperator(ASTNode *ctx); // Ryan
 void ProcessAssignment(ASTNode *ctx); // Ryan
