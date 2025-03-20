@@ -223,7 +223,13 @@ int main(int argc, char *argv[])
     });
 
     // TODO: Semantic Analysis
-    ProcessNode(&ast_root);
+    Array *symbol_table = array_new(8, sizeof(ASTNode));
+    ProcessNode(&ast_root, symbol_table);
+    for (size_t i = 0; i < array_size(symbol_table); i++){
+        printf("Declared Variable -> %s\n", ((ASTNode *)array_get(symbol_table, i))->token.lexeme);
+    }
+
+    array_free(symbol_table);
     // TODO: print Semantic compiler error if any.
 
     ParseTreeNode_free_children(&root);

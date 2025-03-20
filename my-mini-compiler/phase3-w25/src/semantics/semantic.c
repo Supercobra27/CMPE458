@@ -1,4 +1,5 @@
 #include "../../include/semantic.h"
+#include "../../include/dynamic_array.h"
 #include <assert.h>
 
 /*
@@ -91,74 +92,58 @@ bool ScopesConflict(const char *scope1, const char *scope2) {
     return false;
 */// Simon above
   
+static char currentScope[100] = "1";  // does this need to start with 1?
+
+// get the current scope
+const char* GetCurrentScope() {
+    return currentScope;
+}
+
+// enter a new scope
+void EnterScope(int scopeNumber) {
+    char temp[100];
+    sprintf(temp, "%s.%d", currentScope, scopeNumber);
+    strcpy(currentScope, temp);
+}
+
+// exit current scope
+void ExitScope() {
+    // find last dot and remove everything after it
+    char *lastDot = strrchr(currentScope, '.');
+    if (lastDot != NULL) {
+        *lastDot = '\0';
+    }
+}
+
+bool ScopesConflict(const char *scope1, const char *scope2) {
+    // two scopes conflict if one is a prefix of the other
+    // 1 conflicts with 1.2, but 1.2 doesn't conflict with 1.3
+    
+    // check if scope1 is a prefix of scope2
+    size_t len1 = strlen(scope1);
+    if (strncmp(scope1, scope2, len1) == 0) {
+        // make sure it's a full match not 1 matching 12
+        if (scope2[len1] == '.' || scope2[len1] == '\0') {
+            return true;
+        }
+    }
+    
+    // check if scope2 is a prefix of scope1
+    size_t len2 = strlen(scope2);
+    if (strncmp(scope2, scope1, len2) == 0) {
+        if (scope1[len2] == '.' || scope1[len2] == '\0') {
+            return true;
+        }
+    }
+    
+    return false;
+}
+
 bool isNumeric(ASTNodeType type) {
     return type == AST_INTEGER || type == AST_FLOAT;
 }
 
-void ProcessDeclaration(ASTNode *ctx)
-{
-    printf("Declaration Analyzing -> %s\n", ASTNodeType_to_string(ctx->type));
-    // Check node exists w/ max 2 children
-    assert(ctx != NULL);
-    assert(ctx->count == 2);
-
-    // Scoping
-    char *name = ctx->items[1].token.lexeme;
-    char *scope;
-
-    // Check if not already declared within scope. If not add to symbol table.
-}
-
-ASTNodeType returnType(ASTNode *ctx) {
-    if (ctx->count == 1) return ctx->type;
-    ASTNodeType leftType = CHILD_TYPE(ctx, 0);
-    ASTNodeType rightType = CHILD_TYPE(ctx, 1);
-    assert(leftType == rightType);
-    return leftType;
-}
-// Need to fix multiple operators to check for types
-
-void ProcessOperator(ASTNode *ctx){
-    assert(ctx->count == 2); // Binary operator
-    ASTNodeType leftType = CHILD_TYPE(ctx, 0);
-    ASTNodeType rightType = CHILD_TYPE(ctx, 1);
-    if (isNumeric(leftType) && isNumeric(rightType)) assert(leftType == rightType); // ctx->type = returnType(ctx);
-    printf("Operator Analyzing -> %s\n", ASTNodeType_to_string(ctx->type));
-    ProcessExpression(&CHILD_ITEM(ctx, 0));
-    ProcessExpression(&CHILD_ITEM(ctx, 1));
-}
-
-void ProcessUnaryOperator(ASTNode *ctx){
-    assert(ctx->count == 1);
-    printf("Operator Analyzing -> %s\n", ASTNodeType_to_string(ctx->type));
-    ProcessExpression(&CHILD_ITEM(ctx, 0));
-}
-
-void ProcessFunction(ASTNode *ctx){
-    printf("Function Analyzing -> %s\n", ASTNodeType_to_string(ctx->type));
-    assert(ctx->count == 1);
-    ProcessExpression(ctx->items);
-
-}
-
-// Handles Assignment, Operator, Unary Operator
-void ProcessOperation(ASTNode *ctx){
-    if (ctx->type == AST_ASSIGN_EQUAL) {
-        printf("Assignment Analyzing -> %s\n", ASTNodeType_to_string(ctx->type));
-        assert(ctx->count == 2);
-        assert(CHILD_TYPE(ctx, 0) == AST_IDENTIFIER); // LHS must be an identifier
-        assert(CHILD_TYPE(ctx, 1) != AST_ASSIGN_EQUAL); // prevent chained assignment
-        ProcessExpression(&CHILD_ITEM(ctx, 1)); // recurse because RHS expression
-
-    } else if (ctx->type >= AST_LOGICAL_OR && ctx->type < AST_BITWISE_NOT) {
-        ProcessOperator(ctx);
-
-    } else if (ctx->type >= AST_BITWISE_NOT) {
-        ProcessUnaryOperator(ctx);
-    }
-}
-
-void ProcessExpression(ASTNode *ctx) {
+void ProcessExpression(ASTNode *ctx, Array *symbol_table) {
     if (ctx->type == AST_EXPRESSION) ctx = &CHILD_ITEM(ctx, 0);
     switch (ctx->type) {
         case AST_ASSIGN_EQUAL:
@@ -184,7 +169,7 @@ void ProcessExpression(ASTNode *ctx) {
         case AST_LOGICAL_NOT:
         case AST_NEGATE:
         case AST_FACTORIAL:
-            ProcessOperation(ctx);
+            ProcessOperation(ctx, symbol_table);
             break;
         case AST_INTEGER:
         case AST_FLOAT:
@@ -200,15 +185,114 @@ void ProcessExpression(ASTNode *ctx) {
     }
 }
 
-void ProcessScope(ASTNode *ctx) {
-    assert(ctx->type == AST_SCOPE);
-    for (size_t child = 0; child < ctx->count; child++) {
-        ASTNode *childNode = &ctx->items[child];
-        ProcessNode(childNode);
+void ProcessDeclaration(ASTNode *ctx, Array *symbol_table)
+{
+    printf("Declaration Analyzing -> %s\n", ASTNodeType_to_string(ctx->type));
+    // Check node exists w/ max 2 children
+    assert(ctx != NULL);
+    assert(ctx->count == 2);
+    assert(CHILD_TYPE(ctx, 0) == AST_FLOAT_TYPE || CHILD_TYPE(ctx, 0) == AST_INT_TYPE || CHILD_TYPE(ctx, 0) == AST_STRING_TYPE);
+
+    // Scoping
+    char *name = ctx->items[1].token.lexeme;
+    array_push(symbol_table, (Element *)&CHILD_ITEM(ctx, 1));
+    char *scope;
+
+    // Check if not already declared within scope. If not add to symbol table.
+}
+
+void ProcessDeclaration(ASTNode *ctx, Array *symbol_table) // Simon
+{
+    assert(ctx->count == 2); // ensure 2 children
+    
+    // get the identifier node to access the name
+    ASTNode *identifierNode = &CHILD_ITEM(ctx, 1);
+    
+    const char *currentScope = GetCurrentScope();
+    
+    // check for redeclaration
+    bool redeclared = false;
+    
+    // loop through symbol table to check for redeclaration
+    for (int i = 0; i < array_size(symbol_table); i++){
+        Token *other = malloc(sizeof(Token));
+        other = &((ASTNode *)array_get(symbol_table, i))->token;
+        
+        // check if names match
+        if (strcmp(other->lexeme, identifierNode->token.lexeme) == 0) {
+            // check scopes
+            if (ScopesConflict(currentScope, other->scope)) {
+                redeclared = true;
+                // report error - redeclaration
+                fprintf(stderr, "Error: Redeclaration of variable %s on line %d\n", identifierNode->token.lexeme, identifierNode->token.position);
+                exit(1);
+            }
+        }
+    }
+    
+    // if no redeclaration issue, add to symbol table
+    if (!redeclared) {
     }
 }
 
-void ProcessConditional(ASTNode *ctx) { // If statements
+ASTNodeType returnType(ASTNode *ctx) {
+    if (ctx->count == 1) return ctx->type;
+    ASTNodeType leftType = CHILD_TYPE(ctx, 0);
+    ASTNodeType rightType = CHILD_TYPE(ctx, 1);
+    assert(leftType == rightType);
+    return leftType;
+}
+// Need to fix multiple operators to check for types
+
+void ProcessOperator(ASTNode *ctx, Array *symbol_table){
+    assert(ctx->count == 2); // Binary operator
+    ASTNodeType leftType = CHILD_TYPE(ctx, 0);
+    ASTNodeType rightType = CHILD_TYPE(ctx, 1);
+    if (isNumeric(leftType) && isNumeric(rightType)) assert(leftType == rightType); // ctx->type = returnType(ctx);
+    printf("Operator Analyzing -> %s\n", ASTNodeType_to_string(ctx->type));
+    ProcessExpression(&CHILD_ITEM(ctx, 0), symbol_table);
+    ProcessExpression(&CHILD_ITEM(ctx, 1), symbol_table);
+}
+
+void ProcessUnaryOperator(ASTNode *ctx, Array *symbol_table){
+    assert(ctx->count == 1);
+    printf("Operator Analyzing -> %s\n", ASTNodeType_to_string(ctx->type));
+    ProcessExpression(&CHILD_ITEM(ctx, 0), symbol_table);
+}
+
+void ProcessFunction(ASTNode *ctx, Array *symbol_table){
+    printf("Function Analyzing -> %s\n", ASTNodeType_to_string(ctx->type));
+    assert(ctx->count == 1);
+    ProcessExpression(ctx->items, symbol_table);
+
+}
+
+// Handles Assignment, Operator, Unary Operator
+void ProcessOperation(ASTNode *ctx, Array *symbol_table){
+    if (ctx->type == AST_ASSIGN_EQUAL) {
+        printf("Assignment Analyzing -> %s\n", ASTNodeType_to_string(ctx->type));
+        assert(ctx->count == 2);
+        assert(CHILD_TYPE(ctx, 0) == AST_IDENTIFIER); // LHS must be an identifier
+        assert(CHILD_TYPE(ctx, 1) != AST_ASSIGN_EQUAL); // prevent chained assignment
+        ProcessExpression(&CHILD_ITEM(ctx, 1), symbol_table); // recurse because RHS expression
+
+    } else if (ctx->type >= AST_LOGICAL_OR && ctx->type < AST_BITWISE_NOT) {
+        ProcessOperator(ctx, symbol_table);
+
+    } else if (ctx->type >= AST_BITWISE_NOT) {
+        ProcessUnaryOperator(ctx, symbol_table);
+    }
+}
+
+void ProcessScope(ASTNode *ctx, Array *symbol_table) {
+    assert(ctx->type == AST_SCOPE);
+    for (size_t child = 0; child < ctx->count; child++) {
+        ASTNode *childNode = &ctx->items[child];
+        ProcessNode(childNode, symbol_table);
+    }
+}
+
+void ProcessConditional(ASTNode *ctx, Array *symbol_table) { // If statements
     assert(ctx->type == AST_CODITIONAL);
     assert(ctx->count == 3); // A conditional should have a condition and two scopes
 
@@ -223,59 +307,59 @@ void ProcessConditional(ASTNode *ctx) { // If statements
            condType == AST_LOGICAL_OR ||
            condType == AST_LOGICAL_NOT); // Ensure it's a valid comparison (should I add logical?)
 
-    ProcessOperation(&CHILD_ITEM(ctx, 0)); // Process the comparison
-    ProcessScope(&CHILD_ITEM(ctx, 1)); // ThenScope
-    ProcessScope(&CHILD_ITEM(ctx, 2)); // ElseScope
+    ProcessOperation(&CHILD_ITEM(ctx, 0), symbol_table); // Process the comparison
+    ProcessScope(&CHILD_ITEM(ctx, 1), symbol_table); // ThenScope
+    ProcessScope(&CHILD_ITEM(ctx, 2), symbol_table); // ElseScope
 }
 
-void ProcessLoop(ASTNode *ctx) {
+void ProcessLoop(ASTNode *ctx, Array *symbol_table) {
     assert(ctx->type == AST_WHILE_LOOP || ctx->type == AST_REPEAT_UNTIL_LOOP);
     assert(ctx->count == 2);
 
     printf("Loop Analyzing -> %s\n", ASTNodeType_to_string(ctx->type));
 
     if (ctx->type == AST_WHILE_LOOP) {
-        ProcessExpression(&CHILD_ITEM(ctx, 0));
-        ProcessScope(&CHILD_ITEM(ctx, 1));
+        ProcessExpression(&CHILD_ITEM(ctx, 0), symbol_table);
+        ProcessScope(&CHILD_ITEM(ctx, 1), symbol_table);
     }
 
     if(ctx->type == AST_REPEAT_UNTIL_LOOP) {
-        ProcessScope(&CHILD_ITEM(ctx, 0));
-        ProcessExpression(&CHILD_ITEM(ctx, 1));
+        ProcessScope(&CHILD_ITEM(ctx, 0), symbol_table);
+        ProcessExpression(&CHILD_ITEM(ctx, 1), symbol_table);
     }
 }
 
 // Only export
-void ProcessNode(ASTNode *ctx) {
+void ProcessNode(ASTNode *ctx, Array *symbol_table) {
     switch(ctx->type) {
         case AST_SCOPE:
-        ProcessScope(ctx);
+        ProcessScope(ctx, symbol_table);
         break;
         case AST_PROGRAM:
-        ProcessProgram(ctx);
+        ProcessProgram(ctx, symbol_table);
         break;
         case AST_CODITIONAL:
-        ProcessConditional(ctx);
+        ProcessConditional(ctx, symbol_table);
         break;
         case AST_REPEAT_UNTIL_LOOP:
         case AST_WHILE_LOOP:
-        ProcessLoop(ctx);
+        ProcessLoop(ctx, symbol_table);
         break;
         case AST_EXPRESSION:
-        ProcessExpression(ctx);
+        ProcessExpression(ctx, symbol_table);
         break;
         case AST_DECLARATION:
-        ProcessDeclaration(ctx);
+        ProcessDeclaration(ctx, symbol_table);
         break;
         case AST_READ:
         case AST_PRINT:
-        ProcessFunction(ctx);
+        ProcessFunction(ctx, symbol_table);
         break;
     }
 }
 
-void ProcessProgram(ASTNode *head) {
+void ProcessProgram(ASTNode *head, Array *symbol_table) {
     assert(head->type == AST_PROGRAM);
-    printf("Starting Semantic Analysis\n");
-    ProcessNode(head->items);
+    printf("\nStarting Semantic Analysis:\n");
+    ProcessNode(head->items, symbol_table);
 }
