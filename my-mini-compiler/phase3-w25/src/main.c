@@ -7,6 +7,7 @@
 #include "../include/lexer.h"
 #include "../include/parser.h"
 #include "../include/tree.h"
+#include "../include/semantic.h"
 
 // Debugging flag
 const bool DEBUG = true;
@@ -143,16 +144,19 @@ int main(int argc, char *argv[])
         //         "int ;";
 
         input = 
+            "if 1 > 2 then { read x; x = 2; }\n"
             "{ \n    float w;\n    w = 3.14159;\n    {{{{\"middle\";}}}}\n}\n"
             "; ?? skip the empty statement\n"
             "string s;\n"
             "1 + 2 + 3;\n"
-            "x = y = z + 1 - 1;\n"
+            "x = z + 1 - 1;\n"
             "print 5 * (2 + 3);\n"
+            "print \"test\";"
             "{read x;\n"
-            "if 1 > 2 then { }\n"
             "if 1 && 1 then { } else { x = 1; }\n"
             "while 0 { }\n"
+            "y = ~x; y = -x; y = !x; y = factorial(x);\n"
+            "if (!x) then { x = 1; };\n"
             "repeat { } until 1;}\n";
     }
 
@@ -219,7 +223,7 @@ int main(int argc, char *argv[])
     });
 
     // TODO: Semantic Analysis
-
+    ProcessNode(&ast_root);
     // TODO: print Semantic compiler error if any.
 
     ParseTreeNode_free_children(&root);
