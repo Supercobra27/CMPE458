@@ -112,7 +112,7 @@ void ProcessDeclaration(ASTNode *ctx, Array *symbol_table) // Simon
     
     // get the identifier node to access the name
     ASTNode *identifierNode = &CHILD_ITEM(ctx, 1);
-    
+    printf("Declaration Analyzing -> %s\n", ASTNodeType_to_string(CHILD_TYPE(ctx, 0)));
     const char *currentScope = GetCurrentScope();
     
     // check for redeclaration
@@ -129,8 +129,9 @@ void ProcessDeclaration(ASTNode *ctx, Array *symbol_table) // Simon
             if (ScopesConflict(currentScope, other->scope)) {
                 redeclared = true;
                 // report error - redeclaration
-                fprintf(stderr, "Error: Redeclaration of variable %s on line %d\n", identifierNode->token.lexeme, identifierNode->token.position.line);
-                ctx->error = AST_ERROR_REDECLARATION_VAR;
+                //fprintf(stderr, "Error Reported -> Redeclaration - %s Line - %d\n", identifierNode->token.lexeme, identifierNode->token.position.line);
+                //ctx->error = AST_ERROR_REDECLARATION_VAR; // Do I need to set the actual AST_DECLARATION?
+                other->symNode->error = AST_ERROR_REDECLARATION_VAR;
                 break;
             }
         }

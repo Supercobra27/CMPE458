@@ -229,6 +229,10 @@ int main(int argc, char *argv[])
     for (size_t i = 0; i < array_size(symbol_table); i++){
         printf("Declared Variable -> %s\n", ((symEntry *)array_get(symbol_table, i))->symNode->token.lexeme);
     }
+    for (size_t i = 0; i < array_size(symbol_table); i++){
+        symEntry *entry = (symEntry *)array_get(symbol_table, i);
+        if(entry->symNode->error) printf("Error Detected -> %s\n", entry->symNode->token.lexeme);
+    }
 
     array_free(symbol_table);
     // TODO: print Semantic compiler error if any.
