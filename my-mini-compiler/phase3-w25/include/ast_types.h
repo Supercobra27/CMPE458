@@ -79,6 +79,7 @@ typedef enum _ASTErrorType {
     AST_ERROR_CHILD_ERROR,
     AST_ERROR_UNSPECIFIED_PRODUCTION_RULE,
     AST_ERROR_EXPECTED_PROMOTION,
+    AST_ERROR_INCOMPATIBLE_TYPES // need to add to error -> string
 } ASTErrorType;
 
 const char *ASTErrorType_to_string(ASTErrorType t);
