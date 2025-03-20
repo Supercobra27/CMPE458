@@ -1,102 +1,23 @@
 #include "../../include/semantic.h"
 #include "../../include/dynamic_array.h"
 #include <assert.h>
+#include <string.h>
+#include <stdlib.h>
 
-/*
-void ProcessDeclaration(ASTNode *ctx) // Simon
-{
-    assert(ctx->count == 2); // ensure 2 children
-    
-    // get the identifier node to access the name
-    ASTNode *identifierNode = &ctx->items[1];
-    
-    const char *currentScope = GetCurrentScope();
-    
-    // check for redeclaration
-    bool redeclared = false;
-    
-    // loop through symbol table to check for redeclaration
-    for (int i = 0; i < SOMETHING; i++) { // this should be looking through the dynamic array but I think something isn't clicking for me so I just put SOMETHING
-        Token *other = SOMETHING[i];
-        
-        // check if names match
-        if (strcmp(other->lexeme, identifierNode->token.lexeme) == 0) {
-            // check scopes
-            if (ScopesConflict(currentScope, other->scope)) {
-                redeclared = true;
-                // report error - redeclaration
-                fprintf(stderr, "Error: Redeclaration of variable %s on line %d\n", identifierNode->token.lexeme, identifierNode->token.position);
-                exit(1);
-            }
-        }
-    }
-    
-    // if no redeclaration issue, add to symbol table
-    if (!redeclared) {
-    }
-}
-
-void ProcessFunction(ASTNode *ctx) // Simon
-{
-    assert(ctx->count == 2); // keyword amd expression
-
-    ProcessExpression(&ctx->items[1]);
-}
-
-
-// global scope tracking
-static char currentScope[100] = "1";  // does this need to start with 1?
-
-// get the current scope
-const char* GetCurrentScope() {
-    return currentScope;
-}
-
-// enter a new scope
-void EnterScope(int scopeNumber) {
-    char temp[100];
-    sprintf(temp, "%s.%d", currentScope, scopeNumber);
-    strcpy(currentScope, temp);
-}
-
-// exit current scope
-void ExitScope() {
-    // find last dot and remove everything after it
-    char *lastDot = strrchr(currentScope, '.');
-    if (lastDot != NULL) {
-        *lastDot = '\0';
-    }
-}
-
-bool ScopesConflict(const char *scope1, const char *scope2) {
-    // two scopes conflict if one is a prefix of the other
-    // 1 conflicts with 1.2, but 1.2 doesn't conflict with 1.3
-    
-    // check if scope1 is a prefix of scope2
-    size_t len1 = strlen(scope1);
-    if (strncmp(scope1, scope2, len1) == 0) {
-        // make sure it's a full match not 1 matching 12
-        if (scope2[len1] == '.' || scope2[len1] == '\0') {
-            return true;
-        }
-    }
-    
-    // check if scope2 is a prefix of scope1
-    size_t len2 = strlen(scope2);
-    if (strncmp(scope2, scope1, len2) == 0) {
-        if (scope1[len2] == '.' || scope1[len2] == '\0') {
-            return true;
-        }
-    }
-    
-    return false;
-*/// Simon above
+/**
+ * Implement a stack where everytime you enter a new scope, put a 0 on the stack, the size of the stack is the current scope to be stored
+ * remove one upon leaving store in symbol table.
+*/
   
 static char currentScope[100] = "1";  // does this need to start with 1?
 
 // get the current scope
 const char* GetCurrentScope() {
     return currentScope;
+}
+
+size_t getScope() {
+
 }
 
 // enter a new scope
@@ -185,22 +106,6 @@ void ProcessExpression(ASTNode *ctx, Array *symbol_table) {
     }
 }
 
-void ProcessDeclaration(ASTNode *ctx, Array *symbol_table)
-{
-    printf("Declaration Analyzing -> %s\n", ASTNodeType_to_string(ctx->type));
-    // Check node exists w/ max 2 children
-    assert(ctx != NULL);
-    assert(ctx->count == 2);
-    assert(CHILD_TYPE(ctx, 0) == AST_FLOAT_TYPE || CHILD_TYPE(ctx, 0) == AST_INT_TYPE || CHILD_TYPE(ctx, 0) == AST_STRING_TYPE);
-
-    // Scoping
-    char *name = ctx->items[1].token.lexeme;
-    array_push(symbol_table, (Element *)&CHILD_ITEM(ctx, 1));
-    char *scope;
-
-    // Check if not already declared within scope. If not add to symbol table.
-}
-
 void ProcessDeclaration(ASTNode *ctx, Array *symbol_table) // Simon
 {
     assert(ctx->count == 2); // ensure 2 children
@@ -215,23 +120,35 @@ void ProcessDeclaration(ASTNode *ctx, Array *symbol_table) // Simon
     
     // loop through symbol table to check for redeclaration
     for (int i = 0; i < array_size(symbol_table); i++){
-        Token *other = malloc(sizeof(Token));
-        other = &((ASTNode *)array_get(symbol_table, i))->token;
+        symEntry *other = NULL;
+        other = (symEntry *)array_get(symbol_table, i);
         
         // check if names match
-        if (strcmp(other->lexeme, identifierNode->token.lexeme) == 0) {
+        if (strcmp(other->symNode->token.lexeme, identifierNode->token.lexeme) == 0) {
             // check scopes
             if (ScopesConflict(currentScope, other->scope)) {
                 redeclared = true;
                 // report error - redeclaration
-                fprintf(stderr, "Error: Redeclaration of variable %s on line %d\n", identifierNode->token.lexeme, identifierNode->token.position);
-                exit(1);
+                fprintf(stderr, "Error: Redeclaration of variable %s on line %d\n", identifierNode->token.lexeme, identifierNode->token.position.line);
+                ctx->error = AST_ERROR_REDECLARATION_VAR;
+                break;
             }
         }
     }
     
     // if no redeclaration issue, add to symbol table
     if (!redeclared) {
+        symEntry *entry = malloc(sizeof(symEntry));
+        entry->scope = malloc(sizeof(char)*(strlen(currentScope)+1));
+            if (!entry || !entry->scope) {
+        // Handle allocation failure
+        fprintf(stderr, "Memory allocation failed\n");
+            exit(1);
+        }
+        entry->symNode = &CHILD_ITEM(ctx, 1);
+        entry->type = CHILD_TYPE(ctx, 0);
+        strcpy(entry->scope, currentScope);
+        array_push(symbol_table, (Element *)entry);
     }
 }
 

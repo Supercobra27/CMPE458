@@ -148,6 +148,7 @@ int main(int argc, char *argv[])
             "{ \n    float w;\n    w = 3.14159;\n    {{{{\"middle\";}}}}\n}\n"
             "; ?? skip the empty statement\n"
             "string s;\n"
+            "string s;\n"
             "1 + 2 + 3;\n"
             "x = z + 1 - 1;\n"
             "print 5 * (2 + 3);\n"
@@ -223,10 +224,10 @@ int main(int argc, char *argv[])
     });
 
     // TODO: Semantic Analysis
-    Array *symbol_table = array_new(8, sizeof(ASTNode));
+    Array *symbol_table = array_new(8, sizeof(symEntry));
     ProcessNode(&ast_root, symbol_table);
     for (size_t i = 0; i < array_size(symbol_table); i++){
-        printf("Declared Variable -> %s\n", ((ASTNode *)array_get(symbol_table, i))->token.lexeme);
+        printf("Declared Variable -> %s\n", ((symEntry *)array_get(symbol_table, i))->symNode->token.lexeme);
     }
 
     array_free(symbol_table);

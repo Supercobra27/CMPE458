@@ -13,7 +13,14 @@ void ProcessNode(ASTNode *ctx, Array *symbol_table);
 // TODO: Implement this struct to symbol table entry
 typedef struct _symEntry {
     ASTNodeType type;
-    ASTNode symNode;
-};
+    ASTNode *symNode;
+    char *scope;
+}symEntry;
+
+typedef struct _symEntry2 {
+    ASTNodeType type;
+    ASTNode *symNode;
+    size_t scope; // Height of Stack
+}symEntry2;
 
 #endif /* SEMANTIC_H */
