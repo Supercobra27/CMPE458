@@ -38,4 +38,5 @@ add_executable(my-mini-compiler-phase3
         phase3-w25/src/parser/grammar.c
         phase3-w25/src/parser/parser.c
         phase3-w25/src/tree.c
-        phase3-w25/src/main.c)
+        phase3-w25/src/main.c
+        phase3-w25/src/semantics/semantic.c)
