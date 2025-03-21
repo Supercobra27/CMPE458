@@ -17,6 +17,8 @@ typedef struct _symEntry {
     char *scope;
 }symEntry;
 
+typedef Array* scopeStack; // Wrapper
+
 typedef struct _symEntry2 {
     ASTNodeType type;
     ASTNode *symNode;

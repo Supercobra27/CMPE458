@@ -6,7 +6,8 @@
 
 /**
  * Implement a stack where everytime you enter a new scope, put a 0 on the stack, the size of the stack is the current scope to be stored
- * remove one upon leaving store in symbol table.
+ * remove one upon leaving store in symbol table. Treat it like coordinates, i.e. start at just 0, enter another scope becomes 0.0
+ * To check, since they are prefix free, we can just match.
 */
   
 static char currentScope[100] = "1";  // does this need to start with 1?
@@ -128,9 +129,7 @@ void ProcessDeclaration(ASTNode *ctx, Array *symbol_table) // Simon
             // check scopes
             if (ScopesConflict(currentScope, other->scope)) {
                 redeclared = true;
-                // report error - redeclaration
-                //fprintf(stderr, "Error Reported -> Redeclaration - %s Line - %d\n", identifierNode->token.lexeme, identifierNode->token.position.line);
-                //ctx->error = AST_ERROR_REDECLARATION_VAR; // Do I need to set the actual AST_DECLARATION?
+                // Save Error - Redeclaration
                 other->symNode->error = AST_ERROR_REDECLARATION_VAR;
                 break;
             }
@@ -202,12 +201,17 @@ void ProcessOperation(ASTNode *ctx, Array *symbol_table){
     }
 }
 
+int currScope;
+
 void ProcessScope(ASTNode *ctx, Array *symbol_table) {
     assert(ctx->type == AST_SCOPE);
+    currScope++;
+    printf("\nCurrent Scope -> %d\n", currScope);
     for (size_t child = 0; child < ctx->count; child++) {
         ASTNode *childNode = &ctx->items[child];
         ProcessNode(childNode, symbol_table);
     }
+    currScope--;
 }
 
 void ProcessConditional(ASTNode *ctx, Array *symbol_table) { // If statements
