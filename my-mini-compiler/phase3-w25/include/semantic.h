@@ -25,6 +25,6 @@ typedef struct _symEntry {
     char *scope;    // String representation of the scope (e.g., "0.1.0")
 }symEntry;
 
-typedef Array* scopeStack; // Wrapper // Simon: not sure what this was going to be for, I assume it was the start of someone elses idea, I'm leaving it for someone else to delete
+typedef Array* ScopeStackType;
 
 #endif /* SEMANTIC_H */

@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
+#include <stdint.h>
 #include "../include/dynamic_array.h"
 #include "../include/grammar.h"
 #include "../include/lexer.h"
@@ -227,7 +228,8 @@ int main(int argc, char *argv[])
     Array *symbol_table = array_new(8, sizeof(symEntry));
     ProcessNode(&ast_root, symbol_table);
     for (size_t i = 0; i < array_size(symbol_table); i++){
-        printf("Declared Variable -> %s\n", ((symEntry *)array_get(symbol_table, i))->symNode->token.lexeme);
+        printf("Declared Variable -> %s", ((symEntry *)array_get(symbol_table, i))->symNode->token.lexeme);
+        printf("Scope -> %s\n", ((symEntry *)array_get(symbol_table, i))->scope);
     }
     for (size_t i = 0; i < array_size(symbol_table); i++){
         symEntry *entry = (symEntry *)array_get(symbol_table, i);

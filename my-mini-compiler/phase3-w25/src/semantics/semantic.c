@@ -3,6 +3,14 @@
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdint.h>
+
+
+void ProcessExpression(ASTNode *ctx, Array *symbol_table);
+void ProcessDeclaration(ASTNode *ctx, Array *symbol_table);
+void ProcessOperation(ASTNode *ctx, Array *symbol_table);
+void ProcessProgram(ASTNode *head, Array *symbol_table);
+void ProcessNode(ASTNode *ctx, Array *symbol_table);
 
 /**
  * Implement a stack where everytime you enter a new scope, put a 0 on the stack, the size of the stack is the current scope to be stored
