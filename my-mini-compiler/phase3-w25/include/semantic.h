@@ -10,19 +10,21 @@
 #define CHILD_ITEM(node, i) (*(node)).items[i]
 void ProcessNode(ASTNode *ctx, Array *symbol_table);
 
-// TODO: Implement this struct to symbol table entry
+// Scope tracking functions
+void InitializeScopeStack();
+void EnterScope();
+void ExitScope();
+char* GetCurrentScope();
+bool ScopesConflict(const char* scope1, const char* scope2);
+void CleanupScopeStack();
+
+// Symbol table entry
 typedef struct _symEntry {
     ASTNodeType type;
     ASTNode *symNode;
-    char *scope;
+    char *scope;    // String representation of the scope (e.g., "0.1.0")
 }symEntry;
 
-typedef Array* scopeStack; // Wrapper
-
-typedef struct _symEntry2 {
-    ASTNodeType type;
-    ASTNode *symNode;
-    size_t scope; // Height of Stack
-}symEntry2;
+typedef Array* scopeStack; // Wrapper // Simon: not sure what this was going to be for, I assume it was the start of someone elses idea, I'm leaving it for someone else to delete
 
 #endif /* SEMANTIC_H */

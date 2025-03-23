@@ -131,3 +131,12 @@ Element *array_end(Array *const a)
     assert(a != NULL);
     return (Element *)((char *)a->elements + a->size * a->element_size);
 }
+
+Element *array_pop(Array *const a) {
+    assert(a != NULL);
+    assert(a->size > 0);
+    
+    a->size--;
+    
+    return (Element *)((char *)a->elements + a->size * a->element_size);
+}

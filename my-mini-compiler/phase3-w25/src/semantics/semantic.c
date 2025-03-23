@@ -9,56 +9,132 @@
  * remove one upon leaving store in symbol table. Treat it like coordinates, i.e. start at just 0, enter another scope becomes 0.0
  * To check, since they are prefix free, we can just match.
 */
-  
-static char currentScope[100] = "1";  // does this need to start with 1?
 
-// get the current scope
-const char* GetCurrentScope() {
-    return currentScope;
-}
+// Global scope stack
+static Array* scopeStack = NULL;
+static int* scopeCounters = NULL;  // Array of levels to keep track of highest scope at each level
+static int maxStackSize = 50;      // Maximum nesting level
 
-size_t getScope() {
+// Initialize the scope tracking system
+void InitializeScopeStack() {
 
-}
-
-// enter a new scope
-void EnterScope(int scopeNumber) {
-    char temp[100];
-    sprintf(temp, "%s.%d", currentScope, scopeNumber);
-    strcpy(currentScope, temp);
-}
-
-// exit current scope
-void ExitScope() {
-    // find last dot and remove everything after it
-    char *lastDot = strrchr(currentScope, '.');
-    if (lastDot != NULL) {
-        *lastDot = '\0';
-    }
-}
-
-bool ScopesConflict(const char *scope1, const char *scope2) {
-    // two scopes conflict if one is a prefix of the other
-    // 1 conflicts with 1.2, but 1.2 doesn't conflict with 1.3
+    scopeStack = array_new(10, sizeof(int*));  // Initial capacity of 10
     
-    // check if scope1 is a prefix of scope2
-    size_t len1 = strlen(scope1);
-    if (strncmp(scope1, scope2, len1) == 0) {
-        // make sure it's a full match not 1 matching 12
-        if (scope2[len1] == '.' || scope2[len1] == '\0') {
-            return true;
+    scopeCounters = (int*)malloc(maxStackSize * sizeof(int));
+    if (!scopeCounters) {
+        fprintf(stderr, "Failed to allocate memory for scope counters\n");
+        exit(1);
+    }
+    
+    // Initialize all counters to 0
+    for (int i = 0; i < maxStackSize; i++) {
+        scopeCounters[i] = 0;
+    }
+    
+    // Start with the root scope "0"
+    int* initialScope = (int*)malloc(sizeof(int));
+    *initialScope = 0;
+    array_push(scopeStack, (Element*)initialScope);
+}
+
+void EnterScope() {
+    int stackSize = array_size(scopeStack);
+    if (stackSize >= maxStackSize) {
+        fprintf(stderr, "Maximum scope nesting level exceeded\n");
+        return;
+    }
+    
+    // Get next counter value for this level
+    int* newScope = (int*)malloc(sizeof(int));
+    *newScope = scopeCounters[stackSize]++;
+    array_push(scopeStack, (Element*)newScope);
+}
+
+void ExitScope() {
+    if (array_size(scopeStack) <= 1) {
+        fprintf(stderr, "Cannot exit from root scope\n");
+        return;
+    }
+    
+    int* scope = (int*)array_pop(scopeStack);
+    free(scope);
+}
+
+// Get the current scope as a string
+char* GetCurrentScope() {
+    int stackSize = array_size(scopeStack);
+    if (stackSize == 0) {
+        return strdup("0"); // root scope
+    }
+    
+    // Calculate the required buffer size
+    // Each scope level needs at most 10 chars for the number, plus '.' separator
+    char* scopeStr = (char*)malloc((stackSize * 11) * sizeof(char));
+    if (!scopeStr) {
+        fprintf(stderr, "Failed to allocate memory for scope string\n");
+        exit(1);
+    }
+    
+    scopeStr[0] = '\0';
+    for (int i = 0; i < stackSize; i++) {
+        int* level = (int*)array_get(scopeStack, i);
+        
+        // First number doesn't need a dot
+        if (i == 0) {
+            sprintf(scopeStr, "%d", *level);
+        } else {
+            char temp[12];
+            sprintf(temp, ".%d", *level);
+            strcat(scopeStr, temp);
         }
     }
     
-    // check if scope2 is a prefix of scope1
+    return scopeStr;
+}
+
+// Check if two scopes conflict (one is a prefix of the other or they're the same)
+bool ScopesConflict(const char* scope1, const char* scope2) {
+    // Scopes conflict if they are the same
+    if (strcmp(scope1, scope2) == 0) {
+        return true;
+    }
+    
+    // Check if one is a prefix of the other
+    size_t len1 = strlen(scope1);
     size_t len2 = strlen(scope2);
-    if (strncmp(scope2, scope1, len2) == 0) {
-        if (scope1[len2] == '.' || scope1[len2] == '\0') {
+
+    if (len1 < len2) {
+        if (strncmp(scope1, scope2, len1) == 0 && scope2[len1] == '.') {
+            return true;
+        }
+    }
+
+    if (len2 < len1) {
+        if (strncmp(scope2, scope1, len2) == 0 && scope1[len2] == '.') {
             return true;
         }
     }
     
     return false;
+}
+
+void CleanupScopeStack() {
+    if (scopeStack) {
+        // Free all elements in the stack
+        for (int i = 0; i < array_size(scopeStack); i++) {
+            int* scope = (int*)array_get(scopeStack, i);
+            free(scope);
+        }
+        
+        // Free the stack itself
+        array_free(scopeStack);
+        scopeStack = NULL;
+    }
+    
+    if (scopeCounters) {
+        free(scopeCounters);
+        scopeCounters = NULL;
+    }
 }
 
 bool isNumeric(ASTNodeType type) {
@@ -107,14 +183,15 @@ void ProcessExpression(ASTNode *ctx, Array *symbol_table) {
     }
 }
 
-void ProcessDeclaration(ASTNode *ctx, Array *symbol_table) // Simon
-{
+void ProcessDeclaration(ASTNode *ctx, Array *symbol_table) {
     assert(ctx->count == 2); // ensure 2 children
     
     // get the identifier node to access the name
     ASTNode *identifierNode = &CHILD_ITEM(ctx, 1);
     printf("Declaration Analyzing -> %s\n", ASTNodeType_to_string(CHILD_TYPE(ctx, 0)));
-    const char *currentScope = GetCurrentScope();
+    
+    // Get the current scope
+    char *currentScope = GetCurrentScope();
     
     // check for redeclaration
     bool redeclared = false;
@@ -130,7 +207,9 @@ void ProcessDeclaration(ASTNode *ctx, Array *symbol_table) // Simon
             if (ScopesConflict(currentScope, other->scope)) {
                 redeclared = true;
                 // Save Error - Redeclaration
-                other->symNode->error = AST_ERROR_REDECLARATION_VAR;
+                identifierNode->error = AST_ERROR_REDECLARATION_VAR;
+                printf("Error: Variable '%s' redeclared in conflicting scope.\n", 
+                       identifierNode->token.lexeme);
                 break;
             }
         }
@@ -139,16 +218,22 @@ void ProcessDeclaration(ASTNode *ctx, Array *symbol_table) // Simon
     // if no redeclaration issue, add to symbol table
     if (!redeclared) {
         symEntry *entry = malloc(sizeof(symEntry));
-        entry->scope = malloc(sizeof(char)*(strlen(currentScope)+1));
-            if (!entry || !entry->scope) {
-        // Handle allocation failure
-        fprintf(stderr, "Memory allocation failed\n");
+        if (!entry) {
+            fprintf(stderr, "Memory allocation failed for symbol table entry\n");
+            free(currentScope);
             exit(1);
         }
+        
+        entry->scope = currentScope;  // Transfer ownership of the string
         entry->symNode = &CHILD_ITEM(ctx, 1);
         entry->type = CHILD_TYPE(ctx, 0);
-        strcpy(entry->scope, currentScope);
         array_push(symbol_table, (Element *)entry);
+        
+        printf("Added '%s' to symbol table in scope '%s'\n", 
+               entry->symNode->token.lexeme, entry->scope);
+    } else {
+        // Free currentScope if we don't store it
+        free(currentScope);
     }
 }
 
@@ -205,13 +290,23 @@ int currScope;
 
 void ProcessScope(ASTNode *ctx, Array *symbol_table) {
     assert(ctx->type == AST_SCOPE);
-    currScope++;
-    printf("\nCurrent Scope -> %d\n", currScope);
+    
+    EnterScope();  // Enter a new scope when processing a scope node
+    char* currentScope = GetCurrentScope();
+    printf("\nEntered new scope -> %s\n", currentScope);
+    free(currentScope);  // Free the string after using it
+    
     for (size_t child = 0; child < ctx->count; child++) {
         ASTNode *childNode = &ctx->items[child];
         ProcessNode(childNode, symbol_table);
     }
-    currScope--;
+    
+    ExitScope();  // Exit the scope when done processing
+    if (array_size(scopeStack) > 0) {
+        currentScope = GetCurrentScope();
+        printf("Returned to scope -> %s\n", currentScope);
+        free(currentScope);
+    }
 }
 
 void ProcessConditional(ASTNode *ctx, Array *symbol_table) { // If statements
@@ -283,5 +378,12 @@ void ProcessNode(ASTNode *ctx, Array *symbol_table) {
 void ProcessProgram(ASTNode *head, Array *symbol_table) {
     assert(head->type == AST_PROGRAM);
     printf("\nStarting Semantic Analysis:\n");
+    
+    // Initialize the scope tracking system
+    InitializeScopeStack();
+    
     ProcessNode(head->items, symbol_table);
+    
+    // Clean up the scope tracking system
+    CleanupScopeStack();
 }
