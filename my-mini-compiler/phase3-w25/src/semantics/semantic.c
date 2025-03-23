@@ -64,8 +64,8 @@ void ExitScope() {
         return;
     }
     
-    int* scope = (int*)array_pop(scopeStack);
-    free(scope);
+    array_pop(scopeStack);
+    // TODO: use array_decrease_capacity to shrink the stack if necessary
 }
 
 // Get the current scope as a string
@@ -128,12 +128,6 @@ bool ScopesConflict(const char* scope1, const char* scope2) {
 
 void CleanupScopeStack() {
     if (scopeStack) {
-        // Free all elements in the stack
-        for (int i = 0; i < array_size(scopeStack); i++) {
-            int* scope = (int*)array_get(scopeStack, i);
-            free(scope);
-        }
-        
         // Free the stack itself
         array_free(scopeStack);
         scopeStack = NULL;
