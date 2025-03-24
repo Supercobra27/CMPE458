@@ -4,6 +4,10 @@
 
 #include "tokens.h"
 
+#include "dynamic_array.h"
+extern const char *global_input;
+extern Array *global_line_start;
+
 /**
  * @brief Initializes the internal state of the lexer.
  * 

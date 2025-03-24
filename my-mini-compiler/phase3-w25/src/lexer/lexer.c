@@ -36,13 +36,13 @@ static int is_keyword(const char *str)
 static bool is_lexer_initialized = false;
 
 // input and input position
-static const char *global_input = NULL;
+const char *global_input = NULL;
 static int global_position = 0;
 
 // Line tracking
 static int global_current_line;
 // This is a dynamic array of type int to track the start position of each line.
-static Array *global_line_start = NULL;
+Array *global_line_start = NULL;
 
 /**
  * global vairables read:

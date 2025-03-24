@@ -89,16 +89,36 @@ void ASTNode_print_head(const ASTNode *const node) {
 }
 
 
-// Iterate parse tree to find syntax errors recursively
+// Global variables used for syntax error handling
+extern const char *global_input;
+extern Array *global_line_start;
+
+// Function to handle syntax errors similarly to lexical errors
+void print_syntax_compiler_message(const char *input_file_path, const Token *token, ParseErrorType error) {
+    const int line_start_pos = *(int *)array_get(global_line_start, token->position.line - 1);
+    const char *const line_end = strchr(global_input + line_start_pos, '\n');
+    const int line_length = line_end == NULL ? (int)strlen(global_input + line_start_pos) : line_end - (global_input + line_start_pos);
+    static const char *tildes = "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
+
+    printf(
+            "%s:%d:%d: %s\n"
+            "%.*s\n"
+            "%*s%.*s\n",
+            input_file_path, token->position.line, token->position.col_start, ParseErrorType_to_string(error),
+            line_length, global_input + line_start_pos,
+            token->position.col_start, "^", token->position.col_end - token->position.col_start, tildes);
+}
+
+// Enhanced syntax error reporting function using new print function
 void report_syntax_errors(const ParseTreeNode *node, const char *filepath) {
     if (node->error != PARSE_ERROR_NONE && node->token) {
-        LexemePosition pos = node->token->position;
-        printf("%s:%zu:%zu: error: %s\n", filepath, pos.line, pos.col_start, ParseErrorType_to_string(node->error));
+        print_syntax_compiler_message(filepath, node->token, node->error);
     }
     for (size_t i = 0; i < node->count; i++) {
         report_syntax_errors(&node->children[i], filepath);
     }
 }
+
 
 
 // Main function for testing
