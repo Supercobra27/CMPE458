@@ -89,7 +89,7 @@ int main(int argc, char *argv[])
     )
     {
         printf("Grammar is invalid, cannot be parsed correctly.\n");
-        return -1;
+        return -1;  // early return
     }
     printf("Grammar is valid.\n");
     
@@ -171,13 +171,19 @@ int main(int argc, char *argv[])
     do
     {
         token = get_next_token();
+
+        if (token.error != ERROR_NONE) {
+            print_token(token);
+            printf("\nLexical Error: Unrecognized token '%s' at line %zu, col %zu\n", token.lexeme, token.position.line, token.position.col_start);
+            return -1;  // Early return due to lexical error
+        }
+
         array_push(tokens, (Element *)&token);
         if (DEBUG)
         {
             print_token(token); printf("\n");
         }
     } while (token.type != TOKEN_EOF);
-    
 
     // Parse the input
     printf("\nParse Tree:\n");
@@ -193,6 +199,18 @@ int main(int argc, char *argv[])
         .count = 0,
     };
     parse_cfg_recursive_descent_parse_tree(&root, &token_index, (Token *)array_begin(tokens), program_grammar, ParseToken_COUNT_NONTERMINAL);
+
+    if (root.error != PARSE_ERROR_NONE) {
+        const char* error_token_lexeme = "EOF";
+        if (token_index < array_size(tokens)) {
+            Token* error_token = (Token*)array_get(tokens, token_index);
+            error_token_lexeme = error_token->lexeme;
+        }
+        printf("Syntax Error: %s at token '%s'\n",
+               ParseErrorType_to_string(root.error),
+               error_token_lexeme);
+        return -1;  // Early return due to syntax error
+    }
 
     if (DEBUG) print_tree(&(print_tree_t){
         .root = &root,
