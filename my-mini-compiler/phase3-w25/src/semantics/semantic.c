@@ -5,12 +5,17 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-
+void ProcessScopeChild(ASTNode *ctx, Array *symbol_table);
 void ProcessExpression(ASTNode *ctx, Array *symbol_table);
 void ProcessDeclaration(ASTNode *ctx, Array *symbol_table);
 void ProcessOperation(ASTNode *ctx, Array *symbol_table);
 void ProcessProgram(ASTNode *head, Array *symbol_table);
-void ProcessNode(ASTNode *ctx, Array *symbol_table);
+// Scope tracking functions
+void InitializeScopeStack();
+char *GetCurrentScope();
+bool ScopesConflict(const char* scope1, const char* scope2);
+void CleanupScopeStack();
+
 
 /**
  * Implement a stack where everytime you enter a new scope, put a 0 on the stack, the size of the stack is the current scope to be stored
@@ -25,7 +30,6 @@ static int maxStackSize = 50;      // Maximum nesting level
 
 // Initialize the scope tracking system
 void InitializeScopeStack() {
-
     scopeStack = array_new(10, sizeof(int*));  // Initial capacity of 10
     
     scopeCounters = (int*)malloc(maxStackSize * sizeof(int));
@@ -38,34 +42,6 @@ void InitializeScopeStack() {
     for (int i = 0; i < maxStackSize; i++) {
         scopeCounters[i] = 0;
     }
-    
-    // Start with the root scope "0"
-    int* initialScope = (int*)malloc(sizeof(int));
-    *initialScope = 0;
-    array_push(scopeStack, (Element*)initialScope);
-}
-
-void EnterScope() {
-    int stackSize = array_size(scopeStack);
-    if (stackSize >= maxStackSize) {
-        fprintf(stderr, "Maximum scope nesting level exceeded\n");
-        return;
-    }
-    
-    // Get next counter value for this level
-    int* newScope = (int*)malloc(sizeof(int));
-    *newScope = scopeCounters[stackSize]++;
-    array_push(scopeStack, (Element*)newScope);
-}
-
-void ExitScope() {
-    if (array_size(scopeStack) <= 1) {
-        fprintf(stderr, "Cannot exit from root scope\n");
-        return;
-    }
-    
-    array_pop(scopeStack);
-    // TODO: use array_decrease_capacity to shrink the stack if necessary
 }
 
 // Get the current scope as a string
@@ -174,14 +150,16 @@ void ProcessExpression(ASTNode *ctx, Array *symbol_table) {
         case AST_INTEGER:
         case AST_FLOAT:
         case AST_STRING:
+            // TODO: return the type of the literal
             printf("Literal Analyzing -> %s | %s\n", ASTNodeType_to_string(ctx->type), ctx->token.lexeme);
             break;
         case AST_IDENTIFIER:
+            // TODO: look for variable in symbol table, ensure it's in scope, and return the type.
             printf("Identifier Analyzing -> %s | %s\n", ASTNodeType_to_string(ctx->type), ctx->token.lexeme);
             break;
-        // Scope checking occurs here
         default:
             fprintf(stderr, "Invalid expression node type\n");
+            break;
     }
 }
 
@@ -199,7 +177,7 @@ void ProcessDeclaration(ASTNode *ctx, Array *symbol_table) {
     bool redeclared = false;
     
     // loop through symbol table to check for redeclaration
-    for (int i = 0; i < array_size(symbol_table); i++){
+    for (size_t i = 0; i < array_size(symbol_table); i++){
         symEntry *other = NULL;
         other = (symEntry *)array_get(symbol_table, i);
         
@@ -219,20 +197,13 @@ void ProcessDeclaration(ASTNode *ctx, Array *symbol_table) {
     
     // if no redeclaration issue, add to symbol table
     if (!redeclared) {
-        symEntry *entry = malloc(sizeof(symEntry));
-        if (!entry) {
-            fprintf(stderr, "Memory allocation failed for symbol table entry\n");
-            free(currentScope);
-            exit(1);
-        }
-        
-        entry->scope = currentScope;  // Transfer ownership of the string
-        entry->symNode = &CHILD_ITEM(ctx, 1);
-        entry->type = CHILD_TYPE(ctx, 0);
-        array_push(symbol_table, (Element *)entry);
-        
+        symEntry entry;
+        entry.scope = currentScope;  // Transfer ownership of the string
+        entry.symNode = &CHILD_ITEM(ctx, 1);
+        entry.type = CHILD_TYPE(ctx, 0);
+        array_push(symbol_table, (Element *)&entry);
         printf("Added '%s' to symbol table in scope '%s'\n", 
-               entry->symNode->token.lexeme, entry->scope);
+               entry.symNode->token.lexeme, entry.scope);
     } else {
         // Free currentScope if we don't store it
         free(currentScope);
@@ -264,11 +235,10 @@ void ProcessUnaryOperator(ASTNode *ctx, Array *symbol_table){
     ProcessExpression(&CHILD_ITEM(ctx, 0), symbol_table);
 }
 
-void ProcessFunction(ASTNode *ctx, Array *symbol_table){
-    printf("Function Analyzing -> %s\n", ASTNodeType_to_string(ctx->type));
+void ProcessIO(ASTNode *ctx, Array *symbol_table){
+    printf("IO (print/read) Analyzing -> %s\n", ASTNodeType_to_string(ctx->type));
     assert(ctx->count == 1);
     ProcessExpression(ctx->items, symbol_table);
-
 }
 
 // Handles Assignment, Operator, Unary Operator
@@ -279,10 +249,8 @@ void ProcessOperation(ASTNode *ctx, Array *symbol_table){
         assert(CHILD_TYPE(ctx, 0) == AST_IDENTIFIER); // LHS must be an identifier
         assert(CHILD_TYPE(ctx, 1) != AST_ASSIGN_EQUAL); // prevent chained assignment
         ProcessExpression(&CHILD_ITEM(ctx, 1), symbol_table); // recurse because RHS expression
-
     } else if (ctx->type >= AST_LOGICAL_OR && ctx->type < AST_BITWISE_NOT) {
         ProcessOperator(ctx, symbol_table);
-
     } else if (ctx->type >= AST_BITWISE_NOT) {
         ProcessUnaryOperator(ctx, symbol_table);
     }
@@ -293,17 +261,26 @@ int currScope;
 void ProcessScope(ASTNode *ctx, Array *symbol_table) {
     assert(ctx->type == AST_SCOPE);
     
-    EnterScope();  // Enter a new scope when processing a scope node
+    int stackSize = array_size(scopeStack);
+    if (stackSize >= maxStackSize) {
+        fprintf(stderr, "Maximum scope nesting level exceeded\n");
+        exit(EXIT_FAILURE);
+    }
+    // Get next counter value for this level
+    int newScope = scopeCounters[stackSize]++;
+    array_push(scopeStack, (Element*)&newScope);
+    // DEBUG PRINTING
     char* currentScope = GetCurrentScope();
     printf("\nEntered new scope -> %s\n", currentScope);
     free(currentScope);  // Free the string after using it
     
     for (size_t child = 0; child < ctx->count; child++) {
         ASTNode *childNode = &ctx->items[child];
-        ProcessNode(childNode, symbol_table);
+        ProcessScopeChild(childNode, symbol_table);
     }
     
-    ExitScope();  // Exit the scope when done processing
+    array_pop(scopeStack);
+    // DEBUG PRINTING
     if (array_size(scopeStack) > 0) {
         currentScope = GetCurrentScope();
         printf("Returned to scope -> %s\n", currentScope);
@@ -317,15 +294,7 @@ void ProcessConditional(ASTNode *ctx, Array *symbol_table) { // If statements
 
     printf("Conditional Analyzing -> %s\n", ASTNodeType_to_string(ctx->type));
 
-    ASTNodeType condType = CHILD_TYPE(ctx, 0);
-    assert(condType == AST_COMPARE_GREATER_THAN || 
-           condType == AST_COMPARE_LESS_THAN ||
-           condType == AST_COMPARE_EQUAL ||
-           condType == AST_COMPARE_NOT_EQUAL ||
-           condType == AST_LOGICAL_AND || 
-           condType == AST_LOGICAL_OR ||
-           condType == AST_LOGICAL_NOT); // Ensure it's a valid comparison (should I add logical?)
-
+    // TODO: operation returns int, 0=false, non-zero=true
     ProcessOperation(&CHILD_ITEM(ctx, 0), symbol_table); // Process the comparison
     ProcessScope(&CHILD_ITEM(ctx, 1), symbol_table); // ThenScope
     ProcessScope(&CHILD_ITEM(ctx, 2), symbol_table); // ElseScope
@@ -338,53 +307,58 @@ void ProcessLoop(ASTNode *ctx, Array *symbol_table) {
     printf("Loop Analyzing -> %s\n", ASTNodeType_to_string(ctx->type));
 
     if (ctx->type == AST_WHILE_LOOP) {
+        // TODO: ensure the expression is not a string
         ProcessExpression(&CHILD_ITEM(ctx, 0), symbol_table);
         ProcessScope(&CHILD_ITEM(ctx, 1), symbol_table);
     }
 
     if(ctx->type == AST_REPEAT_UNTIL_LOOP) {
         ProcessScope(&CHILD_ITEM(ctx, 0), symbol_table);
+        // TODO: ensure the expression is not a string
         ProcessExpression(&CHILD_ITEM(ctx, 1), symbol_table);
     }
 }
 
 // Only export
-void ProcessNode(ASTNode *ctx, Array *symbol_table) {
+void ProcessScopeChild(ASTNode *ctx, Array *symbol_table) {
     switch(ctx->type) {
         case AST_SCOPE:
-        ProcessScope(ctx, symbol_table);
-        break;
-        case AST_PROGRAM:
-        ProcessProgram(ctx, symbol_table);
-        break;
+            ProcessScope(ctx, symbol_table);
+            break;
         case AST_CODITIONAL:
-        ProcessConditional(ctx, symbol_table);
-        break;
+            ProcessConditional(ctx, symbol_table);
+            break;
         case AST_REPEAT_UNTIL_LOOP:
         case AST_WHILE_LOOP:
-        ProcessLoop(ctx, symbol_table);
-        break;
+            ProcessLoop(ctx, symbol_table);
+            break;
         case AST_EXPRESSION:
-        ProcessExpression(ctx, symbol_table);
-        break;
+            ProcessExpression(ctx, symbol_table);
+            break;
         case AST_DECLARATION:
-        ProcessDeclaration(ctx, symbol_table);
-        break;
+            ProcessDeclaration(ctx, symbol_table);
+            break;
         case AST_READ:
         case AST_PRINT:
-        ProcessFunction(ctx, symbol_table);
-        break;
+            ProcessIO(ctx, symbol_table);
+            break;
+        default:
+            fprintf(stderr, "Invalid node type\n");
+            exit(EXIT_FAILURE);
+            break;
     }
 }
 
 void ProcessProgram(ASTNode *head, Array *symbol_table) {
     assert(head->type == AST_PROGRAM);
-    printf("\nStarting Semantic Analysis:\n");
     
     // Initialize the scope tracking system
     InitializeScopeStack();
     
-    ProcessNode(head->items, symbol_table);
+    // assume that there is only one child to process which is a scope.
+    assert(head->count == 1);
+    assert(head->items[0].type == AST_SCOPE);
+    ProcessScope(head->items, symbol_table);
     
     // Clean up the scope tracking system
     CleanupScopeStack();

@@ -8,21 +8,18 @@
 #define MAX_ARGS_OPERATOR (size_t)2
 #define CHILD_TYPE(node, i) (*(node)).items[i].type
 #define CHILD_ITEM(node, i) (*(node)).items[i]
-void ProcessNode(ASTNode *ctx, Array *symbol_table);
-
-// Scope tracking functions
-void InitializeScopeStack();
-void EnterScope();
-void ExitScope();
-char* GetCurrentScope();
-bool ScopesConflict(const char* scope1, const char* scope2);
-void CleanupScopeStack();
+/**
+ * Semantically verify the given ASTNode `ctx` and populate the symbol table `symbol_table`.
+ * 
+ * @param ctx The ASTNode to semantically verify. Must be of ASTNodeType `AST_PROGRAM`, otherwise undefined behavior.
+ */
+void ProcessProgram(ASTNode *ctx, Array *symbol_table);
 
 // Symbol table entry
 typedef struct _symEntry {
     ASTNodeType type;
-    ASTNode *symNode;
-    char *scope;    // String representation of the scope (e.g., "0.1.0")
+    const ASTNode *symNode;
+    char *scope;    // String representation of the scope (e.g., "0.1.0"), must be freed when this entry is freed.
 }symEntry;
 
 typedef Array* ScopeStackType;

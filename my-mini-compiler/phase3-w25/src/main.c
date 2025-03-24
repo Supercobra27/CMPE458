@@ -11,7 +11,7 @@
 #include "../include/semantic.h"
 
 // Debugging flag
-const bool DEBUG = true;
+const bool DEBUG = false;
 // File extension for input files
 const char *const FILE_EXT = ".cisc";
 
@@ -224,13 +224,16 @@ int main(int argc, char *argv[])
         .print_head = (const_voidp_to_void*)ASTNode_print_head,
     });
 
-    // TODO: Semantic Analysis
+    // Semantic Analysis
+    printf("\nStarting Semantic Analysis:\n");
     Array *symbol_table = array_new(8, sizeof(symEntry));
-    ProcessNode(&ast_root, symbol_table);
+    ProcessProgram(&ast_root, symbol_table);
+    // print symbol table entries
     for (size_t i = 0; i < array_size(symbol_table); i++){
         printf("Declared Variable -> %s ", ((symEntry *)array_get(symbol_table, i))->symNode->token.lexeme);
         printf("Scope -> %s\n", ((symEntry *)array_get(symbol_table, i))->scope);
     }
+    // print symbol table entries with errors
     for (size_t i = 0; i < array_size(symbol_table); i++){
         symEntry *entry = (symEntry *)array_get(symbol_table, i);
         if(entry->symNode->error) printf("Error Detected -> %s\n", entry->symNode->token.lexeme);
