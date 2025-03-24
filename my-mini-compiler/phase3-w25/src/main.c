@@ -89,6 +89,18 @@ void ASTNode_print_head(const ASTNode *const node) {
 }
 
 
+// Iterate parse tree to find syntax errors recursively
+void report_syntax_errors(const ParseTreeNode *node, const char *filepath) {
+    if (node->error != PARSE_ERROR_NONE && node->token) {
+        LexemePosition pos = node->token->position;
+        printf("%s:%zu:%zu: error: %s\n", filepath, pos.line, pos.col_start, ParseErrorType_to_string(node->error));
+    }
+    for (size_t i = 0; i < node->count; i++) {
+        report_syntax_errors(&node->children[i], filepath);
+    }
+}
+
+
 // Main function for testing
 int main(int argc, char *argv[])
 {
@@ -214,16 +226,9 @@ int main(int argc, char *argv[])
     };
     parse_cfg_recursive_descent_parse_tree(&root, &token_index, (Token *)array_begin(tokens), program_grammar, ParseToken_COUNT_NONTERMINAL);
 
-    if (root.error != PARSE_ERROR_NONE) {
-        const char* error_token_lexeme = "EOF";
-        if (token_index < array_size(tokens)) {
-            Token* error_token = (Token*)array_get(tokens, token_index);
-            error_token_lexeme = error_token->lexeme;
-        }
-        printf("Syntax Error: %s at token '%s'\n",
-               ParseErrorType_to_string(root.error),
-               error_token_lexeme);
-    }
+    // Call this after parsing to print syntax errors
+    report_syntax_errors(&root, input_file_path);
+
 
     if (DEBUG.print_parse_tree) print_tree(&(print_tree_t){
         .root = &root,
