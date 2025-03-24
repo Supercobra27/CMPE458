@@ -9,7 +9,21 @@
 #include "../include/tree.h"
 
 // Debugging flag
-const bool DEBUG = true;
+struct debug_flags {
+    bool grammar_check;
+    bool show_input;
+    bool print_tokens;
+    bool print_parse_tree;
+    bool print_abstract_syntax_tree;
+    bool print_symbol_table; 
+} const DEBUG = {
+    .grammar_check = false,
+    .show_input = false,
+    .print_tokens = false, 
+    .print_parse_tree = false, 
+    .print_abstract_syntax_tree = false, 
+    .print_symbol_table = false
+};
 // File extension for input files
 const char *const FILE_EXT = ".cisc";
 
@@ -80,7 +94,7 @@ int main(int argc, char *argv[])
 {
     // setbuf(stdout, NULL);  // Disable buffering 
     printf("Validating grammar:\n");
-    CFG_GrammarCheckResult result = check_cfg_grammar(DEBUG ? stdout : NULL, program_grammar);
+    CFG_GrammarCheckResult result = check_cfg_grammar(DEBUG.grammar_check ? stdout : NULL, program_grammar);
     if (result.missing_or_mismatched_rules
         || result.contains_improperly_terminated_production_rules
         || !result.is_prefix_free 
@@ -94,6 +108,7 @@ int main(int argc, char *argv[])
     printf("Grammar is valid.\n");
     
     // input
+    char *input_file_path = NULL;
     char *input = NULL;
     bool must_free_input = false;
     if (argc == 2)
@@ -130,34 +145,36 @@ int main(int argc, char *argv[])
             input[bytes_read++] = ch;
         input[bytes_read] = '\0';
         fclose(file);
+        input_file_path = file_name;
     }
     else
     {
         // Print usage for file input.
-        printf("\nUsage: .\\my-mini-compiler.exe <Input File Name>.cisc\n");
+        printf("\nUsage: .\\my-mini-compiler.exe <Input-File-Name>.cisc\n");
+        input_file_path = "<Input-File-Name>.cisc";
         // Test with both valid and invalid inputs
         // input = "int x;\n"   // Valid declaration
         //         "x = 42;\n"; // Valid assignment;
-        // input = "int x;\n"
-        //         "x = 42;\n"
-        //         "int ;";
+        input = "int x;\n"
+                "x = 42;\n"
+                "int ?;\n"
+                "string @#;\n";
 
-        input = 
-            "{ \n    float w;\n    w = 3.14159;\n    {{{{\"middle\";}}}}\n}\n"
-            "; ?? skip the empty statement\n"
-            "string s;\n"
-            "1 + 2 + 3;\n"
-            "x = y = z + 1 - 1;\n"
-            "print 5 * (2 + 3);\n"
-            "read x;\n"
-            "if 1 then { }\n"
-            "if 1 then { } else { x = 1; }\n"
-            "while 0 { }\n"
-            "repeat { } until 1;\n";
+        // input = 
+        //     "{ \n    float w;\n    w = 3.14159;\n    {{{{\"middle\";}}}}\n}\n"
+        //     "; ?? skip the empty statement\n"
+        //     "string s;\n"
+        //     "1 + 2 + 3;\n"
+        //     "x = y = z + 1 - 1;\n"
+        //     "print 5 * (2 + 3);\n"
+        //     "read x;\n"
+        //     "if 1 then { }\n"
+        //     "if 1 then { } else { x = 1; }\n"
+        //     "while 0 { }\n"
+        //     "repeat { } until 1;\n";
     }
 
-    // TODO: Add more test cases
-    printf("\nProcessing input:\n```\n%s\n```", DEBUG ? input : "Not showing input.");
+    printf("\nProcessing input:\n```\n%s\n```", DEBUG.show_input ? input : "Not showing input.");
 
     Array *tokens = array_new(8, sizeof(Token));
     // Tokenize the input
@@ -173,14 +190,11 @@ int main(int argc, char *argv[])
         token = get_next_token();
 
         if (token.error != ERROR_NONE) {
-            print_token(token);
-            printf("\nLexical Error: Unrecognized token '%s' at line %zu, col %zu\n", token.lexeme, token.position.line, token.position.col_start);
-            return -1;  // Early return due to lexical error
+            print_token_compiler_message(input_file_path, token);
         }
 
         array_push(tokens, (Element *)&token);
-        if (DEBUG)
-        {
+        if (DEBUG.print_tokens) {
             print_token(token); printf("\n");
         }
     } while (token.type != TOKEN_EOF);
@@ -209,10 +223,9 @@ int main(int argc, char *argv[])
         printf("Syntax Error: %s at token '%s'\n",
                ParseErrorType_to_string(root.error),
                error_token_lexeme);
-        return -1;  // Early return due to syntax error
     }
 
-    if (DEBUG) print_tree(&(print_tree_t){
+    if (DEBUG.print_parse_tree) print_tree(&(print_tree_t){
         .root = &root,
         .children = (const_voidp_to_const_voidp*)ParseTreeNode_children_begin,
         .count = (const_voidp_to_size_t*)ParseTreeNode_num_children,
@@ -220,15 +233,12 @@ int main(int argc, char *argv[])
         .print_head = (const_voidp_to_void*)ParseTreeNode_print_head,
     });
 
-    // TODO: print syntax compiler error message if any.
-
     // Convert to Abstract Syntax Tree
     printf("\nAbstract Syntax Tree:\n");
     ASTNode ast_root; ast_root.type = AST_PROGRAM;
     ASTNode_from_ParseTreeNode(&ast_root, (ParseTreeNodeWithPromo *)&root);
 
-
-    if (DEBUG) print_tree(&(print_tree_t){
+    if (DEBUG.print_abstract_syntax_tree) print_tree(&(print_tree_t){
         .root = &ast_root,
         .children = (const_voidp_to_const_voidp*)ASTNode_children_begin,
         .count = (const_voidp_to_size_t*)ASTNode_num_children,

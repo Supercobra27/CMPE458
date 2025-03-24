@@ -30,7 +30,12 @@ There are multiple sample input files for the parser located in the directory `m
 
 Todo:
 - [ ] fix number parsing for ints and floats ("5.5.5" should not be accepted as FLOAT "5.5.5")
-- [ ] Clearly list and explain each regular expression for each token (perhaps test and make everything explicit using https://regexer.com) and explain what characters are allowed to follow immediately after a token (address the question of whether "10x" is tokenized into INTEGER "10" and IDENTIFIER "x" or alternatively ERROR "10x", also "2then" is tokenized as INTEGER "2" and KEYWORD "then" which I suspect was not intended)
+- [ ] Clearly list and explain each regular expression for each token (perhaps test and make everything explicit using https://regexer.com) and explain what characters are allowed to follow immediately after a token (address the question of whether "10x" is tokenized into INTEGER "10" and IDENTIFIER "x" or alternatively ERROR "10x", also "2then" is tokenized as INTEGER "2" and KEYWORD "then" which I suspect was not intended). Here's an example of c-compiler error:
+    ```
+    [build] C:\Users\Hendrix\GitHub\CMPE458\my-mini-compiler\phase3-w25\src\main.c:189:9: error: invalid suffix "dx" on integer constant
+    [build]   189 |         1dx;
+    [build]       |         ^~~
+    ```
 - [ ] Clearly distinguish whitespace and comment regular expressions from token lexeme regular expressions
 
 Completed:
