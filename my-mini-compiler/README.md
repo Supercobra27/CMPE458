@@ -111,27 +111,24 @@ Completed:
     - [x] Conversion Function
     - Rules are defined in the grammar
 
-2. [ ] fix error printing setup. 
-    - [ ] get rid of global variables in lexer, use a struct instead.
-    - [ ] put compiler message printing functions in main.c
-    - [ ] revise syntax error printing
-
-3. [ ] Define Semantic Rules
+2. [ ] Define Semantic Rules
     - [ ] Declaration/Variables (Simon)
     - [ ] Assignment/Expressions (Ryan)
     - [ ] Types allowed for Operations (Ryan/Simon)
 
-4. [ ] Produce proper compiler error messages
-    - [ ] tokenization error messages
-    - [ ] parsing error messages
+3. [ ] Produce proper compiler error messages
+    - [ ] get rid of global variables in lexer, use a struct instead.
+    - [ ] put compiler message printing functions in main.c
+    - [x] tokenization error messages
+    - [ ] revise syntax error messages
     - [ ] semantic error messages
 
-5. [ ] Check AST based on Rules 
+4. [ ] Check AST based on Rules 
     - [ ] For each AST node, check correct # of childrn and types of children
     - [ ] Be able to discern the type of Identifiers
     - [ ] Be able to keep track of identifier scope
 
-6. [ ] Runtime Error Detection (flags)
+5. [ ] Runtime Error Detection (flags)
     - [ ] Div/0
     - [ ] % (Modulo)
 
