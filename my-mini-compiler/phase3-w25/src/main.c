@@ -27,6 +27,18 @@ struct debug_flags {
 // File extension for input files
 const char *const FILE_EXT = ".cisc";
 
+
+/**
+ * Print Token information to stdout.
+ * 
+ * Prints the type, lexeme, line, col_start, col_end, and error message of the token.
+ */
+void print_token(Token token)
+{
+    printf("Token type=%-10s(%d), lexeme=\"%s\", line=%-2d, column:%d-%d, error_message=\"%s\"",
+           TokenType_to_string(token.type), token.type, token.lexeme, token.position.line, token.position.col_start, token.position.col_end, ErrorType_to_error_message(token.error));
+}
+
 /**
  * WARNING: this function does not check if the pointer is NULL.
  * @return n->children.
@@ -88,16 +100,27 @@ void ASTNode_print_head(const ASTNode *const node) {
     }
 }
 
+void print_token_compiler_message(const Lexer *const l, const char *input_file_path, Token token)
+{
+    const int line_start_pos = *(int *)array_get(l->line_start_positions, token.position.line - 1);
+    const char *const line_end = strchr(l->input_string + line_start_pos, '\n');
+    const int line_length = line_end == NULL ? (int)strlen(l->input_string + line_start_pos) : line_end - (l->input_string + line_start_pos);
+    // tildes is supposed to be as long as the longest token lexeme so that it can always be chopped to the right length.
+    static const char *tildes = "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
+    printf(
+        "%s:%d:%d: %s\n"
+        "%.*s\n"
+        "%*s%.*s\n",
+        input_file_path, token.position.line, token.position.col_start, ErrorType_to_error_message(token.error),
+        line_length, l->input_string + line_start_pos,
+        token.position.col_start, "^", token.position.col_end - token.position.col_start, tildes);
+}
 
-// Global variables used for syntax error handling
-extern const char *global_input;
-extern Array *global_line_start;
 
-// Function to handle syntax errors similarly to lexical errors
-void print_syntax_compiler_message(const char *input_file_path, const Token *token, ParseErrorType error) {
-    const int line_start_pos = *(int *)array_get(global_line_start, token->position.line - 1);
-    const char *const line_end = strchr(global_input + line_start_pos, '\n');
-    const int line_length = line_end == NULL ? (int)strlen(global_input + line_start_pos) : line_end - (global_input + line_start_pos);
+void print_syntax_compiler_message(const Lexer *l, const char *input_file_path, const Token *token, ParseErrorType error) {
+    const int line_start_pos = *(int *)array_get(l->line_start_positions, token->position.line - 1);
+    const char *const line_end = strchr(l->input_string + line_start_pos, '\n');
+    const int line_length = line_end == NULL ? (int)strlen(l->input_string + line_start_pos) : line_end - (l->input_string + line_start_pos);
     static const char *tildes = "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
 
     printf(
@@ -105,17 +128,17 @@ void print_syntax_compiler_message(const char *input_file_path, const Token *tok
             "%.*s\n"
             "%*s%.*s\n",
             input_file_path, token->position.line, token->position.col_start, ParseErrorType_to_string(error),
-            line_length, global_input + line_start_pos,
+            line_length, l->input_string + line_start_pos,
             token->position.col_start, "^", token->position.col_end - token->position.col_start, tildes);
 }
 
 // Enhanced syntax error reporting function using new print function
-void report_syntax_errors(const ParseTreeNode *node, const char *filepath) {
+void report_syntax_errors(const Lexer *const l, const ParseTreeNode *node, const char *filepath) {
     if (node->error != PARSE_ERROR_NONE && node->token) {
-        print_syntax_compiler_message(filepath, node->token, node->error);
+        print_syntax_compiler_message(l, filepath, node->token, node->error);
     }
     for (size_t i = 0; i < node->count; i++) {
-        report_syntax_errors(&node->children[i], filepath);
+        report_syntax_errors(l, &node->children[i], filepath);
     }
 }
 
@@ -206,23 +229,21 @@ int main(int argc, char *argv[])
         //     "repeat { } until 1;\n";
     }
 
-    printf("\nProcessing input:\n```\n%s\n```", DEBUG.show_input ? input : "Not showing input.");
+    if (DEBUG.show_input)
+        printf("\nProcessing input:\n```\n%s\n```", input);
 
-    Array *tokens = array_new(8, sizeof(Token));
     // Tokenize the input
-    printf("\nTokenizing:\n");
-    init_lexer(input, 0);
-    Token token = (Token){
-        .error = ERROR_NONE, 
-        .type = TOKEN_EOF, 
-        .lexeme = "", 
-        .position = (LexemePosition){.line = 0, .col_end = 0, .col_start = 0},};
+    Array *tokens = array_new(8, sizeof(Token));
+    Lexer l = {0};
+    init_lexer(&l, input, 0);
+    if (DEBUG.print_tokens) printf("\nTokenizing:\n");
+    Token token;
     do
     {
-        token = get_next_token();
+        token = get_next_token(&l);
 
         if (token.error != ERROR_NONE) {
-            print_token_compiler_message(input_file_path, token);
+            print_token_compiler_message(&l, input_file_path, token);
         }
 
         array_push(tokens, (Element *)&token);
@@ -246,7 +267,7 @@ int main(int argc, char *argv[])
     parse_cfg_recursive_descent_parse_tree(&root, &token_index, (Token *)array_begin(tokens), program_grammar, ParseToken_COUNT_NONTERMINAL);
 
     // Call this after parsing to print syntax errors
-    report_syntax_errors(&root, input_file_path);
+    report_syntax_errors(&l, &root, input_file_path);
 
 
     if (DEBUG.print_parse_tree) print_tree(&(print_tree_t){
@@ -258,17 +279,19 @@ int main(int argc, char *argv[])
     });
 
     // Convert to Abstract Syntax Tree
-    printf("\nAbstract Syntax Tree:\n");
     ASTNode ast_root; ast_root.type = AST_PROGRAM;
     ASTNode_from_ParseTreeNode(&ast_root, (ParseTreeNodeWithPromo *)&root);
 
-    if (DEBUG.print_abstract_syntax_tree) print_tree(&(print_tree_t){
-        .root = &ast_root,
-        .children = (const_voidp_to_const_voidp*)ASTNode_children_begin,
-        .count = (const_voidp_to_size_t*)ASTNode_num_children,
-        .size = sizeof(ASTNode),
-        .print_head = (const_voidp_to_void*)ASTNode_print_head,
-    });
+    if (DEBUG.print_abstract_syntax_tree) {
+        printf("\nAbstract Syntax Tree:\n");
+        print_tree(&(print_tree_t){
+            .root = &ast_root,
+            .children = (const_voidp_to_const_voidp*)ASTNode_children_begin,
+            .count = (const_voidp_to_size_t*)ASTNode_num_children,
+            .size = sizeof(ASTNode),
+            .print_head = (const_voidp_to_void*)ASTNode_print_head,
+        });
+    }
 
     // TODO: Semantic Analysis
 
