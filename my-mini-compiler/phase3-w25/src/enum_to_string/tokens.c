@@ -122,3 +122,9 @@ const char *ErrorType_to_error_message(const ErrorType error)
     }
     return "Unknown error";
 }
+
+void print_token(Token token)
+{
+    printf("Token type=%-10s(%d), lexeme=\"%s\", line=%-2d, column:%d-%d, error_message=\"%s\"",
+           TokenType_to_string(token.type), token.type, token.lexeme, token.position.line, token.position.col_start, token.position.col_end, ErrorType_to_error_message(token.error));
+}

@@ -99,4 +99,11 @@ typedef struct _Token
     char lexeme[100];        // Actual text of the token
 } Token;
 
+/**
+ * Print Token information to stdin.
+ * 
+ * type, lexeme, line, col_start, col_end, error message
+ */
+void print_token(Token token);
+
 #endif /* TOKENS_H */
