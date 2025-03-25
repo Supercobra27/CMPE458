@@ -232,7 +232,6 @@ int main(int argc, char *argv[])
     } while (token.type != TOKEN_EOF);
 
     // Parse the input
-    printf("\nParse Tree:\n");
     size_t token_index = 0;
     ParseTreeNode root = (ParseTreeNode){
         .type = ParseToken_START_NONTERMINAL,
