@@ -62,14 +62,14 @@ void ParseTreeNode_print_simple(ParseTreeNode *node, int level, void (*print_nod
 /**
  * WARNING: This can go into infinite recursion if the grammar has indirect left-recursion.
  * 
- * @return true if token t could form the prefix of a token sequence that starts with s. If `t == PT_NULL`, then 1 is returned.
+ * @return true if token `t` could form the prefix of a token sequence that starts with `s`. If `t == PT_NULL`, then 1 is returned.
  */
 bool ParseToken_can_start_with(const ParseToken t, const ParseToken s, const CFG_GrammarRule *grammar, const size_t grammar_size)
 {
     assert(grammar != NULL);
     assert(grammar_size >= ParseToken_COUNT_NONTERMINAL);
     if (t == s || t == PT_NULL) {
-        return 1;
+        return true;
     } else if (ParseToken_IS_NONTERMINAL(t)) {
         const CFG_GrammarRule *const g_rule = grammar + t - ParseToken_FIRST_NONTERMINAL;
         for (const ProductionRule *p_rule = g_rule->rules, *const end = g_rule->rules + g_rule->num_rules; 
@@ -79,11 +79,60 @@ bool ParseToken_can_start_with(const ParseToken t, const ParseToken s, const CFG
                 continue;
             // this is where infinite recursion can happen if the grammar has indirect left-recursion.
             if (ParseToken_can_start_with(p_rule->tokens[0], s, grammar, grammar_size)) {
-                return 1;
+                return true;
             }
         }
     }
-    return 0;
+    return false;
+}
+
+/**
+ * WARNING: 
+ * - this function naively populates the children of the node according to the production rule, ignore any left-recursion.
+ * - if any of `node`, `node->rule`, `input`, `index`, `grammar` are NULL or invalid, then the behavior is undefined.
+ * 
+ * dependencies:
+ * - `parse_cfg_recursive_descent_parse_tree` 
+ * 
+ * Populate `node->children` (starting from position `node->count` up to at most `node-capacity` children or when `node->rule->tokens` reaches `PT_NULL`, whichever comes first) from the input token stream according to the production rule (`node->rule`) and `grammar`. 
+ * 
+ * If a child cannot be parsed:
+ * - `index` points to the token at the point of the error
+ * - `node->error` is set to `PARSE_ERROR_CHILD_ERROR` 
+ * - `node->children[node->count]` is initialized with the corresponding error
+ * - any remaining `node->children` are left unchanged
+ * 
+ * In either success or failure:
+ * - `node->count` is set to the number of children that were successfully parsed.
+ * - `index` is advanced to the first token that is not consumed. 
+ * - The populated `node->children` have their types set according to `node->rule->tokens`.
+ */
+void initialize_children_by_rule(ParseTreeNode *const node, const Token *const input, size_t *const index, const CFG_GrammarRule *const grammar, const size_t grammar_size) {
+    for (; node->count < node->capacity; ++node->count) {
+        node->children[node->count].type = node->rule->tokens[node->count];
+        parse_cfg_recursive_descent_parse_tree(node->children + node->count, index, input, grammar, grammar_size);
+        if (node->children[node->count].error) {
+            node->error = PARSE_ERROR_CHILD_ERROR;
+            break;
+        }
+    }
+}
+
+// `node->count - 1` children already parsed
+// 1 child failed to parse
+// set remaining children's expected types and error to PARSE_ERROR_PREVIOUS_TOKEN_FAILED_TO_PARSE
+void initialize_children_default_error_recovery(ParseTreeNode *const node) {
+    ++node->count; // increment count to accept the first child that failed to parse.
+    for (; node->count < node->capacity; ++node->count) {
+        node->children[node->count].type = node->rule->tokens[node->count];
+        node->children[node->count].error = PARSE_ERROR_PREVIOUS_TOKEN_FAILED_TO_PARSE;
+        node->children[node->count].token = NULL;
+        node->children[node->count].rule = NULL;
+        node->children[node->count].finalized_promo_index = SIZE_MAX;
+        node->children[node->count].capacity = 0;
+        node->children[node->count].count = 0;
+        node->children[node->count].children = NULL;
+    }
 }
 
 bool parse_cfg_recursive_descent_parse_tree(ParseTreeNode *const node, size_t *const index, const Token *const input, const CFG_GrammarRule *const grammar, const size_t grammar_size)
@@ -155,29 +204,12 @@ bool parse_cfg_recursive_descent_parse_tree(ParseTreeNode *const node, size_t *c
         }
     }
     // parse children (if any). 
-    // TODO: make this for loop into a function that parses according to a sequence of ParseTokens with ability to specify how to handle errors.
-    for (; node->count < node->capacity; ++node->count) {
-        node->children[node->count].type = p_rule->tokens[node->count];
-        parse_cfg_recursive_descent_parse_tree(node->children + node->count, index, input, grammar, grammar_size);
-        if (node->children[node->count].error) {
-            node->error = PARSE_ERROR_CHILD_ERROR;
-            // this is where you could perform custom error recovery if desired. Such continue parsing until a semi-colon is found.
-            // node->count successful children parsed
-            // 1 child failed to parse
-            // set remaining children expected types to error
-            for (++node->count; node->count < node->capacity; ++node->count) {
-                node->children[node->count].type = p_rule->tokens[node->count];
-                node->children[node->count].error = PARSE_ERROR_PREVIOUS_TOKEN_FAILED_TO_PARSE;
-                node->children[node->count].token = NULL;
-                node->children[node->count].rule = NULL;
-                node->children[node->count].finalized_promo_index = SIZE_MAX;
-                node->children[node->count].count = 0;
-                node->children[node->count].capacity = 0;
-                node->children[node->count].children = NULL;
-            }
-            // return false because the node failed to parse.
-            return false;
-        }
+    initialize_children_by_rule(node, input, index, grammar, grammar_size);
+    if (node->error) {
+        // this is where you could perform custom error recovery if desired. Such as continue advancing the input until a semi-colon is found for statements.
+        // Would have to introduce a new error type for recoveries, such as PARSE_ERROR_CHILD_ERROR_RECOVERED indicating that an error occurred but was recovered from and the parent node may continue parsing while ignoring this error. However, this error type would also have to be propagated to the parent node.
+        initialize_children_default_error_recovery(node);
+        return false;
     }
     // if the rule is not left-recursive, then this node was successfully parsed.
     // the second check includes the case where the rule is of the form A -> ... | A | ...; in this case, there is nothing left to parse so the node is finished
@@ -187,9 +219,11 @@ bool parse_cfg_recursive_descent_parse_tree(ParseTreeNode *const node, size_t *c
     size_t left_recursive_rule_num_children = 0;
     while (left_recursive_rule->tokens[left_recursive_rule_num_children] != PT_NULL) 
         ++left_recursive_rule_num_children;
-    // Try repeatedly parsing the rest of the left-recursive rule until it fails. When it fails, just stop and return what worked so far.
-    // might have to change this to rollback if parsing fails even when the first token matches. This is possible only if the second token of the left-recursive may start with the first token of a non-terminal token that may follow immediatly after this left-recursive rule. For example, A -> A B | C; where first(B)\subset follow(A). so if you had expression statements followed by a semicolon, and if you had semi-colon as a left-recursive operation, then if you parse the semicolon but fail to parse the remainder of the expression, then you should rollback the semicolon and end parsing before the semicolon.
-    while (!node->error && ParseToken_can_start_with(left_recursive_rule->tokens[1], (ParseToken)input[*index].type, grammar, grammar_size))
+    // Repeatedly parse the rest of the left-recursive rule until it can't be parsed anymore. When it can't be parsed further, just stop and return what worked so far.
+    // Would it be necessary to rollback if parsing fails even when the first token matches? This is possible only if the second token of the left-recursive rule may start with the first token of a non-terminal token that may follow immediatly after this left-recursive rule. For example, S -> A D; A -> A B | C; B -> ...; D -> ...;  where first(B)\subset first(D). 
+    // So if you had expression statements followed by a semicolon, and if you had semi-colon as a left-recursive operation, then if you parse the semicolon but fail to parse the remainder of the expression, then you should rollback the semicolon and end parsing before the semicolon.
+    // This rollback scenario would only apply if the grammar is not deterministic (i.e. B and D may share a common prefix). Since the grammar is assumed to be deterministic prior to this function being called, then this is not a problem.
+    while (ParseToken_can_start_with(left_recursive_rule->tokens[1], (ParseToken)input[*index].type, grammar, grammar_size))
     {
         // could get away from copying the whole node. but this is easier to understand.
         const ParseTreeNode temp = *node;
@@ -203,27 +237,14 @@ bool parse_cfg_recursive_descent_parse_tree(ParseTreeNode *const node, size_t *c
         node->capacity = left_recursive_rule_num_children;
         node->children[0] = temp;
         node->count = 1;
-        // TODO: replace this with function idea mentioned above.
-        for (; node->count < node->capacity; ++node->count) {
-            node->children[node->count].type = left_recursive_rule->tokens[node->count];
-            parse_cfg_recursive_descent_parse_tree(node->children + node->count, index, input, grammar, grammar_size);
-            if (node->children[node->count].error != PARSE_ERROR_NONE) {
-                node->error = PARSE_ERROR_CHILD_ERROR;
-                for (++node->count; node->count < node->capacity; ++node->count) {
-                    node->children[node->count].type = left_recursive_rule->tokens[node->count];
-                    node->children[node->count].error = PARSE_ERROR_PREVIOUS_TOKEN_FAILED_TO_PARSE;
-                    node->children[node->count].token = NULL;
-                    node->children[node->count].rule = NULL;
-                    node->children[node->count].finalized_promo_index = SIZE_MAX;
-                    node->children[node->count].children = NULL;
-                    node->children[node->count].capacity = 0;
-                    node->children[node->count].count = 0;
-                }
-                break;
-            }
+        initialize_children_by_rule(node, input, index, grammar, grammar_size);
+        if (node->error) {
+            // this is where you could perform custom error recovery if desired. Such as continue parsing until a semi-colon is found for statements.
+            initialize_children_default_error_recovery(node);
+            return false;
         }
     }
-    return node;
+    return true;
 }
 
 void ASTNode_free_children(ASTNode *const node) {

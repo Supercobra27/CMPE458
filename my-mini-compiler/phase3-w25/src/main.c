@@ -20,8 +20,8 @@ struct debug_flags {
     .grammar_check = false,
     .show_input = false,
     .print_tokens = false, 
-    .print_parse_tree = false, 
-    .print_abstract_syntax_tree = false, 
+    .print_parse_tree = true, 
+    .print_abstract_syntax_tree = true, 
     .print_symbol_table = false
 };
 // File extension for input files
@@ -254,33 +254,25 @@ int main(int argc, char *argv[])
 
     // Parse the input
     size_t token_index = 0;
-    ParseTreeNode root = (ParseTreeNode){
-        .type = ParseToken_START_NONTERMINAL,
-        .token = NULL,
-        .rule = NULL,
-        .finalized_promo_index = SIZE_MAX,
-        .error = PARSE_ERROR_NONE,
-        .children = NULL,
-        .capacity = 0,
-        .count = 0,
-    };
-    parse_cfg_recursive_descent_parse_tree(&root, &token_index, (Token *)array_begin(tokens), program_grammar, ParseToken_COUNT_NONTERMINAL);
+    ParseTreeNode pt_root; pt_root.type = PT_PROGRAM;
+    parse_cfg_recursive_descent_parse_tree(&pt_root, &token_index, (Token *)array_begin(tokens), program_grammar, ParseToken_COUNT_NONTERMINAL);
+    // currently, the parser does not perform error recovery, so only the first syntax error may be reported.
+    report_syntax_errors(&l, &pt_root, input_file_path);
 
-    // Call this after parsing to print syntax errors
-    report_syntax_errors(&l, &root, input_file_path);
-
-
-    if (DEBUG.print_parse_tree) print_tree(&(print_tree_t){
-        .root = &root,
-        .children = (const_voidp_to_const_voidp*)ParseTreeNode_children_begin,
-        .count = (const_voidp_to_size_t*)ParseTreeNode_num_children,
-        .size = sizeof(ParseTreeNode),
-        .print_head = (const_voidp_to_void*)ParseTreeNode_print_head,
-    });
+    if (DEBUG.print_parse_tree) {
+        printf("\nParse Tree:\n");
+        print_tree(&(print_tree_t){
+            .root = &pt_root,
+            .children = (const_voidp_to_const_voidp*)ParseTreeNode_children_begin,
+            .count = (const_voidp_to_size_t*)ParseTreeNode_num_children,
+            .size = sizeof(ParseTreeNode),
+            .print_head = (const_voidp_to_void*)ParseTreeNode_print_head,
+        });
+    }
 
     // Convert to Abstract Syntax Tree
     ASTNode ast_root; ast_root.type = AST_PROGRAM;
-    ASTNode_from_ParseTreeNode(&ast_root, (ParseTreeNodeWithPromo *)&root);
+    ASTNode_from_ParseTreeNode(&ast_root, (ParseTreeNodeWithPromo *)&pt_root);
 
     if (DEBUG.print_abstract_syntax_tree) {
         printf("\nAbstract Syntax Tree:\n");
@@ -297,7 +289,8 @@ int main(int argc, char *argv[])
 
     // TODO: print Semantic compiler error if any.
 
-    ParseTreeNode_free_children(&root);
+    ParseTreeNode_free_children(&pt_root);
+    ASTNode_free_children(&ast_root);
     array_free(tokens);
     if (must_free_input)
         free(input);
