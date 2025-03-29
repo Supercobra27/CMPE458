@@ -42,7 +42,7 @@ void ParseTreeNode_free_children(ParseTreeNode *node) {
         return; 
     // Recursively free all children 
     for (size_t i = 0; i < node->count; ++i)
-        ParseTreeNode_free_children(node->children + i); // Recursively free each child
+        ParseTreeNode_free_children(node->children + i); 
     // Free the children array
     free(node->children);
     node->children = NULL; 
@@ -161,10 +161,10 @@ bool parse_cfg_recursive_descent_parse_tree(ParseTreeNode *const node, size_t *c
         parse_cfg_recursive_descent_parse_tree(node->children + node->count, index, input, grammar, grammar_size);
         if (node->children[node->count].error) {
             node->error = PARSE_ERROR_CHILD_ERROR;
-            // this is where you could perform custom error recovery if desired. Such as see if it was just a semicolon missing or something.
+            // this is where you could perform custom error recovery if desired. Such continue parsing until a semi-colon is found.
             // node->count successful children parsed
             // 1 child failed to parse
-            // set remaining children to error
+            // set remaining children expected types to error
             for (++node->count; node->count < node->capacity; ++node->count) {
                 node->children[node->count].type = p_rule->tokens[node->count];
                 node->children[node->count].error = PARSE_ERROR_PREVIOUS_TOKEN_FAILED_TO_PARSE;
@@ -191,8 +191,8 @@ bool parse_cfg_recursive_descent_parse_tree(ParseTreeNode *const node, size_t *c
     // might have to change this to rollback if parsing fails even when the first token matches. This is possible only if the second token of the left-recursive may start with the first token of a non-terminal token that may follow immediatly after this left-recursive rule. For example, A -> A B | C; where first(B)\subset follow(A). so if you had expression statements followed by a semicolon, and if you had semi-colon as a left-recursive operation, then if you parse the semicolon but fail to parse the remainder of the expression, then you should rollback the semicolon and end parsing before the semicolon.
     while (!node->error && ParseToken_can_start_with(left_recursive_rule->tokens[1], (ParseToken)input[*index].type, grammar, grammar_size))
     {
-        // could get away from copying the whole thing. but this is easier to understand.
-        ParseTreeNode temp = *node;
+        // could get away from copying the whole node. but this is easier to understand.
+        const ParseTreeNode temp = *node;
         node->children = malloc(left_recursive_rule_num_children * sizeof(ParseTreeNode));
         if (node->children == NULL) {
             perror("malloc");

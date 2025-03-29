@@ -36,6 +36,4 @@ void init_lexer(Lexer *l, const char *input_string, const int start_position);
  */
 Token get_next_token(Lexer *l);
 
-void print_token_compiler_message(const Lexer *l, const char *input_file_path, Token token);
-
 #endif /* LEXER_H */

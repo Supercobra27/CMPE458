@@ -100,9 +100,9 @@ void ASTNode_print_head(const ASTNode *const node) {
     }
 }
 
-void print_token_compiler_message(const Lexer *const l, const char *input_file_path, Token token)
+void print_token_compiler_message(const Lexer *const l, const char *input_file_path, const Token *const token, const char *const error_message)
 {
-    const int line_start_pos = *(int *)array_get(l->line_start_positions, token.position.line - 1);
+    const int line_start_pos = *(int *)array_get(l->line_start_positions, token->position.line - 1);
     const char *const line_end = strchr(l->input_string + line_start_pos, '\n');
     const int line_length = line_end == NULL ? (int)strlen(l->input_string + line_start_pos) : line_end - (l->input_string + line_start_pos);
     // tildes is supposed to be as long as the longest token lexeme so that it can always be chopped to the right length.
@@ -111,34 +111,34 @@ void print_token_compiler_message(const Lexer *const l, const char *input_file_p
         "%s:%d:%d: %s\n"
         "%.*s\n"
         "%*s%.*s\n",
-        input_file_path, token.position.line, token.position.col_start, ErrorType_to_error_message(token.error),
+        input_file_path, token->position.line, token->position.col_start, error_message,
         line_length, l->input_string + line_start_pos,
-        token.position.col_start, "^", token.position.col_end - token.position.col_start, tildes);
+        token->position.col_start, "^", token->position.col_end - token->position.col_start, tildes);
 }
 
-
-void print_syntax_compiler_message(const Lexer *l, const char *input_file_path, const Token *token, ParseErrorType error) {
-    const int line_start_pos = *(int *)array_get(l->line_start_positions, token->position.line - 1);
-    const char *const line_end = strchr(l->input_string + line_start_pos, '\n');
-    const int line_length = line_end == NULL ? (int)strlen(l->input_string + line_start_pos) : line_end - (l->input_string + line_start_pos);
-    static const char *tildes = "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
-
-    printf(
-            "%s:%d:%d: %s\n"
-            "%.*s\n"
-            "%*s%.*s\n",
-            input_file_path, token->position.line, token->position.col_start, ParseErrorType_to_string(error),
-            line_length, l->input_string + line_start_pos,
-            token->position.col_start, "^", token->position.col_end - token->position.col_start, tildes);
-}
 
 // Enhanced syntax error reporting function using new print function
-void report_syntax_errors(const Lexer *const l, const ParseTreeNode *node, const char *filepath) {
-    if (node->error != PARSE_ERROR_NONE && node->token) {
-        print_syntax_compiler_message(l, filepath, node->token, node->error);
+void report_syntax_errors(const Lexer *const l, const ParseTreeNode *const node, const char *const filepath) {
+    // print error message if the node has an error and it has a token that was not already reported as an error by the lexer
+    switch (node->error) {
+        case PARSE_ERROR_NONE:
+        case PARSE_ERROR_PREVIOUS_TOKEN_FAILED_TO_PARSE:
+            return;
+        case PARSE_ERROR_CHILD_ERROR:
+            break;
+        case PARSE_ERROR_NO_RULE_MATCHES:
+        case PARSE_ERROR_WRONG_TOKEN:
+            // a non-terminal node that could not even begin to be parsed
+            if (node->token) {
+                char *message = malloc(100);
+                snprintf(message, 100, "error: expected a %s", ParseToken_to_string(node->type));
+                print_token_compiler_message(l, filepath, node->token, message);
+                free(message);
+            }
+            return;
     }
-    for (size_t i = 0; i < node->count; i++) {
-        report_syntax_errors(l, &node->children[i], filepath);
+    for (const ParseTreeNode *child = node->children; child != node->children + node->count; ++child) {
+        report_syntax_errors(l, child, filepath);
     }
 }
 
@@ -243,7 +243,7 @@ int main(int argc, char *argv[])
         token = get_next_token(&l);
 
         if (token.error != ERROR_NONE) {
-            print_token_compiler_message(&l, input_file_path, token);
+            print_token_compiler_message(&l, input_file_path, &token, ErrorType_to_error_message(token.error));
         }
 
         array_push(tokens, (Element *)&token);
