@@ -2,6 +2,8 @@
 #ifndef LEXER_H
 #define LEXER_H
 
+#include <stdbool.h>
+
 #include "tokens.h"
 
 #include "dynamic_array.h"
