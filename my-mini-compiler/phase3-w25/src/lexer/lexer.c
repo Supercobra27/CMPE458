@@ -57,18 +57,7 @@ void record_if_newline(Lexer *const l)
 }
 
 
-/* Get next token from global_input */
-/**
- * global variables read only:
- * - global_input
- * 
- * global variables modified only:
- * 
- * global variables read and modified:
- * - global_position
- * - global_current_line
- * - global_line_start
- */
+/* Get next token from l->input_string */
 Token get_next_token(Lexer *const l)
 {
     char c, cn; // first char and the following for checking operations
