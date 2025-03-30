@@ -226,7 +226,7 @@ int main(int const argc, const char *const argv[]) {
     }
 
     if (DEBUG.show_input)
-        printf("\nProcessing input:\n```\n%s\n```", input);
+        printf("\nProcessing input:\n```\n%s\n```\n", input);
 
     // Tokenize the input
     if (DEBUG.print_tokens) 
