@@ -21,8 +21,7 @@ typedef struct _Lexer {
  * 
  * Must be called before calling `get_next_token`.
  * 
- * Internally, this sets global variables for the input string, current position, and line tracking.
- * 
+ * @param l The lexer to initialize. Must be a pointer to a `Lexer` struct. 
  * @param input_string The input string to tokenize. This string must be terminated by a null character `'\0'`. This string will not be modified by the lexer. The memory will not be freed by the lexer. 
  * @param start_position The position in the input where the lexer should start. This is required to track positions of the start of each newline.
  */
