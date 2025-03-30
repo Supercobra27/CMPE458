@@ -195,7 +195,7 @@ Todo:
 
 ### Abstract Syntax Tree Grammar
 - the ^ symbol following a token indicates that that token is promoted in-place of the left-hand side of the production rule
-- the @ symbol following a token indicates that it's children are promoted to replace it
+- the @ symbol following a token indicates that its children are promoted to replace it
 ```
 Program -> Scope
 Scope -> StatementList@
