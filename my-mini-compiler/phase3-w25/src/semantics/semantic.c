@@ -463,9 +463,9 @@ void ProcessProgram(ASTNode *head, Array *symbol_table) {
     // Clean up the scope tracking system
     CleanupScopeStack();
     printf("\n");
-    for (size_t i = 0; i < array_size(semanticErrors); i++){
-        ASTNode *entry = (ASTNode *)array_get(semanticErrors, i);
-        if(entry->error) printf("Error Detected -> %s @ %s\n", ASTErrorType_to_string(entry->error), ASTNodeType_to_string(entry->type));
-    }
+    // for (size_t i = 0; i < array_size(semanticErrors); i++){
+    //     ASTNode *entry = (ASTNode *)array_get(semanticErrors, i);
+    //     if(entry->error) printf("Error Detected -> %s @ %s\n", ASTErrorType_to_string(entry->error), ASTNodeType_to_string(entry->type));
+    // }
     array_free(semanticErrors);
 }
