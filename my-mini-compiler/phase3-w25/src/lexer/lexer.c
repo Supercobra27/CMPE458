@@ -14,7 +14,7 @@
 // to check if a string is a keyword
 // return the offset of the keyword in the keywords array
 // return -1 if it is not a keyword
-static int is_keyword(const char *str)
+static inline int is_keyword(const char *str)
 {
     static const char *const keywords[] = {
         "int", "float", "string", "print", "read", "if", "then", "else", "while",
@@ -46,7 +46,7 @@ void init_lexer(Lexer *const l, const char *input_string, const int start_positi
 // Call this function to record a newline character.
 // If the l->input_string[l->current_position] is a newline character, it will record the position of the next character.
 // if the l->input_string[l->current_position] is not a newline character, nothing will happen.
-void record_if_newline(Lexer *const l)
+static inline void record_if_newline(Lexer *const l)
 {
     if (l->input_string[l->current_position] != '\n')
         return;
