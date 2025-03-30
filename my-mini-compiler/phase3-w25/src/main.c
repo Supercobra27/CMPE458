@@ -137,8 +137,8 @@ struct debug_flags {
     .show_input = true,
     .print_tokens = false, 
     .print_parse_tree = false, 
-    .print_abstract_syntax_tree = false, 
-    .print_symbol_table = false
+    .print_abstract_syntax_tree = true, 
+    .print_symbol_table = true
 };
 // File extension for input files
 const char *const FILE_EXT = ".cisc";

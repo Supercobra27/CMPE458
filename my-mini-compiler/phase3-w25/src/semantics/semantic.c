@@ -210,6 +210,8 @@ ASTNodeType ProcessExpression(ASTNode *ctx, Array *symbol_table) {
 
 void ProcessDeclaration(ASTNode *ctx, Array *symbol_table) {
     assert(ctx->count == 2); // ensure 2 children
+
+    if (ctx->error != AST_ERROR_NONE) return;
     
     // get the identifier node to access the name
     ASTNode *identifierNode = &CHILD_ITEM(ctx, 1);
