@@ -366,6 +366,7 @@ void ProcessScope(ASTNode *ctx, Array *symbol_table) {
     }
     
     array_pop(scopeStack);
+    scopeCounters[stackSize + 1] = 0; // Reset the next level counter
     // DEBUG PRINTING
     if (array_size(scopeStack) > 0) {
         currentScope = GetCurrentScope();
