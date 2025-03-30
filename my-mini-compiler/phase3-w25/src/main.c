@@ -132,7 +132,7 @@ struct debug_flags {
 } const DEBUG = {
     .grammar_check = true,
     .grammar_check_verbose = false,
-    .show_input = false,
+    .show_input = true,
     .print_tokens = false, 
     .print_parse_tree = false, 
     .print_abstract_syntax_tree = false, 
@@ -199,6 +199,11 @@ int main(int const argc, const char *const argv[]) {
                 "x = 42;\n"
                 "int ?;\n"
                 "string @#;\n";
+
+        // input = 
+        //     "int x;\n"
+        //     "x = 42;\n";
+
         // input = 
         //     "{ \n    float w;\n    w = 3.14159;\n    {{{{\"middle\";}}}}\n}\n"
         //     "; ?? skip the empty statement\n"
