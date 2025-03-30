@@ -117,10 +117,10 @@ Completed:
     - [ ] Types allowed for Operations (Ryan/Simon)
 
 3. [ ] Produce proper compiler error messages
-    - [ ] get rid of global variables in lexer, use a struct instead.
-    - [ ] put compiler message printing functions in main.c
+    - [x] get rid of global variables in lexer, use a struct instead.
+    - [x] put compiler message printing functions in main.c
     - [x] tokenization error messages
-    - [ ] revise syntax error messages
+    - [x] revise syntax error messages
     - [ ] semantic error messages
 
 4. [ ] Check AST based on Rules 
