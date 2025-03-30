@@ -9,7 +9,7 @@ void ProcessScopeChild(ASTNode *ctx, Array *symbol_table);
 ASTNodeType ProcessExpression(ASTNode *ctx, Array *symbol_table);
 void ProcessDeclaration(ASTNode *ctx, Array *symbol_table);
 ASTNodeType ProcessOperation(ASTNode *ctx, Array *symbol_table);
-void ProcessProgram(ASTNode *head, Array *symbol_table);
+Array* ProcessProgram(ASTNode *head, Array *symbol_table);
 // Scope tracking functions
 void InitializeScopeStack();
 char *GetCurrentScope();
@@ -451,7 +451,7 @@ void ProcessScopeChild(ASTNode *ctx, Array *symbol_table) {
     }
 }
 
-void ProcessProgram(ASTNode *head, Array *symbol_table) {
+Array* ProcessProgram(ASTNode *head, Array *symbol_table) {
     assert(head->type == AST_PROGRAM);
     
     // Initialize the scope tracking system
@@ -466,9 +466,5 @@ void ProcessProgram(ASTNode *head, Array *symbol_table) {
     // Clean up the scope tracking system
     CleanupScopeStack();
     printf("\n");
-    for (size_t i = 0; i < array_size(semanticErrors); i++){
-        ASTNode *entry = (ASTNode *)array_get(semanticErrors, i);
-        if(entry->error) printf("Error Detected -> %s @ %s\n", ASTErrorType_to_string(entry->error), ASTNodeType_to_string(entry->type));
-    }
-    array_free(semanticErrors);
+    return semanticErrors;
 }

@@ -13,7 +13,7 @@
  * 
  * @param ctx The ASTNode to semantically verify. Must be of ASTNodeType `AST_PROGRAM`, otherwise undefined behavior.
  */
-void ProcessProgram(ASTNode *ctx, Array *symbol_table);
+Array* ProcessProgram(ASTNode *ctx, Array *symbol_table);
 
 // Symbol table entry
 typedef struct _symEntry {

@@ -299,7 +299,16 @@ int main(int const argc, const char *const argv[]) {
     // Semantic Analysis
     printf("\nStarting Semantic Analysis:\n");
     Array *symbol_table = array_new(8, sizeof(symEntry));
-    ProcessProgram(&ast_root, symbol_table);
+    Array* semanticErrors = ProcessProgram(&ast_root, symbol_table);
+    // Print semantic errors
+    for (size_t i = 0; i < array_size(semanticErrors); i++){
+        ASTNode *entry = (ASTNode *)array_get(semanticErrors, i);
+        if (entry->type == AST_DECLARATION) entry = &CHILD_ITEM(entry, 1);
+        if(entry->error) printf("Error Detected -> %s @ %s\n", ASTErrorType_to_string(entry->error), TokenType_to_string(entry->token.type));
+    }
+
+    array_free(semanticErrors);
+
     // print symbol table entries
     for (size_t i = 0; i < array_size(symbol_table); i++){
         printf("Declared Variable -> %s ", ((symEntry *)array_get(symbol_table, i))->symNode->token.lexeme);
