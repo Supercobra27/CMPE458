@@ -75,9 +75,6 @@ void ASTNode_free_children(ASTNode *const node);
  * 
  * @param ast_node The ASTNode to construct from the ParseTreeNode. If `parse_node->rule->promote_index` is specified, then `ast_node->type` will be set by a promoted child, otherwise it will be left unchanged. Other fields will be filled in by the contents of `parse_node`.
  * @param parse_node The ParseTreeNode to convert to an ASTNode. This node and its children must have a valid pointer to the ProductionRule used to parse it.
- * @param grammar The grammar rules to use to convert the ParseTreeNode to an ASTNode.
- * @param grammar_size The size of the grammar array.
- * @return true if the ASTNode and its children were successfully constructed, false otherwise.
  */
 bool ASTNode_from_ParseTreeNode(ASTNode *const ast_node, ParseTreeNodeWithPromo *const parse_node);
 

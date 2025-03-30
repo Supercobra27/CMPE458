@@ -81,7 +81,7 @@ void ParseTreeNode_print_simple(ParseTreeNode *node, int level, void (*print_nod
  * - `index` is advanced to the first token that is not consumed. 
  * - The populated `node->children` have their types set according to `node->rule->tokens`.
  */
-void initialize_children_by_rule(ParseTreeNode *const node, const Token *const input, size_t *const index, const CFG_GrammarRule *const grammar, const size_t grammar_size) {
+static inline void initialize_children_by_rule(ParseTreeNode *const node, const Token *const input, size_t *const index, const CFG_GrammarRule *const grammar, const size_t grammar_size) {
     for (; node->count < node->capacity; ++node->count) {
         node->children[node->count].type = node->rule->tokens[node->count];
         parse_cfg_recursive_descent_parse_tree(node->children + node->count, index, input, grammar, grammar_size);
@@ -95,7 +95,7 @@ void initialize_children_by_rule(ParseTreeNode *const node, const Token *const i
 // `node->count - 1` children already parsed
 // 1 child failed to parse
 // set remaining children's expected types and error to PARSE_ERROR_PREVIOUS_TOKEN_FAILED_TO_PARSE
-void initialize_children_default_error_recovery(ParseTreeNode *const node) {
+static inline void default_error_recovery(ParseTreeNode *const node) {
     ++node->count; // increment count to accept the first child that failed to parse.
     for (; node->count < node->capacity; ++node->count) {
         ParseTreeNode_init(node->children + node->count, 0);
@@ -149,7 +149,7 @@ bool parse_cfg_recursive_descent_parse_tree(ParseTreeNode *const node, size_t *c
     for (; p_rule < g_rule->rules + g_rule->num_rules; ++p_rule) {
         if (p_rule->tokens[0] == node->type) {
             left_recursive_rule = p_rule;
-        } else if (ParseToken_can_start_with(p_rule->tokens[0], (ParseToken)input[*index].type, grammar, grammar_size)){
+        } else if (ParseToken_can_start_with(p_rule->tokens[0], (ParseToken)input[*index].type, grammar, grammar_size)) {
             node->rule = p_rule;
             break;
         }
@@ -177,7 +177,7 @@ bool parse_cfg_recursive_descent_parse_tree(ParseTreeNode *const node, size_t *c
     if (node->error) {
         // this is where you could perform custom error recovery if desired. Such as continue advancing the input until a semi-colon is found for statements.
         // Would have to introduce a new error type for recoveries, such as PARSE_ERROR_CHILD_ERROR_RECOVERED indicating that an error occurred but was recovered from and the parent node may continue parsing while ignoring this error. However, this error type would also have to be propagated to the parent node.
-        initialize_children_default_error_recovery(node);
+        default_error_recovery(node);
         return false;
     }
     // if the rule is not left-recursive, then this node was successfully parsed.
@@ -207,7 +207,7 @@ bool parse_cfg_recursive_descent_parse_tree(ParseTreeNode *const node, size_t *c
         initialize_children_by_rule(node, input, index, grammar, grammar_size);
         if (node->error) {
             // this is where you could perform custom error recovery if desired. Such as continue parsing until a semi-colon is found for statements.
-            initialize_children_default_error_recovery(node);
+            default_error_recovery(node);
             return false;
         }
     }
