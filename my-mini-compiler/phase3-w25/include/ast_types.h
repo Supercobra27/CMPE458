@@ -1,7 +1,7 @@
 #ifndef AST_NODE_H
 #define AST_NODE_H
 
-// Basic node types for AST (Abstract Syntax Tree)
+// node types for AST (Abstract Syntax Tree)
 typedef enum _ASTNodeType {
     // used for null-terminated arrays of ASTNodeType
     AST_NULL,
@@ -14,7 +14,6 @@ typedef enum _ASTNodeType {
     AST_INT_TYPE,
     AST_FLOAT_TYPE,
     AST_STRING_TYPE,
-
     // special node types for grammar rules, these will not be present in the AST.
     // used by grammar rules to indicate that the children of this node should not be added to the AST, but the node itself should be. The type of this node must be determined by one of its promoted children. (just take the promotion and ignore the children) (do we want to have a way to specify the node type even if there is no promotion?)
     // AST_IGNORE_CHILDREN,
@@ -24,11 +23,9 @@ typedef enum _ASTNodeType {
     AST_FROM_CHILDREN,
     // may be used when the ParseToken does not have a corresponding ASTNodeType, it's type must be derived from a promoted child. If it's possible to not have promoted children, then this node does not make sense but it will retain the type AST_FROM_PROMOTION (TODO: implement check for this being used incorrectly).
     AST_FROM_PROMOTION,
-    
     // Non-terminal nodes
     AST_PROGRAM,
     AST_SCOPE, // StatementList@ (variable number of children)
-    // AST_STATEMENT_LIST, does not exist
     AST_DECLARATION, // TYPE IDENTIFIER
     AST_PRINT, // Operation
     AST_READ,  // Operation
