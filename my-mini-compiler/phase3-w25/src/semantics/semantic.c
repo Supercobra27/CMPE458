@@ -244,7 +244,7 @@ void ProcessDeclaration(ASTNode *ctx, Array *symbol_table) {
     }
     
     // if no redeclaration issue, add to symbol table
-    if (!redeclared) {
+    if (!redeclared && ctx->error == AST_ERROR_NONE) {
         symEntry entry;
         entry.scope = currentScope;  // Transfer ownership of the string
         entry.symNode = &CHILD_ITEM(ctx, 1);
