@@ -28,6 +28,8 @@ static Array* scopeStack = NULL;
 static int* scopeCounters = NULL;  // Array of levels to keep track of highest scope at each level
 static int maxStackSize = 50;      // Maximum nesting level
 
+static Array* semanticErrors = NULL;
+
 // Initialize the scope tracking system
 void InitializeScopeStack() {
     scopeStack = array_new(10, sizeof(int*));  // Initial capacity of 10
@@ -42,6 +44,10 @@ void InitializeScopeStack() {
     for (int i = 0; i < maxStackSize; i++) {
         scopeCounters[i] = 0;
     }
+}
+
+void IntializeErrors() {
+    semanticErrors = array_new(10, sizeof(ASTNode*));
 }
 
 // Get the current scope as a string
@@ -191,10 +197,11 @@ ASTNodeType ProcessExpression(ASTNode *ctx, Array *symbol_table) {
             }
             printf("Error Reported -> Non-Declared Variable\n");
             ctx->error = AST_ERROR_UNDECLARED_VAR;
+            array_push(semanticErrors, (Element *)ctx);
             return AST_NULL;
             break;
         default:
-            fprintf(stderr, "Invalid expression node type\n");
+            fprintf(stderr, "Error Reported -> Invalid expression node type\n");
             return AST_NULL;
             break;
     }
@@ -226,6 +233,7 @@ void ProcessDeclaration(ASTNode *ctx, Array *symbol_table) {
                 redeclared = true;
                 // Save Error - Redeclaration
                 identifierNode->error = AST_ERROR_REDECLARATION_VAR;
+                array_push(semanticErrors, (Element *)identifierNode);
                 printf("Error: Variable '%s' redeclared in conflicting scope.\n", 
                        identifierNode->token.lexeme);
                 break;
@@ -259,10 +267,12 @@ ASTNodeType ProcessOperator(ASTNode *ctx, Array *symbol_table){
 
     if (LHS != RHS && (LHS != AST_NULL && RHS != AST_NULL)) {
         ctx->error = AST_ERROR_INCOMPATIBLE_TYPES;
+        array_push(semanticErrors, (Element *)ctx);
         printf("Error Reported -> Incompatible Types\n");
     } else if (LHS != RHS){
         ctx->error = AST_ERROR_UNDEFINED_ASSIGNMENT;
-        printf("Error Reported -> Assignment failed, are all variables declared?\n");
+        array_push(semanticErrors, (Element *)ctx);
+        printf("Error Reported -> Assignment/Operation Failed\n");
     } else {
         return LHS;
     }
@@ -296,11 +306,13 @@ ASTNodeType ProcessOperation(ASTNode *ctx, Array *symbol_table){
         //assert(CHILD_TYPE(ctx, 1) != AST_ASSIGN_EQUAL); // prevent chained assignment
 
         if (!(CHILD_TYPE(ctx, 0) == AST_IDENTIFIER)) { 
-            ctx->error = AST_ERROR_EXPECTED_IDENTIFIER; 
+            ctx->error = AST_ERROR_EXPECTED_IDENTIFIER;
+            array_push(semanticErrors, (Element *)ctx);
             return AST_NULL; 
         }
         if ((CHILD_TYPE(ctx, 1) == AST_ASSIGN_EQUAL)) { 
-            ctx->error = AST_ERROR_EXPECTED_ASSIGNMENT; 
+            ctx->error = AST_ERROR_EXPECTED_ASSIGNMENT;
+            array_push(semanticErrors, (Element *)ctx);
             return AST_NULL; 
         }
         ASTNodeType LHS = VarToLiteral(ProcessExpression(&CHILD_ITEM(ctx, 0), symbol_table));
@@ -310,9 +322,11 @@ ASTNodeType ProcessOperation(ASTNode *ctx, Array *symbol_table){
 
         if (LHS != RHS && (LHS == AST_NULL || RHS == AST_NULL)) {
             ctx->error = AST_ERROR_UNDEFINED_ASSIGNMENT;
+            array_push(semanticErrors, (Element *)ctx);
             printf("Error Reported -> Undefined Assignment\n");
         }else if(LHS != RHS){
             ctx->error = AST_ERROR_INCOMPATIBLE_TYPES;
+            array_push(semanticErrors, (Element *)ctx);
             printf("Error Reported -> Incompatible Types upon Assignment\n");
         }
     } else if (ctx->type >= AST_LOGICAL_OR && ctx->type < AST_BITWISE_NOT) {
@@ -370,6 +384,7 @@ void ProcessConditional(ASTNode *ctx, Array *symbol_table) { // If statements
     if (outcome != AST_INTEGER){
             printf("Error Reported -> Incompatible Conditional\n");
             ctx->error = AST_ERROR_INVALID_CONDITIONAL;
+            array_push(semanticErrors, (Element *)ctx);
     }
     ProcessScope(&CHILD_ITEM(ctx, 1), symbol_table); // ThenScope
     ProcessScope(&CHILD_ITEM(ctx, 2), symbol_table); // ElseScope
@@ -384,9 +399,10 @@ void ProcessLoop(ASTNode *ctx, Array *symbol_table) {
 
     if (ctx->type == AST_WHILE_LOOP) {
         outcome = ProcessExpression(&CHILD_ITEM(ctx, 0), symbol_table);
-        if (outcome == AST_STRING){
+        if (outcome == AST_STRING || outcome == AST_NULL){
             printf("Error Reported -> Incompatible Conditional\n");
             ctx->error = AST_ERROR_INVALID_CONDITIONAL;
+            array_push(semanticErrors, (Element *)ctx);
         }
         ProcessScope(&CHILD_ITEM(ctx, 1), symbol_table);
     }
@@ -394,9 +410,10 @@ void ProcessLoop(ASTNode *ctx, Array *symbol_table) {
     if(ctx->type == AST_REPEAT_UNTIL_LOOP) {
         ProcessScope(&CHILD_ITEM(ctx, 0), symbol_table);
         outcome = ProcessExpression(&CHILD_ITEM(ctx, 1), symbol_table);
-        if (outcome == AST_STRING){
+        if (outcome == AST_STRING || outcome == AST_NULL){
             printf("Error Reported -> Incompatible Conditional\n");
             ctx->error = AST_ERROR_INVALID_CONDITIONAL;
+            array_push(semanticErrors, (Element *)ctx);
         }
     }
 }
@@ -436,6 +453,7 @@ void ProcessProgram(ASTNode *head, Array *symbol_table) {
     
     // Initialize the scope tracking system
     InitializeScopeStack();
+    IntializeErrors();
     
     // assume that there is only one child to process which is a scope.
     assert(head->count == 1);
@@ -444,4 +462,10 @@ void ProcessProgram(ASTNode *head, Array *symbol_table) {
     
     // Clean up the scope tracking system
     CleanupScopeStack();
+    printf("\n");
+    for (size_t i = 0; i < array_size(semanticErrors); i++){
+        ASTNode *entry = (ASTNode *)array_get(semanticErrors, i);
+        if(entry->error) printf("Error Detected -> %s @ %s\n", ASTErrorType_to_string(entry->error), ASTNodeType_to_string(entry->type));
+    }
+    array_free(semanticErrors);
 }

@@ -145,7 +145,7 @@ int main(int argc, char *argv[])
         //         "int ;";
 
         input = 
-            "float x;\n"
+            "int x;\n"
             "int y;\n"
             "if 1 > 2 then { read x; x = 2.0; }\n"
             "{ \n    float w;\n    w = 3.14159;\n    {{{{\"middle\";}}}}\n}\n"
@@ -154,6 +154,7 @@ int main(int argc, char *argv[])
             "string s;\n"
             "1 + x + 3.0;\n"
             "x + x + x;\n"
+            "y = 2.0;"
             "int z;\n"
             "x = z + 1 - 1;\n"
             "{int e; e = 1;}\n"
@@ -172,8 +173,42 @@ int main(int argc, char *argv[])
             "if (!x) then { x = 1; };\n"
             "if (\"y\") then { };"
             "repeat { } until 1;}\n";
-    }
+        // input = 
+        //     // Type mismatches and re-declarations
+        //     "float a;\n"
+        //     "a = \"string\";\n"
+        //     "int b;\n"
+        //     "b = 3.5;\n"
+        //     "string s;\n"
+        //     "int s;\n"
 
+        //     // Scoping edge cases
+        //     "{ int d; d = 2; }\n"
+        //     "d = 3;\n"
+        //     "{{{{{ float x; }}}}} x = 5.0;\n"
+
+        //     // Operator precedence and evaluation order
+        //     "int p;\n"
+        //     "p = 2 + 3 * 4 - 5 / 2;\n"  // Should correctly apply precedence
+
+        //     // Conditionals and loops
+        //     "if (1 < 2 && 3 > 4 || !0) then { print \"Condition met\"; }\n"
+        //     "while (p > 0) { p = p - 1; print p; }\n"
+        //     "repeat { print \"Looping\"; } until (p == 2.0);\n"
+
+        //     // String handling and escape sequences
+        //     "string msg;\n"
+        //     "msg = \"This is a string with escape sequences.\";\n"
+        //     "print msg;\n"
+
+        //     // Unary operations and logical expressions
+        //     "int neg;\n"
+        //     "neg = -5;\n"
+
+        //     // Complex nested expressions
+        //     "int complex;\n"
+        //     "complex = (2 + (3 * (4.0 - 1))) / (1 + (5 / 2.0));\n";
+    }
     // TODO: Add more test cases
     printf("\nProcessing input:\n```\n%s\n```", DEBUG ? input : "Not showing input.");
 

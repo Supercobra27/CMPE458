@@ -114,6 +114,20 @@ const char *ASTErrorType_to_string(const ASTErrorType t)
             return "AST_ERROR_MISSING_PRODUCTION_RULE";
         case AST_ERROR_EXPECTED_PROMOTION:
             return "AST_ERROR_EXPECTED_PROMOTION";
+        case AST_ERROR_EXPECTED_IDENTIFIER:
+            return "AST_ERROR_EXPECTED_IDENTIFIER";
+        case AST_ERROR_EXPECTED_ASSIGNMENT:
+            return "AST_ERROR_EXPECTED_ASSIGNMENT";
+        case AST_ERROR_INVALID_CONDITIONAL:
+            return "AST_ERROR_INVALID_CONDITIONAL";
+        case AST_ERROR_REDECLARATION_VAR:
+            return "AST_ERROR_REDECLARATION_VAR";
+        case AST_ERROR_UNDEFINED_ASSIGNMENT:
+            return "AST_ERROR_UNDEFINED_ASSIGNMENT";
+        case AST_ERROR_UNDECLARED_VAR:
+            return "AST_ERROR_UNDECLARED_VAR";
+        case AST_ERROR_INCOMPATIBLE_TYPES:
+            return "AST_ERROR_INCOMPATIBLE_TYPES";
     }
     return "UNKNOWN";
 }
