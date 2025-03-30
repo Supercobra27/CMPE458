@@ -9,24 +9,29 @@
 #include "../include/parser.h"
 #include "../include/tree.h"
 #include "../include/semantic.h"
-
-// Debugging flag
-const bool DEBUG = false;
-// File extension for input files
-const char *const FILE_EXT = ".cisc";
+/**
+ * Print Token information to stdout.
+ * 
+ * Prints the type, lexeme, line, col_start, col_end, and error message of the token.
+ */
+void print_token(Token token)
+{
+    printf("Token type=%-10s(%d), lexeme=\"%s\", line=%-2d, column:%d-%d, error_message=\"%s\"",
+           TokenType_to_string(token.type), token.type, token.lexeme, token.position.line, token.position.col_start, token.position.col_end, ErrorType_to_error_message(token.error));
+}
 
 /**
  * WARNING: this function does not check if the pointer is NULL.
  * @return n->children.
  */
-ParseTreeNode *ParseTreeNode_children_begin(const ParseTreeNode *n) {
+ParseTreeNode *ParseTreeNode_children_begin(const ParseTreeNode *const n) {
     return n->children;
 }
 /**
  * WARNING: this function does not check if the pointer is NULL.
  * @return n->count.
  */
-size_t ParseTreeNode_num_children(const ParseTreeNode *n) {
+size_t ParseTreeNode_num_children(const ParseTreeNode *const n) {
     return n->count;
 }
 /**
@@ -49,10 +54,10 @@ void ParseTreeNode_print_head(const ParseTreeNode *const node) {
             printf("%s \"%s\"", TokenType_to_string(node->token->type), node->token->lexeme);
     }
 }
-const ASTNode *ASTNode_children_begin(const ASTNode *n) {
+const ASTNode *ASTNode_children_begin(const ASTNode *const n) {
     return n->items;
 }
-size_t ASTNode_num_children(const ASTNode *n) {
+size_t ASTNode_num_children(const ASTNode *const n) {
     return n->count;
 }
 /**
@@ -76,52 +81,109 @@ void ASTNode_print_head(const ASTNode *const node) {
     }
 }
 
-
-// Main function for testing
-int main(int argc, char *argv[])
+void print_token_compiler_message(FILE *const stream, const Lexer *const l, const char *input_file_path, const Token *const token, const char *const error_message)
 {
-    // setbuf(stdout, NULL);  // Disable buffering 
-    printf("Validating grammar:\n");
-    CFG_GrammarCheckResult result = check_cfg_grammar(DEBUG ? stdout : NULL, program_grammar);
-    if (result.missing_or_mismatched_rules
-        || result.contains_improperly_terminated_production_rules
-        || !result.is_prefix_free 
-        || result.contains_direct_left_recursive_rule_as_last_rule 
-        || result.contains_indirect_left_recursion
-    )
-    {
-        printf("Grammar is invalid, cannot be parsed correctly.\n");
-        return -1;
+    const int line_start_pos = *(int *)array_get(l->line_start_positions, token->position.line - 1);
+    const char *const line_end = strchr(l->input_string + line_start_pos, '\n');
+    const int line_length = line_end == NULL ? (int)strlen(l->input_string + line_start_pos) : line_end - (l->input_string + line_start_pos);
+    // tildes is supposed to be as long as the longest token lexeme so that it can always be chopped to the right length.
+    static const char *const tildes = "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
+    fprintf(stream,
+        "%s:%d:%d: %s\n"
+        "%.*s\n"
+        "%*s%.*s\n",
+        input_file_path, token->position.line, token->position.col_start, error_message,
+        line_length, l->input_string + line_start_pos,
+        token->position.col_start, "^", token->position.col_end - token->position.col_start, tildes);
+}
+
+// Enhanced syntax error reporting function using new print function
+void report_syntax_errors(FILE *const stream, const Lexer *const l, const ParseTreeNode *const node, const char *const filepath) {
+    // print error message if the node has an error and it has a token that was not already reported as an error by the lexer
+    switch (node->error) {
+        case PARSE_ERROR_NONE:
+        case PARSE_ERROR_PREVIOUS_TOKEN_FAILED_TO_PARSE:
+            break;
+        case PARSE_ERROR_CHILD_ERROR:
+            for (const ParseTreeNode *child = node->children; child != node->children + node->count; ++child) {
+                report_syntax_errors(stream, l, child, filepath);
+            }
+            break;
+        case PARSE_ERROR_NO_RULE_MATCHES:
+        case PARSE_ERROR_WRONG_TOKEN:
+            if (node->token) {
+                const unsigned int MESSAGE_SIZE = 100;
+                char *message = malloc(MESSAGE_SIZE);
+                snprintf(message, MESSAGE_SIZE, "error: expected a %s", ParseToken_to_string(node->type));
+                print_token_compiler_message(stream, l, filepath, node->token, message);
+                free(message);
+            }
+            break;
     }
-    printf("Grammar is valid.\n");
+}
+
+// Debugging flags
+struct debug_flags {
+    bool grammar_check;
+    bool grammar_check_verbose;
+    bool show_input;
+    bool print_tokens;
+    bool print_parse_tree;
+    bool print_abstract_syntax_tree;
+    bool print_symbol_table; 
+} const DEBUG = {
+    .grammar_check = true,
+    .grammar_check_verbose = false,
+    .show_input = true,
+    .print_tokens = false, 
+    .print_parse_tree = false, 
+    .print_abstract_syntax_tree = false, 
+    .print_symbol_table = false
+};
+// File extension for input files
+const char *const FILE_EXT = ".cisc";
+
+int main(int const argc, const char *const argv[]) {
+    // TODO: Add command line argument parsing for debug flags.
+    if (DEBUG.grammar_check) {
+        if (DEBUG.grammar_check_verbose)
+            printf("Validating grammar:\n");
+        CFG_GrammarCheckResult result = check_cfg_grammar(DEBUG.grammar_check_verbose ? stdout : NULL, program_grammar);
+        if (result.missing_or_mismatched_rules
+            || result.contains_improperly_terminated_production_rules
+            || !result.is_prefix_free 
+            || result.contains_direct_left_recursive_rule_as_last_rule 
+            || result.contains_indirect_left_recursion) {
+            fprintf(stderr, "Grammar is invalid, compilation cannot be proceed.\n");
+            return -1;  // early return
+        }
+        if (DEBUG.grammar_check_verbose)
+            printf("Grammar is valid.\n");
+    }
     
-    // input
+    const char *input_file_path = NULL;
     char *input = NULL;
     bool must_free_input = false;
-    if (argc == 2)
-    {
+    if (argc == 2) {
         // Input file extension check
-        int file_len = strlen(argv[1]);
-        char *file_name = argv[1];
-        if (file_len < 5 || strncmp(file_name + file_len - 5, FILE_EXT, 5) != 0)
-        {
-            printf("Incorrect file extension, the correct extension is .cisc");
+        const int file_path_len = strlen(argv[1]);
+        input_file_path = argv[1];
+        if (file_path_len < 5 || strncmp(input_file_path + file_path_len - 5, FILE_EXT, 5) != 0) {
+            fprintf(stderr, "Incorrect file extension, the correct extension is .cisc\n");
             return -1;
         }
         // Load file into input.
-        FILE *file = fopen(file_name, "r");
-        if (file == NULL)
-        {
-            printf("Error: Unable to open file %s\n", file_name);
+        FILE *file = fopen(input_file_path, "r");
+        if (file == NULL) {
+            fprintf(stderr, "Error: Unable to open file %s\n", input_file_path);
             return -1;
         }
         fseek(file, 0, SEEK_END);
         size_t file_size = ftell(file);
         fseek(file, 0, SEEK_SET);
         input = malloc(file_size + 1);
-        if (input == NULL)
-        {
-            printf("Error: Unable to allocate memory for file %s\n", file_name);
+        if (input == NULL) {
+            fprintf(stderr, "Error: Unable to allocate memory for file %s\n", input_file_path);
             return -1;
         }
         must_free_input = true;
@@ -133,143 +195,89 @@ int main(int argc, char *argv[])
         input[bytes_read] = '\0';
         fclose(file);
     }
-    else
-    {
-        // Print usage for file input.
-        printf("\nUsage: .\\my-mini-compiler.exe <Input File Name>.cisc\n");
-        // Test with both valid and invalid inputs
-        // input = "int x;\n"   // Valid declaration
-        //         "x = 42;\n"; // Valid assignment;
-        // input = "int x;\n"
-        //         "x = 42;\n"
-        //         "int ;";
+    else {
+        input_file_path = "<input-file-name>.cisc";
+        input = "int x;\n"
+                "x = 42;\n"
+                "int ?;\n"
+                "string @#;\n";
 
-        input = 
-            "int x;\n"
-            "int y;\n"
-            "if 1 > 2 then { read x; x = 2.0; }\n"
-            "{ \n    float w;\n    w = 3.14159;\n    {{{{\"middle\";}}}}\n}\n"
-            "; ?? skip the empty statement\n"
-            "string s;\n"
-            "string s;\n"
-            "1 + x + 3.0;\n"
-            "x + x + x;\n"
-            "y = 2.0;"
-            "int z;\n"
-            "x = z + 1 - 1;\n"
-            "{int e; e = 1;}\n"
-            "int e;\n"
-            //"int u;\n"
-            "{{{{int u;}}}}\n"
-            "{int u;}\n"
-            "e = 3;\n"
-            "int y;\n"
-            "print 5 * (2 + 3);\n"
-            "print \"test\";"
-            "{read x;\n"
-            "if 1 && 1 then { } else { x = 1; }\n"
-            "while 0 { }\n"
-            "y = ~x; y = -x; y = !x; y = factorial(x);\n"
-            "if (!x) then { x = 1; };\n"
-            "if (\"y\") then { };"
-            "repeat { } until 1;}\n";
         // input = 
-        //     // Type mismatches and re-declarations
-        //     "float a;\n"
-        //     "a = \"string\";\n"
-        //     "int b;\n"
-        //     "b = 3.5;\n"
+        //     "int x;\n"
+        //     "x = 42;\n";
+
+        // input = 
+        //     "{ \n    float w;\n    w = 3.14159;\n    {{{{\"middle\";}}}}\n}\n"
+        //     "; ?? skip the empty statement\n"
         //     "string s;\n"
-        //     "int s;\n"
+        //     "1 + 2 + 3;\n"
+        //     "x = y = z + 1 - 1;\n"
+        //     "print 5 * (2 + 3);\n"
+        //     "read x;\n"
+        //     "if 1 then { }\n"
+        //     "if 1 then { } else { x = 1; }\n"
+        //     "while 0 { }\n"
+        //     "repeat { } until 1;\n";
 
-        //     // Scoping edge cases
-        //     "{ int d; d = 2; }\n"
-        //     "d = 3;\n"
-        //     "{{{{{ float x; }}}}} x = 5.0;\n"
-
-        //     // Operator precedence and evaluation order
-        //     "int p;\n"
-        //     "p = 2 + 3 * 4 - 5 / 2;\n"  // Should correctly apply precedence
-
-        //     // Conditionals and loops
-        //     "if (1 < 2 && 3 > 4 || !0) then { print \"Condition met\"; }\n"
-        //     "while (p > 0) { p = p - 1; print p; }\n"
-        //     "repeat { print \"Looping\"; } until (p == 2.0);\n"
-
-        //     // String handling and escape sequences
-        //     "string msg;\n"
-        //     "msg = \"This is a string with escape sequences.\";\n"
-        //     "print msg;\n"
-
-        //     // Unary operations and logical expressions
-        //     "int neg;\n"
-        //     "neg = -5;\n"
-
-        //     // Complex nested expressions
-        //     "int complex;\n"
-        //     "complex = (2 + (3 * (4.0 - 1))) / (1 + (5 / 2.0));\n";
+        // Print usage for file input.
+        printf(
+            "Usage: .\\my-mini-compiler.exe %s\n"
+            "Using default input:\n"
+            "```\n%s\n```\n", 
+            input_file_path, input);
     }
-    // TODO: Add more test cases
-    printf("\nProcessing input:\n```\n%s\n```", DEBUG ? input : "Not showing input.");
 
-    Array *tokens = array_new(8, sizeof(Token));
+    if (DEBUG.show_input)
+        printf("\nProcessing input:\n```\n%s\n```", input);
+
     // Tokenize the input
-    printf("\nTokenizing:\n");
-    init_lexer(input, 0);
-    Token token = (Token){
-        .error = ERROR_NONE, 
-        .type = TOKEN_EOF, 
-        .lexeme = "", 
-        .position = (LexemePosition){.line = 0, .col_end = 0, .col_start = 0},};
-    do
-    {
-        token = get_next_token();
+    if (DEBUG.print_tokens) 
+        printf("\nTokenizing:\n");
+    Array *tokens = array_new(8, sizeof(Token));
+    Lexer l = {0};
+    init_lexer(&l, input, 0);
+    Token token;
+    do {
+        token = get_next_token(&l);
         array_push(tokens, (Element *)&token);
-        if (DEBUG)
-        {
-            print_token(token); printf("\n");
+        if (token.error != ERROR_NONE)
+            print_token_compiler_message(stderr, &l, input_file_path, &token, ErrorType_to_error_message(token.error));
+        if (DEBUG.print_tokens) {
+            print_token(token); 
+            printf("\n");
         }
     } while (token.type != TOKEN_EOF);
-    
 
     // Parse the input
-    printf("\nParse Tree:\n");
     size_t token_index = 0;
-    ParseTreeNode root = (ParseTreeNode){
-        .type = ParseToken_START_NONTERMINAL,
-        .token = NULL,
-        .rule = NULL,
-        .finalized_promo_index = SIZE_MAX,
-        .error = PARSE_ERROR_NONE,
-        .children = NULL,
-        .capacity = 0,
-        .count = 0,
-    };
-    parse_cfg_recursive_descent_parse_tree(&root, &token_index, (Token *)array_begin(tokens), program_grammar, ParseToken_COUNT_NONTERMINAL);
-
-    if (DEBUG) print_tree(&(print_tree_t){
-        .root = &root,
-        .children = (const_voidp_to_const_voidp*)ParseTreeNode_children_begin,
-        .count = (const_voidp_to_size_t*)ParseTreeNode_num_children,
-        .size = sizeof(ParseTreeNode),
-        .print_head = (const_voidp_to_void*)ParseTreeNode_print_head,
-    });
-
-    // TODO: print syntax compiler error message if any.
+    ParseTreeNode pt_root; pt_root.type = PT_PROGRAM;
+    parse_cfg_recursive_descent_parse_tree(&pt_root, &token_index, (Token *)array_begin(tokens), program_grammar, ParseToken_COUNT_NONTERMINAL);
+    // currently, the parser does not perform error recovery, so at most one syntax error can be reported.
+    report_syntax_errors(stderr, &l, &pt_root, input_file_path);
+    if (DEBUG.print_parse_tree) {
+        printf("\nParse Tree:\n");
+        print_tree(&(print_tree_t){
+            .root = &pt_root,
+            .children = (const_voidp_to_const_voidp*)ParseTreeNode_children_begin,
+            .count = (const_voidp_to_size_t*)ParseTreeNode_num_children,
+            .size = sizeof(ParseTreeNode),
+            .print_head = (const_voidp_to_void*)ParseTreeNode_print_head,
+        });
+    }
 
     // Convert to Abstract Syntax Tree
-    printf("\nAbstract Syntax Tree:\n");
     ASTNode ast_root; ast_root.type = AST_PROGRAM;
-    ASTNode_from_ParseTreeNode(&ast_root, (ParseTreeNodeWithPromo *)&root);
-
-
-    if (DEBUG) print_tree(&(print_tree_t){
-        .root = &ast_root,
-        .children = (const_voidp_to_const_voidp*)ASTNode_children_begin,
-        .count = (const_voidp_to_size_t*)ASTNode_num_children,
-        .size = sizeof(ASTNode),
-        .print_head = (const_voidp_to_void*)ASTNode_print_head,
-    });
+    ASTNode_from_ParseTreeNode(&ast_root, (ParseTreeNodeWithPromo *)&pt_root);
+    if (DEBUG.print_abstract_syntax_tree) {
+        printf("\nAbstract Syntax Tree:\n");
+        print_tree(&(print_tree_t){
+            .root = &ast_root,
+            .children = (const_voidp_to_const_voidp*)ASTNode_children_begin,
+            .count = (const_voidp_to_size_t*)ASTNode_num_children,
+            .size = sizeof(ASTNode),
+            .print_head = (const_voidp_to_void*)ASTNode_print_head,
+        });
+    }
 
     // Semantic Analysis
     printf("\nStarting Semantic Analysis:\n");
@@ -286,10 +294,11 @@ int main(int argc, char *argv[])
         if(entry->symNode->error) printf("Error Detected -> %s\n", entry->symNode->token.lexeme);
     }
 
-    array_free(symbol_table);
-    // TODO: print Semantic compiler error if any.
 
-    ParseTreeNode_free_children(&root);
+    array_free(symbol_table);
+
+    ParseTreeNode_free_children(&pt_root);
+    ASTNode_free_children(&ast_root);
     array_free(tokens);
     if (must_free_input)
         free(input);

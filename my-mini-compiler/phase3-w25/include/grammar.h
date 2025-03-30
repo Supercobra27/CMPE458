@@ -18,8 +18,7 @@ typedef struct _ProductionRule
     // if `promote_index == len(tokens)`, the parent node will be replaced by AST_NULL.
     // if `promote_index < len(tokens)`, the parent node will be replaced by the ASTNodeType of the child node at `tokens[promote_index]` (special if ASTNodeType is AST_NULL). 
     size_t promote_index;
-    // TODO: what should be done if ast_types[promote_index] is AST_NULL and `promote_index < len(tokens)` (either promote the AST_NULL, or pick a different promote index)?
-    // solution to be implemented for semantic analysis: add another field to indicate what to do if `ast_types[promote_index] == AST_NULL`.
+    // if `NULL`, then this is simply ignored.
     // if `ast_types[promote_index] == AST_NULL`, then if `promotion_alternate_if_AST_NULL[promote_index] == promote_index`, then promote `AST_NULL`, otherwise promote the ASTNodeType at `promotion_alternate_if_AST_NULL[promote_index]`. If there is a cycle (e.g. `promotion_alternate_if_AST_NULL[0] == 1` and `promotion_alternate_if_AST_NULL[1] == 0`), then promote `AST_NULL`.
     const size_t *promotion_alternate_if_AST_NULL;
 } ProductionRule;
@@ -60,8 +59,14 @@ size_t find_direct_left_recursive(const CFG_GrammarRule *rule);
  * 
  * @return The index of the first ProductionRule that causes direct left recursion, or -1 if there is no direct left recursion.
  */
-size_t find_indirect_left_recursive(const CFG_GrammarRule grammar[ParseToken_COUNT_NONTERMINAL], const ParseToken lhs_token);
+size_t find_indirect_left_recursive(const CFG_GrammarRule grammar[ParseToken_COUNT_NONTERMINAL], ParseToken lhs_token);
 
+/**
+ * WARNING: This can go into infinite recursion if the grammar has indirect left-recursion.
+ * 
+ * @return true if token `t` could form the prefix of a token sequence that starts with `s`. If `t == PT_NULL`, then 1 is returned.
+ */
+bool ParseToken_can_start_with(ParseToken t, ParseToken s, const CFG_GrammarRule *grammar, size_t grammar_size);
 
 /**
  * Check an array of CFG_GrammarRule for the following properties:
@@ -72,6 +77,16 @@ size_t find_indirect_left_recursive(const CFG_GrammarRule grammar[ParseToken_COU
  * @param grammar Array of CFG_GrammarRule to check.
  */
 CFG_GrammarCheckResult check_cfg_grammar(FILE *stream, const CFG_GrammarRule grammar[ParseToken_COUNT_NONTERMINAL]);
+// Some checks that are not made but should be considered if a more general grammar is used:
+//
+// Would it be necessary to rollback if left-recursive parsing fails even when the second token matches? 
+// This is possible only if the second token of the left-recursive rule may start with the first token of a non-terminal token that may follow immediatly after this left-recursive rule. For example, you began parsing S and are now left-recursively parsing A, S -> A D; A -> A B | C; B -> w...; D -> w...;  where w\in first(B) and w\in first(D). 
+// So if you had expression statements followed by a semicolon, and if you had semi-colon as a left-recursive operation, then if you parse the semicolon but fail to parse the remainder of the expression, then you should rollback the semicolon and end parsing before the semicolon.
+// This rollback scenario would only be possible if the grammar is not deterministic (i.e. B and D may share a common prefix). Since the grammar is assumed to be deterministic prior to this function being called, then this is not a problem.
+//
+// What if the left-recursive rule base case is epsilon and the first token of the left-recursive rule may also be epsilon?
+// For example, A -> A B | B; B -> C | epsilon; 
+// I believe this should be considered as non-deterministic because you could parse epsilon (empty-string) forever. Which means you would build an endless parse tree with epsilon nodes. 
 
 static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
     {
@@ -307,7 +322,6 @@ static const CFG_GrammarRule program_grammar[ParseToken_COUNT_NONTERMINAL] = {
                 .promotion_alternate_if_AST_NULL = NULL}},
         .num_rules = 1U},
             
-    // TODO: PT_ASSIGNMENTEX_R12 was not deterministic (prefix-free), this fixes it. However, this fix does not work with the single promote_index, because the promote index would need to be different for each case as can be seen below.
     {
         .lhs = PT_ASSIGNMENTEX_R12,
         .rules = (ProductionRule[]){

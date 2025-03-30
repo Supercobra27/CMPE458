@@ -70,7 +70,7 @@ typedef enum _TokenType
 const char *TokenType_to_string(TokenType type);
 
 /* Error types for lexical analysis */
-typedef enum
+typedef enum _ErrorType
 {
     ERROR_NONE,
     ERROR_INVALID_CHAR,

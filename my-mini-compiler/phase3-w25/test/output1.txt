@@ -1,0 +1,68 @@
+
+Processing input:
+```
+int x;
+x = 42;
+
+```
+Parse Tree:
+PT_PROGRAM
+|-PT_SCOPE
+| \-PT_STATEMENT_LIST
+|   |-PT_STATEMENT
+|   | \-PT_DECLARATION
+|   |   |-PT_TYPE_KEYWORD
+|   |   | \-PT_INT_KEYWORD -> TOKEN_INT_KEYWORD "int"
+|   |   |-PT_IDENTIFIER -> TOKEN_IDENTIFIER "x"
+|   |   \-PT_STATEMENT_END
+|   |     \-PT_SEMICOLON -> TOKEN_SEMICOLON ";"
+|   \-PT_STATEMENT_LIST
+|     |-PT_STATEMENT
+|     | \-PT_EXPRESSION_STATEMENT
+|     |   |-PT_EXPRESSION
+|     |   | \-PT_ASSIGNMENTEX_R12
+|     |   |   |-PT_OREX_L11
+|     |   |   | \-PT_ANDEX_L10
+|     |   |   |   \-PT_BITOREX_L9
+|     |   |   |     \-PT_BITXOREX_L8
+|     |   |   |       \-PT_BITANDEX_L7
+|     |   |   |         \-PT_RELATIONEX_L6
+|     |   |   |           \-PT_SHIFTEX_L5
+|     |   |   |             \-PT_SUMEX_L4
+|     |   |   |               \-PT_PRODUCTEX_L3
+|     |   |   |                 \-PT_UNARYPREFIXEX_R2
+|     |   |   |                   \-PT_FACTOR
+|     |   |   |                     \-PT_IDENTIFIER -> TOKEN_IDENTIFIER "x"
+|     |   |   \-PT_ASSIGNMENT_REST
+|     |   |     |-PT_ASSIGNMENT_OPERATOR
+|     |   |     | \-PT_ASSIGN_EQUAL
+|     |   |     |   \-PT_EQUAL -> TOKEN_EQUAL "="
+|     |   |     \-PT_ASSIGNMENTEX_R12
+|     |   |       |-PT_OREX_L11
+|     |   |       | \-PT_ANDEX_L10
+|     |   |       |   \-PT_BITOREX_L9
+|     |   |       |     \-PT_BITXOREX_L8
+|     |   |       |       \-PT_BITANDEX_L7
+|     |   |       |         \-PT_RELATIONEX_L6
+|     |   |       |           \-PT_SHIFTEX_L5
+|     |   |       |             \-PT_SUMEX_L4
+|     |   |       |               \-PT_PRODUCTEX_L3
+|     |   |       |                 \-PT_UNARYPREFIXEX_R2
+|     |   |       |                   \-PT_FACTOR
+|     |   |       |                     \-PT_INTEGER_CONST -> TOKEN_INTEGER_CONST "42"
+|     |   |       \-PT_ASSIGNMENT_REST
+|     |   \-PT_STATEMENT_END
+|     |     \-PT_SEMICOLON -> TOKEN_SEMICOLON ";"
+|     \-PT_STATEMENT_LIST
+\-PT_EOF -> TOKEN_EOF ""
+
+Abstract Syntax Tree:
+AST_PROGRAM
+\-AST_SCOPE
+  |-AST_DECLARATION
+  | |-AST_INT_TYPE
+  | \-AST_IDENTIFIER -> TOKEN_IDENTIFIER "x"
+  \-AST_EXPRESSION
+    \-AST_ASSIGN_EQUAL
+      |-AST_IDENTIFIER -> TOKEN_IDENTIFIER "x"
+      \-AST_INTEGER -> TOKEN_INTEGER_CONST "42"

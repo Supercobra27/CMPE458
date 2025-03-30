@@ -30,7 +30,12 @@ There are multiple sample input files for the parser located in the directory `m
 
 Todo:
 - [ ] fix number parsing for ints and floats ("5.5.5" should not be accepted as FLOAT "5.5.5")
-- [ ] Clearly list and explain each regular expression for each token (perhaps test and make everything explicit using https://regexer.com) and explain what characters are allowed to follow immediately after a token (address the question of whether "10x" is tokenized into INTEGER "10" and IDENTIFIER "x" or alternatively ERROR "10x", also "2then" is tokenized as INTEGER "2" and KEYWORD "then" which I suspect was not intended)
+- [ ] Clearly list and explain each regular expression for each token (perhaps test and make everything explicit using https://regexer.com) and explain what characters are allowed to follow immediately after a token (address the question of whether "10x" is tokenized into INTEGER "10" and IDENTIFIER "x" or alternatively ERROR "10x", also "2then" is tokenized as INTEGER "2" and KEYWORD "then" which I suspect was not intended). Here's an example of c-compiler error:
+    ```
+    [build] C:\Users\Hendrix\GitHub\CMPE458\my-mini-compiler\phase3-w25\src\main.c:189:9: error: invalid suffix "dx" on integer constant
+    [build]   189 |         1dx;
+    [build]       |         ^~~
+    ```
 - [ ] Clearly distinguish whitespace and comment regular expressions from token lexeme regular expressions
 
 Completed:
@@ -101,25 +106,27 @@ Completed:
 
 ## Phase 3: Semantic Analyzer
 ### Simple Checklist
-1. [ ] Convert Parse Tree to AST (Hendrix)
+1. [x] Convert Parse Tree to AST (Hendrix)
     - [x] Free Dynamic Memory Function
-    - [ ] Conversion Function
+    - [x] Conversion Function
     - Rules are defined in the grammar
 
 2. [ ] Define Semantic Rules
     - [ ] Declaration/Variables (Simon)
     - [ ] Assignment/Expressions (Ryan)
     - [ ] Types allowed for Operations (Ryan/Simon)
-    - [ ] Define Error Rules (Hendrix)
 
-3. [ ] Connect & Create Symbol Table (Monica)
-    - [ ] Define Data Structure - Now
-    - [ ] Determine Operations - Now
-    - [ ] Define Properties Useful for Semantic Rules
+3. [ ] Produce proper compiler error messages
+    - [ ] get rid of global variables in lexer, use a struct instead.
+    - [ ] put compiler message printing functions in main.c
+    - [x] tokenization error messages
+    - [ ] revise syntax error messages
+    - [ ] semantic error messages
 
-4. [ ] Check AST based on Rules
-    - [ ] ForEach AST node, define what is expected (typing, scope, variables)
-    - [ ] Conversion function for said defintions
+4. [ ] Check AST based on Rules 
+    - [ ] For each AST node, check correct # of childrn and types of children
+    - [ ] Be able to discern the type of Identifiers
+    - [ ] Be able to keep track of identifier scope
 
 5. [ ] Runtime Error Detection (flags)
     - [ ] Div/0
@@ -127,10 +134,8 @@ Completed:
 
 
 
+### Detailed Checklist
 Todo (in increasing order of dependency):
-- [ ] implement function to convert ParseTreeNode into ASTNode (Abstract Syntax Tree) using grammar rules (see an example here: https://stackoverflow.com/questions/5026517/whats-the-difference-between-parse-trees-and-abstract-syntax-trees-asts)
-    - [ ] implement function to free dynamic memory of an AST
-    - [ ] implement conversion function to create ASTNode from ParseTreeNode
 - [ ] specify semantic/context-sensitive rules for the programming language 
     - [ ] Declaration and use of variables (identifier) in relation to Scope and Expression.
     - [ ] type of arguments allowed in each different Operation.
@@ -166,6 +171,9 @@ Todo (in increasing order of dependency):
 
 Completed:
 - [x] decide whether PT_PROGRAM is present in the AST, or if it is removed and only Scope exists (PT_PROGRAM will exist as the start symbol)
+- [x] implement function to convert ParseTreeNode into ASTNode (Abstract Syntax Tree) using grammar rules (see an example here: https://stackoverflow.com/questions/5026517/whats-the-difference-between-parse-trees-and-abstract-syntax-trees-asts)
+    - [x] implement function to free dynamic memory of an AST
+    - [x] implement conversion function to create ASTNode from ParseTreeNode
 
 ## Phase 4: Code Generation
 
@@ -187,7 +195,7 @@ Todo:
 
 ### Abstract Syntax Tree Grammar
 - the ^ symbol following a token indicates that that token is promoted in-place of the left-hand side of the production rule
-- the @ symbol following a token indicates that it's children are promoted to replace it
+- the @ symbol following a token indicates that its children are promoted to replace it
 ```
 Program -> Scope
 Scope -> StatementList@

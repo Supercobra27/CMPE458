@@ -28,6 +28,12 @@ Token get_next_token();
 
 void print_token(Token token);
 
+/**
+ * @brief Print a compiler message for a token, may occupy multiple lines.
+ * 
+ * @param input_file_path The path to the input file.
+ * @param token The token to print. `token.position` must have been set correctly as an output from `get_next_token`.
+ */
 void print_token_compiler_message(const char *input_file_path, Token token);
 
 #endif /* LEXER_H */
