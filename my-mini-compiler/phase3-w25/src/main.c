@@ -1,34 +1,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <assert.h>
 #include "../include/dynamic_array.h"
 #include "../include/grammar.h"
 #include "../include/lexer.h"
 #include "../include/parser.h"
 #include "../include/tree.h"
-
-// Debugging flag
-struct debug_flags {
-    bool grammar_check;
-    bool grammar_check_verbose;
-    bool show_input;
-    bool print_tokens;
-    bool print_parse_tree;
-    bool print_abstract_syntax_tree;
-    bool print_symbol_table; 
-} const DEBUG = {
-    .grammar_check = true,
-    .grammar_check_verbose = false,
-    .show_input = false,
-    .print_tokens = false, 
-    .print_parse_tree = false, 
-    .print_abstract_syntax_tree = false, 
-    .print_symbol_table = false
-};
-// File extension for input files
-const char *const FILE_EXT = ".cisc";
-
 
 /**
  * Print Token information to stdout.
@@ -108,7 +85,7 @@ void print_token_compiler_message(FILE *const stream, const Lexer *const l, cons
     const char *const line_end = strchr(l->input_string + line_start_pos, '\n');
     const int line_length = line_end == NULL ? (int)strlen(l->input_string + line_start_pos) : line_end - (l->input_string + line_start_pos);
     // tildes is supposed to be as long as the longest token lexeme so that it can always be chopped to the right length.
-    static const char *tildes = "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
+    static const char *const tildes = "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
     fprintf(stream,
         "%s:%d:%d: %s\n"
         "%.*s\n"
@@ -117,7 +94,6 @@ void print_token_compiler_message(FILE *const stream, const Lexer *const l, cons
         line_length, l->input_string + line_start_pos,
         token->position.col_start, "^", token->position.col_end - token->position.col_start, tildes);
 }
-
 
 // Enhanced syntax error reporting function using new print function
 void report_syntax_errors(FILE *const stream, const Lexer *const l, const ParseTreeNode *const node, const char *const filepath) {
@@ -144,8 +120,29 @@ void report_syntax_errors(FILE *const stream, const Lexer *const l, const ParseT
     }
 }
 
+// Debugging flags
+struct debug_flags {
+    bool grammar_check;
+    bool grammar_check_verbose;
+    bool show_input;
+    bool print_tokens;
+    bool print_parse_tree;
+    bool print_abstract_syntax_tree;
+    bool print_symbol_table; 
+} const DEBUG = {
+    .grammar_check = true,
+    .grammar_check_verbose = false,
+    .show_input = false,
+    .print_tokens = false, 
+    .print_parse_tree = false, 
+    .print_abstract_syntax_tree = false, 
+    .print_symbol_table = false
+};
+// File extension for input files
+const char *const FILE_EXT = ".cisc";
 
 int main(int const argc, const char *const argv[]) {
+    // TODO: Add command line argument parsing for debug flags.
     if (DEBUG.grammar_check) {
         if (DEBUG.grammar_check_verbose)
             printf("Validating grammar:\n");
