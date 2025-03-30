@@ -10,14 +10,15 @@
 #include "../../include/simple_dynamic_array.h"
 
 /**
-* Sets the fields of the ParseTreeNode to their default values (all zero, finalized_promo_index = SIZE_MAX). 
- *
+ * This is not actually used very much, but it is more for documentation purposes of what the initial values are for an empty node.
+ * 
+ * Sets the fields of the ParseTreeNode to their default values (all zero, finalized_promo_index = SIZE_MAX). 
  * 
  * Then allocate memory for the children array if capacity is non-zero.
  * @param node The node to initialize. (must not be NULL).
  * @param capacity The initial capacity of the children array.
  */
-static inline void ParseTreeNode_init_zero(ParseTreeNode *node, size_t capacity) {
+static inline void ParseTreeNode_init(ParseTreeNode *const node, size_t const capacity) {
     assert(node != NULL);
     node->type = PT_NULL;
     node->token = NULL;
@@ -28,9 +29,9 @@ static inline void ParseTreeNode_init_zero(ParseTreeNode *node, size_t capacity)
     node->capacity = 0;
     node->count = 0;
     if (capacity) {
-        node->children = calloc(capacity, sizeof(ParseTreeNode));
+        node->children = malloc(capacity * sizeof(ParseTreeNode));
         if (node->children == NULL) {
-            perror("calloc");
+            perror("malloc");
             exit(EXIT_FAILURE);
         }
         node->capacity = capacity;
@@ -97,14 +98,9 @@ void initialize_children_by_rule(ParseTreeNode *const node, const Token *const i
 void initialize_children_default_error_recovery(ParseTreeNode *const node) {
     ++node->count; // increment count to accept the first child that failed to parse.
     for (; node->count < node->capacity; ++node->count) {
+        ParseTreeNode_init(node->children + node->count, 0);
         node->children[node->count].type = node->rule->tokens[node->count];
         node->children[node->count].error = PARSE_ERROR_PREVIOUS_TOKEN_FAILED_TO_PARSE;
-        node->children[node->count].token = NULL;
-        node->children[node->count].rule = NULL;
-        node->children[node->count].finalized_promo_index = SIZE_MAX;
-        node->children[node->count].capacity = 0;
-        node->children[node->count].count = 0;
-        node->children[node->count].children = NULL;
     }
 }
 
@@ -195,8 +191,7 @@ bool parse_cfg_recursive_descent_parse_tree(ParseTreeNode *const node, size_t *c
     // Repeatedly parse the rest of the left-recursive rule until it can't be parsed anymore. When it can't be parsed further, just stop and return what worked so far.
     // This left-recursive parsing is a little bit precarious, it has really only been tested with program_grammar.
     // See `check_cfg_grammar` in `grammar.h` for more information on grammar validation.
-    while (ParseToken_can_start_with(left_recursive_rule->tokens[1], (ParseToken)input[*index].type, grammar, grammar_size))
-    {
+    while (ParseToken_can_start_with(left_recursive_rule->tokens[1], (ParseToken)input[*index].type, grammar, grammar_size)) {
         // could get away from copying the whole node. but this is easier to understand.
         const ParseTreeNode temp = *node;
         node->children = malloc(left_recursive_rule_num_children * sizeof(ParseTreeNode));
@@ -300,8 +295,7 @@ bool ASTNode_from_ParseTreeNode_impl(ASTNode *const a, ParseTreeNodeWithPromo *c
 
     if (p->type == PT_NULL)
         return true;
-    if (ParseToken_IS_TERMINAL(p->type)) 
-    {
+    if (ParseToken_IS_TERMINAL(p->type)) {
         if (p->token == NULL) {
             a->error = AST_ERROR_MISSING_TOKEN;
             return false;
@@ -356,6 +350,7 @@ bool ASTNode_from_ParseTreeNode_impl(ASTNode *const a, ParseTreeNodeWithPromo *c
                 a->error = AST_ERROR_CHILD_ERROR;
                 return false;
             }
+        // push only a single child to the array.
         } else {
             da_push(a, ((ASTNode){.type = rule->ast_types[i], .error = AST_ERROR_NONE, .token = (Token){0}, .items = NULL, .count = 0, .capacity = 0}));
             if (!ASTNode_from_ParseTreeNode_impl(a->items + a->count - 1, p->children + i)) {
@@ -369,21 +364,17 @@ bool ASTNode_from_ParseTreeNode_impl(ASTNode *const a, ParseTreeNodeWithPromo *c
         }
     }
 
-    if (p->error) {
-        switch (p->error) {
-            case PARSE_ERROR_WRONG_TOKEN:
-                a->error = AST_ERROR_TOKEN_ERROR;
-                break;
-            case PARSE_ERROR_CHILD_ERROR:
-                a->error = AST_ERROR_CHILD_ERROR;
-                break;
-            case PARSE_ERROR_NO_RULE_MATCHES:
-                a->error = AST_ERROR_UNSPECIFIED_PRODUCTION_RULE;
-                break;
-            default:
-                a->error = AST_ERROR_UNSPECIFIED_PRODUCTION_RULE;
-                break;
-        }
+    switch (p->error) {
+        case PARSE_ERROR_NONE:
+        case PARSE_ERROR_WRONG_TOKEN: // handled in the terminal case.
+            break;
+        case PARSE_ERROR_CHILD_ERROR:
+            a->error = AST_ERROR_CHILD_ERROR;
+            break;
+        case PARSE_ERROR_NO_RULE_MATCHES:
+        case PARSE_ERROR_PREVIOUS_TOKEN_FAILED_TO_PARSE:
+            a->error = AST_ERROR_UNSPECIFIED_PRODUCTION_RULE;
+            break;
     }
 
     return a->error == AST_ERROR_NONE;
