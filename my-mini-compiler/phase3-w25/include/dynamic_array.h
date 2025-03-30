@@ -125,4 +125,11 @@ Element *array_begin(Array *const a);
  */
 Element *array_end(Array *const a);
 
+/**
+ * Removes and returns the last element from the array.
+ * @param a The array to pop an element from. If `a` is NULL or invalid, Undefined behavior.
+ * @return A pointer to the popped element. Undefined behavior if the array is empty.
+ */
+Element *array_pop(Array *const a);
+
 #endif

@@ -4,7 +4,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <assert.h>
-
+#include <stdint.h>
 #include "../../include/tokens.h"
 #include "../../include/parser.h"
 #include "../../include/simple_dynamic_array.h"

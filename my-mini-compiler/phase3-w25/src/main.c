@@ -1,12 +1,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <assert.h>
+#include <stdint.h>
 #include "../include/dynamic_array.h"
 #include "../include/grammar.h"
 #include "../include/lexer.h"
 #include "../include/parser.h"
 #include "../include/tree.h"
-
+#include "../include/semantic.h"
 /**
  * Print Token information to stdout.
  * 
@@ -277,9 +279,23 @@ int main(int const argc, const char *const argv[]) {
         });
     }
 
-    // TODO: Semantic Analysis
+    // Semantic Analysis
+    printf("\nStarting Semantic Analysis:\n");
+    Array *symbol_table = array_new(8, sizeof(symEntry));
+    ProcessProgram(&ast_root, symbol_table);
+    // print symbol table entries
+    for (size_t i = 0; i < array_size(symbol_table); i++){
+        printf("Declared Variable -> %s ", ((symEntry *)array_get(symbol_table, i))->symNode->token.lexeme);
+        printf("Scope -> %s\n", ((symEntry *)array_get(symbol_table, i))->scope);
+    }
+    // print symbol table entries with errors
+    for (size_t i = 0; i < array_size(symbol_table); i++){
+        symEntry *entry = (symEntry *)array_get(symbol_table, i);
+        if(entry->symNode->error) printf("Error Detected -> %s\n", entry->symNode->token.lexeme);
+    }
 
-    // TODO: print semantic errors if any.
+
+    array_free(symbol_table);
 
     ParseTreeNode_free_children(&pt_root);
     ASTNode_free_children(&ast_root);

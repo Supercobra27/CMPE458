@@ -2,6 +2,8 @@
 Semantic Rules defined for - Assignment/Expressions
 Ryan
 
+Rules:
+Every operation must have 2 children maximum and must be of the same type (int/float)
 
 ## AST Grammar
 Expression -> Operation^ 

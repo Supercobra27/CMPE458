@@ -1,0 +1,16 @@
+int x;
+
+{
+    int a;
+}
+{
+    {
+        float s;
+    }
+    {
+        int s; ?? valid redeclaration since scope does not conflict with previous identifier named 's'
+        {
+            string s; ?? this is an invalid redeclaration because of scope conflicts
+        }
+    }
+}
