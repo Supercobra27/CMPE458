@@ -15,7 +15,7 @@
 typedef struct _ParseTreeNode {
     ParseToken type;
     ParseErrorType error;
-    const Token *token; // Token associated with this node. NULL iff ParseToken_IS_NONTERMINAL(type).
+    const Token *token; // Token associated with this node. When initialized: `NULL` if and only if `ParseToken_IS_NONTERMINAL(type)` and `error != PARSE_ERROR_NONE`.
     const ProductionRule *rule; // Rule used to parse this node. NULL iff ParseToken_IS_TERMINAL(type).
     size_t finalized_promo_index;
     size_t count;

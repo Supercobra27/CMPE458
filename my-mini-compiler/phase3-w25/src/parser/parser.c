@@ -60,33 +60,6 @@ void ParseTreeNode_print_simple(ParseTreeNode *node, int level, void (*print_nod
 }
 
 /**
- * WARNING: This can go into infinite recursion if the grammar has indirect left-recursion.
- * 
- * @return true if token `t` could form the prefix of a token sequence that starts with `s`. If `t == PT_NULL`, then 1 is returned.
- */
-bool ParseToken_can_start_with(const ParseToken t, const ParseToken s, const CFG_GrammarRule *grammar, const size_t grammar_size)
-{
-    assert(grammar != NULL);
-    assert(grammar_size >= ParseToken_COUNT_NONTERMINAL);
-    if (t == s || t == PT_NULL) {
-        return true;
-    } else if (ParseToken_IS_NONTERMINAL(t)) {
-        const CFG_GrammarRule *const g_rule = grammar + t - ParseToken_FIRST_NONTERMINAL;
-        for (const ProductionRule *p_rule = g_rule->rules, *const end = g_rule->rules + g_rule->num_rules; 
-            p_rule < end; ++p_rule) {
-            // direct left-recursive rule. Skip this rule to prevent infinite recursion and check the next one.
-            if (p_rule->tokens[0] == t) 
-                continue;
-            // this is where infinite recursion can happen if the grammar has indirect left-recursion.
-            if (ParseToken_can_start_with(p_rule->tokens[0], s, grammar, grammar_size)) {
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
-/**
  * WARNING: 
  * - this function naively populates the children of the node according to the production rule, ignore any left-recursion.
  * - if any of `node`, `node->rule`, `input`, `index`, `grammar` are NULL or invalid, then the behavior is undefined.
@@ -220,9 +193,8 @@ bool parse_cfg_recursive_descent_parse_tree(ParseTreeNode *const node, size_t *c
     while (left_recursive_rule->tokens[left_recursive_rule_num_children] != PT_NULL) 
         ++left_recursive_rule_num_children;
     // Repeatedly parse the rest of the left-recursive rule until it can't be parsed anymore. When it can't be parsed further, just stop and return what worked so far.
-    // Would it be necessary to rollback if parsing fails even when the first token matches? This is possible only if the second token of the left-recursive rule may start with the first token of a non-terminal token that may follow immediatly after this left-recursive rule. For example, S -> A D; A -> A B | C; B -> ...; D -> ...;  where first(B)\subset first(D). 
-    // So if you had expression statements followed by a semicolon, and if you had semi-colon as a left-recursive operation, then if you parse the semicolon but fail to parse the remainder of the expression, then you should rollback the semicolon and end parsing before the semicolon.
-    // This rollback scenario would only apply if the grammar is not deterministic (i.e. B and D may share a common prefix). Since the grammar is assumed to be deterministic prior to this function being called, then this is not a problem.
+    // This left-recursive parsing is a little bit precarious, it has really only been tested with program_grammar.
+    // See `check_cfg_grammar` in `grammar.h` for more information on grammar validation.
     while (ParseToken_can_start_with(left_recursive_rule->tokens[1], (ParseToken)input[*index].type, grammar, grammar_size))
     {
         // could get away from copying the whole node. but this is easier to understand.
