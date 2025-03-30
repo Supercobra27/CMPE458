@@ -145,13 +145,24 @@ int main(int argc, char *argv[])
         //         "int ;";
 
         input = 
-            "if 1 > 2 then { read x; x = 2; }\n"
+            "float x;\n"
+            "int y;\n"
+            "if 1 > 2 then { read x; x = 2.0; }\n"
             "{ \n    float w;\n    w = 3.14159;\n    {{{{\"middle\";}}}}\n}\n"
             "; ?? skip the empty statement\n"
             "string s;\n"
             "string s;\n"
-            "1 + 2 + 3;\n"
+            "1 + x + 3.0;\n"
+            "x + x + x;\n"
+            "int z;\n"
             "x = z + 1 - 1;\n"
+            "{int e; e = 1;}\n"
+            "int e;\n"
+            //"int u;\n"
+            "{{{{int u;}}}}\n"
+            "{int u;}\n"
+            "e = 3;\n"
+            "int y;\n"
             "print 5 * (2 + 3);\n"
             "print \"test\";"
             "{read x;\n"
@@ -159,6 +170,7 @@ int main(int argc, char *argv[])
             "while 0 { }\n"
             "y = ~x; y = -x; y = !x; y = factorial(x);\n"
             "if (!x) then { x = 1; };\n"
+            "if (\"y\") then { };"
             "repeat { } until 1;}\n";
     }
 

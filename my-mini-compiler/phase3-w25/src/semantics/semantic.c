@@ -6,9 +6,9 @@
 #include <stdint.h>
 
 void ProcessScopeChild(ASTNode *ctx, Array *symbol_table);
-void ProcessExpression(ASTNode *ctx, Array *symbol_table);
+ASTNodeType ProcessExpression(ASTNode *ctx, Array *symbol_table);
 void ProcessDeclaration(ASTNode *ctx, Array *symbol_table);
-void ProcessOperation(ASTNode *ctx, Array *symbol_table);
+ASTNodeType ProcessOperation(ASTNode *ctx, Array *symbol_table);
 void ProcessProgram(ASTNode *head, Array *symbol_table);
 // Scope tracking functions
 void InitializeScopeStack();
@@ -87,11 +87,11 @@ bool ScopesConflict(const char* scope1, const char* scope2) {
     size_t len1 = strlen(scope1);
     size_t len2 = strlen(scope2);
 
-    if (len1 < len2) {
-        if (strncmp(scope1, scope2, len1) == 0 && scope2[len1] == '.') {
-            return true;
-        }
-    }
+    // if (len1 < len2) {
+    //     if (strncmp(scope1, scope2, len1) == 0 && scope2[len1] == '.') {
+    //         return true;
+    //     }
+    // }
 
     if (len2 < len1) {
         if (strncmp(scope2, scope1, len2) == 0 && scope1[len2] == '.') {
@@ -100,6 +100,28 @@ bool ScopesConflict(const char* scope1, const char* scope2) {
     }
     
     return false;
+}
+
+bool AssignmentExists(const char* scope1, const char* scope2){
+    return ScopesConflict(scope1, scope2);
+}
+
+ASTNodeType VarToLiteral(ASTNodeType varType){
+        switch (varType){
+            case AST_INT_TYPE:
+            varType = AST_INTEGER;
+            break;
+            case AST_FLOAT_TYPE:
+            varType = AST_FLOAT;
+            break;
+            case AST_STRING_TYPE:
+            varType = AST_STRING;
+            break;
+            default:
+            varType = AST_NULL;
+            break;
+        }
+    return varType;
 }
 
 void CleanupScopeStack() {
@@ -119,8 +141,10 @@ bool isNumeric(ASTNodeType type) {
     return type == AST_INTEGER || type == AST_FLOAT;
 }
 
-void ProcessExpression(ASTNode *ctx, Array *symbol_table) {
+ASTNodeType ProcessExpression(ASTNode *ctx, Array *symbol_table) {
     if (ctx->type == AST_EXPRESSION) ctx = &CHILD_ITEM(ctx, 0);
+    ASTNodeType typeOP;
+
     switch (ctx->type) {
         case AST_ASSIGN_EQUAL:
         case AST_ADD:
@@ -145,22 +169,36 @@ void ProcessExpression(ASTNode *ctx, Array *symbol_table) {
         case AST_LOGICAL_NOT:
         case AST_NEGATE:
         case AST_FACTORIAL:
-            ProcessOperation(ctx, symbol_table);
+            typeOP = ProcessOperation(ctx, symbol_table);
+            return typeOP;
             break;
         case AST_INTEGER:
         case AST_FLOAT:
         case AST_STRING:
-            // TODO: return the type of the literal
             printf("Literal Analyzing -> %s | %s\n", ASTNodeType_to_string(ctx->type), ctx->token.lexeme);
+            return ctx->type;
             break;
         case AST_IDENTIFIER:
-            // TODO: look for variable in symbol table, ensure it's in scope, and return the type.
             printf("Identifier Analyzing -> %s | %s\n", ASTNodeType_to_string(ctx->type), ctx->token.lexeme);
+            char *scope = GetCurrentScope();
+            for(size_t item = 0; item < array_size(symbol_table); item++){
+                symEntry *entry = (symEntry *)array_get(symbol_table, item);
+                if (strcmp(entry->symNode->token.lexeme, ctx->token.lexeme) == 0){
+                    if (AssignmentExists(scope, entry->scope)){
+                        return entry->type;
+                    }
+                }
+            }
+            printf("Error Reported -> Non-Declared Variable\n");
+            ctx->error = AST_ERROR_UNDECLARED_VAR;
+            return AST_NULL;
             break;
         default:
             fprintf(stderr, "Invalid expression node type\n");
+            return AST_NULL;
             break;
     }
+    return AST_NULL;
 }
 
 void ProcessDeclaration(ASTNode *ctx, Array *symbol_table) {
@@ -210,29 +248,36 @@ void ProcessDeclaration(ASTNode *ctx, Array *symbol_table) {
     }
 }
 
-ASTNodeType returnType(ASTNode *ctx) {
-    if (ctx->count == 1) return ctx->type;
-    ASTNodeType leftType = CHILD_TYPE(ctx, 0);
-    ASTNodeType rightType = CHILD_TYPE(ctx, 1);
-    assert(leftType == rightType);
-    return leftType;
-}
-// Need to fix multiple operators to check for types
-
-void ProcessOperator(ASTNode *ctx, Array *symbol_table){
+ASTNodeType ProcessOperator(ASTNode *ctx, Array *symbol_table){
     assert(ctx->count == 2); // Binary operator
-    ASTNodeType leftType = CHILD_TYPE(ctx, 0);
-    ASTNodeType rightType = CHILD_TYPE(ctx, 1);
-    if (isNumeric(leftType) && isNumeric(rightType)) assert(leftType == rightType); // ctx->type = returnType(ctx);
     printf("Operator Analyzing -> %s\n", ASTNodeType_to_string(ctx->type));
-    ProcessExpression(&CHILD_ITEM(ctx, 0), symbol_table);
-    ProcessExpression(&CHILD_ITEM(ctx, 1), symbol_table);
+    ASTNodeType LHS = ProcessExpression(&CHILD_ITEM(ctx, 0), symbol_table);
+    ASTNodeType RHS = ProcessExpression(&CHILD_ITEM(ctx, 1), symbol_table);
+
+    if (LHS >= AST_INT_TYPE && LHS < AST_SKIP) LHS = VarToLiteral(LHS);
+    if (RHS >= AST_INT_TYPE && RHS < AST_SKIP) RHS = VarToLiteral(RHS);
+
+    if (LHS != RHS && (LHS != AST_NULL && RHS != AST_NULL)) {
+        ctx->error = AST_ERROR_INCOMPATIBLE_TYPES;
+        printf("Error Reported -> Incompatible Types\n");
+    } else if (LHS != RHS){
+        ctx->error = AST_ERROR_UNDEFINED_ASSIGNMENT;
+        printf("Error Reported -> Assignment failed, are all variables declared?\n");
+    } else {
+        return LHS;
+    }
+    return AST_NULL;
 }
 
-void ProcessUnaryOperator(ASTNode *ctx, Array *symbol_table){
+ASTNodeType ProcessUnaryOperator(ASTNode *ctx, Array *symbol_table){
     assert(ctx->count == 1);
+    ASTNodeType type;
     printf("Operator Analyzing -> %s\n", ASTNodeType_to_string(ctx->type));
-    ProcessExpression(&CHILD_ITEM(ctx, 0), symbol_table);
+    type = ProcessExpression(&CHILD_ITEM(ctx, 0), symbol_table);
+    
+    if (type >= AST_INT_TYPE && type < AST_SKIP) type = VarToLiteral(type);
+
+    return type;
 }
 
 void ProcessIO(ASTNode *ctx, Array *symbol_table){
@@ -242,18 +287,43 @@ void ProcessIO(ASTNode *ctx, Array *symbol_table){
 }
 
 // Handles Assignment, Operator, Unary Operator
-void ProcessOperation(ASTNode *ctx, Array *symbol_table){
+ASTNodeType ProcessOperation(ASTNode *ctx, Array *symbol_table){
     if (ctx->type == AST_ASSIGN_EQUAL) {
         printf("Assignment Analyzing -> %s\n", ASTNodeType_to_string(ctx->type));
         assert(ctx->count == 2);
-        assert(CHILD_TYPE(ctx, 0) == AST_IDENTIFIER); // LHS must be an identifier
-        assert(CHILD_TYPE(ctx, 1) != AST_ASSIGN_EQUAL); // prevent chained assignment
-        ProcessExpression(&CHILD_ITEM(ctx, 1), symbol_table); // recurse because RHS expression
+
+        //assert(CHILD_TYPE(ctx, 0) == AST_IDENTIFIER); // LHS must be an identifier
+        //assert(CHILD_TYPE(ctx, 1) != AST_ASSIGN_EQUAL); // prevent chained assignment
+
+        if (!(CHILD_TYPE(ctx, 0) == AST_IDENTIFIER)) { 
+            ctx->error = AST_ERROR_EXPECTED_IDENTIFIER; 
+            return AST_NULL; 
+        }
+        if ((CHILD_TYPE(ctx, 1) == AST_ASSIGN_EQUAL)) { 
+            ctx->error = AST_ERROR_EXPECTED_ASSIGNMENT; 
+            return AST_NULL; 
+        }
+        ASTNodeType LHS = VarToLiteral(ProcessExpression(&CHILD_ITEM(ctx, 0), symbol_table));
+        ASTNodeType RHS = ProcessExpression(&CHILD_ITEM(ctx, 1), symbol_table);
+
+        if (RHS >= AST_INT_TYPE && RHS < AST_SKIP) RHS = VarToLiteral(RHS);
+
+        if (LHS != RHS && (LHS == AST_NULL || RHS == AST_NULL)) {
+            ctx->error = AST_ERROR_UNDEFINED_ASSIGNMENT;
+            printf("Error Reported -> Undefined Assignment\n");
+        }else if(LHS != RHS){
+            ctx->error = AST_ERROR_INCOMPATIBLE_TYPES;
+            printf("Error Reported -> Incompatible Types upon Assignment\n");
+        }
     } else if (ctx->type >= AST_LOGICAL_OR && ctx->type < AST_BITWISE_NOT) {
-        ProcessOperator(ctx, symbol_table);
+        ASTNodeType typeEval = ProcessOperator(ctx, symbol_table);
+        return typeEval;
     } else if (ctx->type >= AST_BITWISE_NOT) {
-        ProcessUnaryOperator(ctx, symbol_table);
+        ASTNodeType typeEval = ProcessUnaryOperator(ctx, symbol_table);
+        return typeEval;
     }
+
+    return AST_NULL;
 }
 
 int currScope;
@@ -291,11 +361,16 @@ void ProcessScope(ASTNode *ctx, Array *symbol_table) {
 void ProcessConditional(ASTNode *ctx, Array *symbol_table) { // If statements
     assert(ctx->type == AST_CODITIONAL);
     assert(ctx->count == 3); // A conditional should have a condition and two scopes
+    ASTNodeType outcome = AST_NULL;
 
     printf("Conditional Analyzing -> %s\n", ASTNodeType_to_string(ctx->type));
 
     // TODO: operation returns int, 0=false, non-zero=true
-    ProcessOperation(&CHILD_ITEM(ctx, 0), symbol_table); // Process the comparison
+    outcome = ProcessOperation(&CHILD_ITEM(ctx, 0), symbol_table); // Process the comparison
+    if (outcome != AST_INTEGER){
+            printf("Error Reported -> Incompatible Conditional\n");
+            ctx->error = AST_ERROR_INVALID_CONDITIONAL;
+    }
     ProcessScope(&CHILD_ITEM(ctx, 1), symbol_table); // ThenScope
     ProcessScope(&CHILD_ITEM(ctx, 2), symbol_table); // ElseScope
 }
@@ -303,19 +378,26 @@ void ProcessConditional(ASTNode *ctx, Array *symbol_table) { // If statements
 void ProcessLoop(ASTNode *ctx, Array *symbol_table) {
     assert(ctx->type == AST_WHILE_LOOP || ctx->type == AST_REPEAT_UNTIL_LOOP);
     assert(ctx->count == 2);
+    ASTNodeType outcome = AST_NULL;
 
     printf("Loop Analyzing -> %s\n", ASTNodeType_to_string(ctx->type));
 
     if (ctx->type == AST_WHILE_LOOP) {
-        // TODO: ensure the expression is not a string
-        ProcessExpression(&CHILD_ITEM(ctx, 0), symbol_table);
+        outcome = ProcessExpression(&CHILD_ITEM(ctx, 0), symbol_table);
+        if (outcome == AST_STRING){
+            printf("Error Reported -> Incompatible Conditional\n");
+            ctx->error = AST_ERROR_INVALID_CONDITIONAL;
+        }
         ProcessScope(&CHILD_ITEM(ctx, 1), symbol_table);
     }
 
     if(ctx->type == AST_REPEAT_UNTIL_LOOP) {
         ProcessScope(&CHILD_ITEM(ctx, 0), symbol_table);
-        // TODO: ensure the expression is not a string
-        ProcessExpression(&CHILD_ITEM(ctx, 1), symbol_table);
+        outcome = ProcessExpression(&CHILD_ITEM(ctx, 1), symbol_table);
+        if (outcome == AST_STRING){
+            printf("Error Reported -> Incompatible Conditional\n");
+            ctx->error = AST_ERROR_INVALID_CONDITIONAL;
+        }
     }
 }
 
