@@ -128,6 +128,8 @@ const char *ASTErrorType_to_string(const ASTErrorType t)
             return "AST_ERROR_UNDECLARED_VAR";
         case AST_ERROR_INCOMPATIBLE_TYPES:
             return "AST_ERROR_INCOMPATIBLE_TYPES";
+        case AST_ERROR_DIVISION_BY_ZERO:
+            return "AST_ERROR_DIVISION_BY_ZERO";
     }
     return "UNKNOWN";
 }
