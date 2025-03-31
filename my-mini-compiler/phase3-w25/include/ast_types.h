@@ -82,7 +82,8 @@ typedef enum _ASTErrorType {
     AST_ERROR_REDECLARATION_VAR,
     AST_ERROR_UNDEFINED_ASSIGNMENT,
     AST_ERROR_UNDECLARED_VAR,
-    AST_ERROR_INCOMPATIBLE_TYPES // need to add to error -> string
+    AST_ERROR_INCOMPATIBLE_TYPES, // need to add to error -> string
+    AST_ERROR_DIVISION_BY_ZERO
 } ASTErrorType;
 
 const char *ASTErrorType_to_string(ASTErrorType t);

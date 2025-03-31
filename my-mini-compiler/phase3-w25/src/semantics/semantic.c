@@ -267,6 +267,17 @@ ASTNodeType ProcessOperator(ASTNode *ctx, Array *symbol_table){
     if (LHS >= AST_INT_TYPE && LHS < AST_SKIP) LHS = VarToLiteral(LHS);
     if (RHS >= AST_INT_TYPE && RHS < AST_SKIP) RHS = VarToLiteral(RHS);
 
+    // Check for division/modulo by zero if RHS is a literal 0
+    if ((ctx->type == AST_DIVIDE || ctx->type == AST_MODULO) &&
+        (CHILD_TYPE(ctx, 1) == AST_INTEGER || CHILD_TYPE(ctx, 1) == AST_FLOAT) &&
+        strcmp(CHILD_ITEM(ctx, 1).token.lexeme, "0") == 0) {
+
+        ctx->error = AST_ERROR_DIVISION_BY_ZERO;
+        array_push(semanticErrors, (Element *)ctx);
+        printf("Error Reported -> Division or Modulo by Zero\n");
+    }
+
+
     if (LHS != RHS && (LHS != AST_NULL && RHS != AST_NULL)) {
         ctx->error = AST_ERROR_INCOMPATIBLE_TYPES;
         array_push(semanticErrors, (Element *)ctx);

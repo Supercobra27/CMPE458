@@ -233,7 +233,9 @@ int main(int const argc, const char *const argv[]) {
             "while 0 { }\n"
             "y = ~x; y = -x; y = !x; y = factorial(x);\n"
             "if (!x) then { x = 1; };\n"
-            "if (\"y\") then { };"
+            "if (\"y\") then { };\n"
+            "int k;\n"
+            "k = 7/0;\n"
             "repeat { } until 1;}\n";
 
         // Print usage for file input.
