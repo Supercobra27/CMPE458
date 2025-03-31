@@ -5,11 +5,11 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-void ProcessScopeChild(ASTNode *ctx, Array *symbol_table);
-ASTNodeType ProcessExpression(ASTNode *ctx, Array *symbol_table);
-void ProcessDeclaration(ASTNode *ctx, Array *symbol_table);
-ASTNodeType ProcessOperation(ASTNode *ctx, Array *symbol_table);
-Array* ProcessProgram(ASTNode *head, Array *symbol_table);
+void ProcessScopeChild(ASTNode *ctx, Array *symbol_table, FILE *stream);
+ASTNodeType ProcessExpression(ASTNode *ctx, Array *symbol_table, FILE *stream);
+void ProcessDeclaration(ASTNode *ctx, Array *symbol_table, FILE *stream);
+ASTNodeType ProcessOperation(ASTNode *ctx, Array *symbol_table, FILE *stream);
+Array* ProcessProgram(ASTNode *head, Array *symbol_table, FILE *stream);
 // Scope tracking functions
 void InitializeScopeStack();
 char *GetCurrentScope();
@@ -147,7 +147,7 @@ bool isNumeric(ASTNodeType type) {
     return type == AST_INTEGER || type == AST_FLOAT;
 }
 
-ASTNodeType ProcessExpression(ASTNode *ctx, Array *symbol_table) {
+ASTNodeType ProcessExpression(ASTNode *ctx, Array *symbol_table, FILE *stream) {
     if (ctx->type == AST_EXPRESSION) ctx = &CHILD_ITEM(ctx, 0);
     ASTNodeType typeOP;
 
@@ -175,17 +175,18 @@ ASTNodeType ProcessExpression(ASTNode *ctx, Array *symbol_table) {
         case AST_LOGICAL_NOT:
         case AST_NEGATE:
         case AST_FACTORIAL:
-            typeOP = ProcessOperation(ctx, symbol_table);
+            typeOP = ProcessOperation(ctx, symbol_table, stream);
             return typeOP;
             break;
         case AST_INTEGER:
         case AST_FLOAT:
         case AST_STRING:
-            printf("Literal Analyzing -> %s | %s\n", ASTNodeType_to_string(ctx->type), ctx->token.lexeme);
+            if (stream) fprintf(stream, "Literal Analyzing -> %s | %s\n", ASTNodeType_to_string(ctx->type), ctx->token.lexeme);
             return ctx->type;
             break;
         case AST_IDENTIFIER:
-            printf("Identifier Analyzing -> %s | %s\n", ASTNodeType_to_string(ctx->type), ctx->token.lexeme);
+            if (stream) fprintf(stream, "Identifier Analyzing -> %s | %s\n", 
+                ASTNodeType_to_string(ctx->type), ctx->token.lexeme);
             char *scope = GetCurrentScope();
             for(size_t item = 0; item < array_size(symbol_table); item++){
                 symEntry *entry = (symEntry *)array_get(symbol_table, item);
@@ -195,7 +196,7 @@ ASTNodeType ProcessExpression(ASTNode *ctx, Array *symbol_table) {
                     }
                 }
             }
-            printf("Error Reported -> Non-Declared Variable\n");
+            fprintf(stderr, "Error Reported -> Non-Declared Variable\n");
             ctx->error = AST_ERROR_UNDECLARED_VAR;
             array_push(semanticErrors, (Element *)ctx);
             return AST_NULL;
@@ -208,14 +209,14 @@ ASTNodeType ProcessExpression(ASTNode *ctx, Array *symbol_table) {
     return AST_NULL;
 }
 
-void ProcessDeclaration(ASTNode *ctx, Array *symbol_table) {
+void ProcessDeclaration(ASTNode *ctx, Array *symbol_table, FILE *stream) {
     assert(ctx->count == 2); // ensure 2 children
 
     if (ctx->error != AST_ERROR_NONE) return;
     
     // get the identifier node to access the name
     ASTNode *identifierNode = &CHILD_ITEM(ctx, 1);
-    printf("Declaration Analyzing -> %s\n", ASTNodeType_to_string(CHILD_TYPE(ctx, 0)));
+    if (stream) fprintf(stream, "Declaration Analyzing -> %s\n", ASTNodeType_to_string(CHILD_TYPE(ctx, 0)));
     
     // Get the current scope
     char *currentScope = GetCurrentScope();
@@ -233,10 +234,9 @@ void ProcessDeclaration(ASTNode *ctx, Array *symbol_table) {
             // check scopes
             if (ScopesConflict(currentScope, other->scope)) {
                 redeclared = true;
-                // Save Error - Redeclaration
                 identifierNode->error = AST_ERROR_REDECLARATION_VAR;
                 array_push(semanticErrors, (Element *)identifierNode);
-                printf("Error: Variable '%s' redeclared in conflicting scope.\n", 
+                fprintf(stderr, "Error: Variable '%s' redeclared in conflicting scope.\n", 
                        identifierNode->token.lexeme);
                 break;
             }
@@ -250,7 +250,7 @@ void ProcessDeclaration(ASTNode *ctx, Array *symbol_table) {
         entry.symNode = &CHILD_ITEM(ctx, 1);
         entry.type = CHILD_TYPE(ctx, 0);
         array_push(symbol_table, (Element *)&entry);
-        printf("Added '%s' to symbol table in scope '%s'\n", 
+        if (stream) fprintf(stream, "Added '%s' to symbol table in scope '%s'\n", 
                entry.symNode->token.lexeme, entry.scope);
     } else {
         // Free currentScope if we don't store it
@@ -258,11 +258,11 @@ void ProcessDeclaration(ASTNode *ctx, Array *symbol_table) {
     }
 }
 
-ASTNodeType ProcessOperator(ASTNode *ctx, Array *symbol_table){
+ASTNodeType ProcessOperator(ASTNode *ctx, Array *symbol_table, FILE *stream){
     assert(ctx->count == 2); // Binary operator
-    printf("Operator Analyzing -> %s\n", ASTNodeType_to_string(ctx->type));
-    ASTNodeType LHS = ProcessExpression(&CHILD_ITEM(ctx, 0), symbol_table);
-    ASTNodeType RHS = ProcessExpression(&CHILD_ITEM(ctx, 1), symbol_table);
+    if (stream) fprintf(stream, "Operator Analyzing -> %s\n", ASTNodeType_to_string(ctx->type));
+    ASTNodeType LHS = ProcessExpression(&CHILD_ITEM(ctx, 0), symbol_table, stream);
+    ASTNodeType RHS = ProcessExpression(&CHILD_ITEM(ctx, 1), symbol_table, stream);
 
     if (LHS >= AST_INT_TYPE && LHS < AST_SKIP) LHS = VarToLiteral(LHS);
     if (RHS >= AST_INT_TYPE && RHS < AST_SKIP) RHS = VarToLiteral(RHS);
@@ -270,38 +270,38 @@ ASTNodeType ProcessOperator(ASTNode *ctx, Array *symbol_table){
     if (LHS != RHS && (LHS != AST_NULL && RHS != AST_NULL)) {
         ctx->error = AST_ERROR_INCOMPATIBLE_TYPES;
         array_push(semanticErrors, (Element *)ctx);
-        printf("Error Reported -> Incompatible Types\n");
+        fprintf(stderr, "Error Reported -> Incompatible Types\n");
     } else if (LHS != RHS){
         ctx->error = AST_ERROR_UNDEFINED_ASSIGNMENT;
         array_push(semanticErrors, (Element *)ctx);
-        printf("Error Reported -> Assignment/Operation Failed\n");
+        fprintf(stderr, "Error Reported -> Assignment/Operation Failed\n");
     } else {
         return LHS;
     }
     return AST_NULL;
 }
 
-ASTNodeType ProcessUnaryOperator(ASTNode *ctx, Array *symbol_table){
+ASTNodeType ProcessUnaryOperator(ASTNode *ctx, Array *symbol_table, FILE *stream){
     assert(ctx->count == 1);
     ASTNodeType type;
-    printf("Operator Analyzing -> %s\n", ASTNodeType_to_string(ctx->type));
-    type = ProcessExpression(&CHILD_ITEM(ctx, 0), symbol_table);
+    if (stream) fprintf(stream, "Operator Analyzing -> %s\n", ASTNodeType_to_string(ctx->type));
+    type = ProcessExpression(&CHILD_ITEM(ctx, 0), symbol_table, stream);
     
     if (type >= AST_INT_TYPE && type < AST_SKIP) type = VarToLiteral(type);
 
     return type;
 }
 
-void ProcessIO(ASTNode *ctx, Array *symbol_table){
-    printf("IO (print/read) Analyzing -> %s\n", ASTNodeType_to_string(ctx->type));
+void ProcessIO(ASTNode *ctx, Array *symbol_table, FILE *stream){
+    if (stream) fprintf(stream, "IO (print/read) Analyzing -> %s\n", ASTNodeType_to_string(ctx->type));
     assert(ctx->count == 1);
-    ProcessExpression(ctx->items, symbol_table);
+    ProcessExpression(ctx->items, symbol_table, stream);
 }
 
 // Handles Assignment, Operator, Unary Operator
-ASTNodeType ProcessOperation(ASTNode *ctx, Array *symbol_table){
+ASTNodeType ProcessOperation(ASTNode *ctx, Array *symbol_table, FILE *stream){
     if (ctx->type == AST_ASSIGN_EQUAL) {
-        printf("Assignment Analyzing -> %s\n", ASTNodeType_to_string(ctx->type));
+        if (stream) fprintf(stream, "Assignment Analyzing -> %s\n", ASTNodeType_to_string(ctx->type));
         assert(ctx->count == 2);
 
         //assert(CHILD_TYPE(ctx, 0) == AST_IDENTIFIER); // LHS must be an identifier
@@ -317,8 +317,8 @@ ASTNodeType ProcessOperation(ASTNode *ctx, Array *symbol_table){
             array_push(semanticErrors, (Element *)ctx);
             return AST_NULL; 
         }
-        ASTNodeType LHS = VarToLiteral(ProcessExpression(&CHILD_ITEM(ctx, 0), symbol_table));
-        ASTNodeType RHS = ProcessExpression(&CHILD_ITEM(ctx, 1), symbol_table);
+        ASTNodeType LHS = VarToLiteral(ProcessExpression(&CHILD_ITEM(ctx, 0), symbol_table, stream));
+        ASTNodeType RHS = ProcessExpression(&CHILD_ITEM(ctx, 1), symbol_table, stream);
 
         if (RHS >= AST_INT_TYPE && RHS < AST_SKIP) RHS = VarToLiteral(RHS);
 
@@ -332,10 +332,10 @@ ASTNodeType ProcessOperation(ASTNode *ctx, Array *symbol_table){
             printf("Error Reported -> Incompatible Types upon Assignment\n");
         }
     } else if (ctx->type >= AST_LOGICAL_OR && ctx->type < AST_BITWISE_NOT) {
-        ASTNodeType typeEval = ProcessOperator(ctx, symbol_table);
+        ASTNodeType typeEval = ProcessOperator(ctx, symbol_table, stream);
         return typeEval;
     } else if (ctx->type >= AST_BITWISE_NOT) {
-        ASTNodeType typeEval = ProcessUnaryOperator(ctx, symbol_table);
+        ASTNodeType typeEval = ProcessUnaryOperator(ctx, symbol_table, stream);
         return typeEval;
     }
 
@@ -344,7 +344,7 @@ ASTNodeType ProcessOperation(ASTNode *ctx, Array *symbol_table){
 
 int currScope;
 
-void ProcessScope(ASTNode *ctx, Array *symbol_table) {
+void ProcessScope(ASTNode *ctx, Array *symbol_table, FILE *stream) {
     assert(ctx->type == AST_SCOPE);
     
     int stackSize = array_size(scopeStack);
@@ -357,12 +357,12 @@ void ProcessScope(ASTNode *ctx, Array *symbol_table) {
     array_push(scopeStack, (Element*)&newScope);
     // DEBUG PRINTING
     char* currentScope = GetCurrentScope();
-    printf("\nEntered new scope -> %s\n", currentScope);
+    if (stream) fprintf(stream, "\nEntered new scope -> %s\n", currentScope);
     free(currentScope);  // Free the string after using it
     
     for (size_t child = 0; child < ctx->count; child++) {
         ASTNode *childNode = &ctx->items[child];
-        ProcessScopeChild(childNode, symbol_table);
+        ProcessScopeChild(childNode, symbol_table, stream);
     }
     
     array_pop(scopeStack);
@@ -370,49 +370,49 @@ void ProcessScope(ASTNode *ctx, Array *symbol_table) {
     // DEBUG PRINTING
     if (array_size(scopeStack) > 0) {
         currentScope = GetCurrentScope();
-        printf("Returned to scope -> %s\n", currentScope);
+        if (stream) fprintf(stream, "Returned to scope -> %s\n", currentScope);
         free(currentScope);
     }
 }
 
-void ProcessConditional(ASTNode *ctx, Array *symbol_table) { // If statements
+void ProcessConditional(ASTNode *ctx, Array *symbol_table, FILE *stream) { // If statements
     assert(ctx->type == AST_CODITIONAL);
     assert(ctx->count == 3); // A conditional should have a condition and two scopes
     ASTNodeType outcome = AST_NULL;
 
-    printf("Conditional Analyzing -> %s\n", ASTNodeType_to_string(ctx->type));
+    if (stream) fprintf(stream, "Conditional Analyzing -> %s\n", ASTNodeType_to_string(ctx->type));
 
     // TODO: operation returns int, 0=false, non-zero=true
-    outcome = ProcessOperation(&CHILD_ITEM(ctx, 0), symbol_table); // Process the comparison
+    outcome = ProcessOperation(&CHILD_ITEM(ctx, 0), symbol_table, stream); // Process the comparison
     if (outcome != AST_INTEGER){
             printf("Error Reported -> Incompatible Conditional\n");
             ctx->error = AST_ERROR_INVALID_CONDITIONAL;
             array_push(semanticErrors, (Element *)ctx);
     }
-    ProcessScope(&CHILD_ITEM(ctx, 1), symbol_table); // ThenScope
-    ProcessScope(&CHILD_ITEM(ctx, 2), symbol_table); // ElseScope
+    ProcessScope(&CHILD_ITEM(ctx, 1), symbol_table, stream); // ThenScope
+    ProcessScope(&CHILD_ITEM(ctx, 2), symbol_table, stream); // ElseScope
 }
 
-void ProcessLoop(ASTNode *ctx, Array *symbol_table) {
+void ProcessLoop(ASTNode *ctx, Array *symbol_table, FILE *stream) {
     assert(ctx->type == AST_WHILE_LOOP || ctx->type == AST_REPEAT_UNTIL_LOOP);
     assert(ctx->count == 2);
     ASTNodeType outcome = AST_NULL;
 
-    printf("Loop Analyzing -> %s\n", ASTNodeType_to_string(ctx->type));
+    if (stream) fprintf(stream, "Loop Analyzing -> %s\n", ASTNodeType_to_string(ctx->type));
 
     if (ctx->type == AST_WHILE_LOOP) {
-        outcome = ProcessExpression(&CHILD_ITEM(ctx, 0), symbol_table);
+        outcome = ProcessExpression(&CHILD_ITEM(ctx, 0), symbol_table, stream);
         if (outcome == AST_STRING || outcome == AST_NULL){
             printf("Error Reported -> Incompatible Conditional\n");
             ctx->error = AST_ERROR_INVALID_CONDITIONAL;
             array_push(semanticErrors, (Element *)ctx);
         }
-        ProcessScope(&CHILD_ITEM(ctx, 1), symbol_table);
+        ProcessScope(&CHILD_ITEM(ctx, 1), symbol_table, stream);
     }
 
     if(ctx->type == AST_REPEAT_UNTIL_LOOP) {
-        ProcessScope(&CHILD_ITEM(ctx, 0), symbol_table);
-        outcome = ProcessExpression(&CHILD_ITEM(ctx, 1), symbol_table);
+        ProcessScope(&CHILD_ITEM(ctx, 0), symbol_table, stream);
+        outcome = ProcessExpression(&CHILD_ITEM(ctx, 1), symbol_table, stream);
         if (outcome == AST_STRING || outcome == AST_NULL){
             printf("Error Reported -> Incompatible Conditional\n");
             ctx->error = AST_ERROR_INVALID_CONDITIONAL;
@@ -422,27 +422,27 @@ void ProcessLoop(ASTNode *ctx, Array *symbol_table) {
 }
 
 // Only export
-void ProcessScopeChild(ASTNode *ctx, Array *symbol_table) {
+void ProcessScopeChild(ASTNode *ctx, Array *symbol_table, FILE *stream) {
     switch(ctx->type) {
         case AST_SCOPE:
-            ProcessScope(ctx, symbol_table);
+            ProcessScope(ctx, symbol_table, stream);
             break;
         case AST_CODITIONAL:
-            ProcessConditional(ctx, symbol_table);
+            ProcessConditional(ctx, symbol_table, stream);
             break;
         case AST_REPEAT_UNTIL_LOOP:
         case AST_WHILE_LOOP:
-            ProcessLoop(ctx, symbol_table);
+            ProcessLoop(ctx, symbol_table, stream);
             break;
         case AST_EXPRESSION:
-            ProcessExpression(ctx, symbol_table);
+            ProcessExpression(ctx, symbol_table, stream);
             break;
         case AST_DECLARATION:
-            ProcessDeclaration(ctx, symbol_table);
+            ProcessDeclaration(ctx, symbol_table, stream);
             break;
         case AST_READ:
         case AST_PRINT:
-            ProcessIO(ctx, symbol_table);
+            ProcessIO(ctx, symbol_table, stream);
             break;
         default:
             fprintf(stderr, "Invalid node type\n");
@@ -451,7 +451,7 @@ void ProcessScopeChild(ASTNode *ctx, Array *symbol_table) {
     }
 }
 
-Array* ProcessProgram(ASTNode *head, Array *symbol_table) {
+Array* ProcessProgram(ASTNode *head, Array *symbol_table, FILE *stream) {
     assert(head->type == AST_PROGRAM);
     
     // Initialize the scope tracking system
@@ -461,7 +461,7 @@ Array* ProcessProgram(ASTNode *head, Array *symbol_table) {
     // assume that there is only one child to process which is a scope.
     assert(head->count == 1);
     assert(head->items[0].type == AST_SCOPE);
-    ProcessScope(head->items, symbol_table);
+    ProcessScope(head->items, symbol_table, stream);
     
     // Clean up the scope tracking system
     CleanupScopeStack();

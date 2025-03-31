@@ -130,6 +130,7 @@ struct debug_flags {
     bool print_tokens;
     bool print_parse_tree;
     bool print_abstract_syntax_tree;
+    bool print_semantic_analysis;
     bool print_symbol_table; 
 } const DEBUG = {
     .grammar_check = true,
@@ -138,6 +139,7 @@ struct debug_flags {
     .print_tokens = false, 
     .print_parse_tree = false, 
     .print_abstract_syntax_tree = true, 
+    .print_semantic_analysis = true,
     .print_symbol_table = true
 };
 // File extension for input files
@@ -297,9 +299,11 @@ int main(int const argc, const char *const argv[]) {
     }
 
     // Semantic Analysis
-    printf("\nStarting Semantic Analysis:\n");
+    
+    if (DEBUG.print_semantic_analysis)
+        printf("\nStarting Semantic Analysis:\n");
     Array *symbol_table = array_new(8, sizeof(symEntry));
-    Array* semanticErrors = ProcessProgram(&ast_root, symbol_table);
+    Array* semanticErrors = ProcessProgram(&ast_root, symbol_table, DEBUG.print_semantic_analysis ? stdout : NULL);
     // Print semantic errors
     for (size_t i = 0; i < array_size(semanticErrors); i++){
         ASTNode *entry = (ASTNode *)array_get(semanticErrors, i);
@@ -309,17 +313,20 @@ int main(int const argc, const char *const argv[]) {
 
     array_free(semanticErrors);
 
-    // print symbol table entries
-    for (size_t i = 0; i < array_size(symbol_table); i++){
-        printf("Declared Variable -> %s ", ((symEntry *)array_get(symbol_table, i))->symNode->token.lexeme);
-        printf("Scope -> %s\n", ((symEntry *)array_get(symbol_table, i))->scope);
-    }
-    // print symbol table entries with errors
-    for (size_t i = 0; i < array_size(symbol_table); i++){
-        symEntry *entry = (symEntry *)array_get(symbol_table, i);
-        if(entry->symNode->error) printf("Error Detected -> %s\n", entry->symNode->token.lexeme);
-    }
-
+    if (DEBUG.print_symbol_table) {
+        printf("\nSymbol Table:\n");
+        
+        // print symbol table entries
+        for (size_t i = 0; i < array_size(symbol_table); i++){
+            printf("Declared Variable -> %s ", ((symEntry *)array_get(symbol_table, i))->symNode->token.lexeme);
+            printf("Scope -> %s\n", ((symEntry *)array_get(symbol_table, i))->scope);
+        }
+        // print symbol table entries with errors
+        for (size_t i = 0; i < array_size(symbol_table); i++){
+            symEntry *entry = (symEntry *)array_get(symbol_table, i);
+            if(entry->symNode->error) printf("Error Detected -> %s\n", entry->symNode->token.lexeme);
+        }
+}
 
     array_free(symbol_table);
 
