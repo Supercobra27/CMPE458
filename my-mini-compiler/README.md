@@ -14,7 +14,7 @@ cmake --build .
 Three executables are generated, 
 - one for just the lexer from phase 1 `my-mini-compiler1`,
 - one for with the combination of the lexer and the parser `my-mini-compiler2`,
-- one for the combination of lexer, parser and semantic analyzer `my-mini-compiler3` (work in progress).
+- one for the combination of lexer, parser and semantic analyzer `my-mini-compiler3`.
 
 Both executables are run the in the terminal in the same way, by running the executable along with your input file of choice. For example:  
 
@@ -29,6 +29,7 @@ There are multiple sample input files for the parser located in the directory `m
 ## Phase 1: Lexer/Scanner
 
 Todo:
+- [ ] convert token lexemes to be string-view instead of a fixed 100 char string.
 - [ ] fix number parsing for ints and floats ("5.5.5" should not be accepted as FLOAT "5.5.5")
 - [ ] Clearly list and explain each regular expression for each token (perhaps test and make everything explicit using https://regexer.com) and explain what characters are allowed to follow immediately after a token (address the question of whether "10x" is tokenized into INTEGER "10" and IDENTIFIER "x" or alternatively ERROR "10x", also "2then" is tokenized as INTEGER "2" and KEYWORD "then" which I suspect was not intended). Here's an example of c-compiler error:
     ```
@@ -74,7 +75,6 @@ To Do:
     - test the parser by parsing the stream of tokens to build a parse tree
     - check that the built parse tree from parsing matches the original parse tree
     - for each valid parse tree, create invalid parse trees. Do this by arbitrarily picking a node of the parse tree to be in error, update the parse tree to reflect this error. Create modified token stream with this error parse tree. parse the token stream and see if you build the same parse tree with the same error.
-- [ ] Optional: improve/simplify the parse_cfg_recursive_descent_parse_tree function
 - [ ] Optional: implement alternative parsing function such as a bottom-up parser (recursive descent technically performs bottom-up parsing to parse left-recursive grammar rules)
 
 
@@ -105,16 +105,22 @@ Completed:
 
 
 ## Phase 3: Semantic Analyzer
-### Simple Checklist
-1. [x] Convert Parse Tree to AST (Hendrix)
+### Checklist
+
+To Do: 
+- [ ] change symbol table to be a hash table
+- [ ] generalize the semantic validation to work on different grammars
+
+Completed:
+1. Convert Parse Tree to AST
     - [x] Free Dynamic Memory Function
     - [x] Conversion Function
     - Rules are defined in the grammar
 
 2. [x] Define Semantic Rules
-    - [x] Declaration/Variables (Simon)
-    - [x] Assignment/Expressions (Ryan)
-    - [x] Types allowed for Operations (Ryan/Simon)
+    - [x] Declaration/Variables
+    - [x] Assignment/Expressions
+    - [x] Types allowed for Operations 
 
 3. [x] Produce proper compiler error messages
     - [x] get rid of global variables in lexer, use a struct instead.
@@ -130,46 +136,6 @@ Completed:
 
 5. [x] Runtime Error Detection (flags)
     - [x] Div/0
-    - [x] % (Modulo)
-
-
-
-### Detailed Checklist
-Todo (in increasing order of dependency):
-- [ ] specify semantic/context-sensitive rules for the programming language 
-    - [ ] Declaration and use of variables (identifier) in relation to Scope and Expression.
-    - [ ] type of arguments allowed in each different Operation.
-        - [ ] Assignment (AssignEqual)
-        - [ ] Logical (LogicalOr, LogicalAnd, LogicalNot)
-        - [ ] Bitwise (BitwiseOr, BitwiseAnd, BitwiseNot)
-        - [ ] Bitwise (BitwiseOr, BitwiseAnd, BitwiseNot, ShiftLeft, ShiftRight)
-        - [ ] Comparison (CompareEqual, CompareNotEqual, CompareLessEqual, CompareLessThan, CompareGreaterEqual, CompareGreaterThan)
-        - [ ] Arithmetic (Add, Subtract, Negate, Multiply, Divide, Modulo, Factorial)
-    - [ ] type(s) allowed for the Expression in a Conditional, WhileLoop, and RepeatUntilLoop
-    - [ ] type(s) allowed for the Expression in Print.
-    - [ ] type(s) allowed for the Expression in Read.
-    - [ ] Which operations/constructs can accept different types (are polymorphic) and how do we represent this information to enable code generation?
-        - This is mentioned because with these kinds of functions, technically the type is being passed as a parameter (see https://en.wikipedia.org/wiki/Typed_lambda_calculus). So, we either have to be somehow "pass the type as a parameter" to these functions, or recognize the type of the arguments and convert the function to one of a specific type.
-        - For example, `Add` is the polymorphic function which can operate on either two arguments of type `int` or two arguments of type `float`. So there could be two different versions of `Add`, one for `ints` such as `AddInt` and one for floats such as `AddFloat` (and this could possibly be even more specific when considering the available processor instruction set). 
-        - As far as the semantic validity of the Abstract Syntax Tree is concerned, checking that both arguments to `Add` are the same type is enough.
-        - An even more clear difference is between different kinds of `Print` such as between `PrintString` vs. `PrintInt`.
-- [ ] What information would be displayed in an error message for each of the semantic rules
-- [ ] Specify the type rules for each type of ASTNode somehow in C
-    - [ ] perhaps we leave ASTNode as the "untyped"/semantically-unchecked abstract syntax tree and introduce a new data structure which is the "typed"/semantically-valid abstract syntax tree
-    - [ ] perhaps we can implement type rules between mutable/immutable at the level of syntax/grammar?
-- [ ] implement symbol table data structure 
-    - [ ] determine operations needed to be done on the symbol table 
-    - [ ] choose underlying data structure to store the entries whether it be contiguous array or hash table or something else
-    - [ ] determine what properties need to be kept track of to validate/invalidate semantic rules
-    - [ ] determine symbol table entry C struct 
-    - [ ] implement the symbol table in C
-- [ ] implement ASTNode validation with use of symbol table, perhaps creating "typed"/semantically-valid abstract syntax tree.
-- [ ] implement runtime error detection
-    - [ ] determine which operations or constructs can incur a runtime error (such as division by zero)
-    - [ ] specify this property somehow in the Abstract Syntax Tree data structure
-- [ ] Optional: add constant-folding and checking for runtime errors (division by zero) of constant expressions at compile time.
-
-Completed:
 - [x] decide whether PT_PROGRAM is present in the AST, or if it is removed and only Scope exists (PT_PROGRAM will exist as the start symbol)
 - [x] implement function to convert ParseTreeNode into ASTNode (Abstract Syntax Tree) using grammar rules (see an example here: https://stackoverflow.com/questions/5026517/whats-the-difference-between-parse-trees-and-abstract-syntax-trees-asts)
     - [x] implement function to free dynamic memory of an AST
